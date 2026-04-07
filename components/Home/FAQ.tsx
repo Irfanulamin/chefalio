@@ -119,7 +119,7 @@ export const FAQ = () => {
                     </div>
 
                     <motion.div
-                      animate={{ rotate: isOpen ? 45 : 0 }}
+                      animate={{ rotate: isOpen ? 0 : 45 }}
                       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                       className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center border transition-all duration-300
                       ${isOpen ? "border-black/20 bg-black/8 dark:border-white/20 dark:bg-white/8" : "border-black/10 dark:border-white/10"}`}

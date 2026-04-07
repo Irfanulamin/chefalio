@@ -16,25 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import z from "zod";
 
-type Tab = "security" | "profile";
-
-const Skeleton = () => (
-  <div className="max-w-3xl mx-auto px-4 py-12 space-y-6 animate-pulse">
-    <div className="h-8 w-40 rounded-lg bg-zinc-200 dark:bg-zinc-800" />
-    <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800" />
-    <div className="flex gap-4 items-center">
-      <div className="h-20 w-20 rounded-2xl bg-zinc-200 dark:bg-zinc-800 shrink-0" />
-      <div className="space-y-2 flex-1">
-        <div className="h-5 w-32 rounded bg-zinc-200 dark:bg-zinc-800" />
-        <div className="h-4 w-48 rounded bg-zinc-200 dark:bg-zinc-800" />
-        <div className="h-4 w-24 rounded bg-zinc-200 dark:bg-zinc-800" />
-      </div>
-    </div>
-    <div className="h-10 w-full rounded-xl bg-zinc-200 dark:bg-zinc-800" />
-    <div className="h-10 w-full rounded-xl bg-zinc-200 dark:bg-zinc-800" />
-  </div>
-);
-
 const InfoRow = ({
   icon: Icon,
   label,
@@ -62,9 +43,8 @@ const InfoRow = ({
 );
 
 export default function SettingsPage() {
-  const { profile, isProfileLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>("profile");
-  const { updateProfile, changePassword } = useAuth();
+  const { profile, updateProfile, changePassword } = useAuth();
+  const [activeTab, setActiveTab] = useState<"security" | "profile">("profile");
 
   const profileFieldDefinitions = [
     {
@@ -155,9 +135,11 @@ export default function SettingsPage() {
     },
   });
 
-  if (isProfileLoading) return <Skeleton />;
-
-  const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
+  const tabs: {
+    id: "security" | "profile";
+    label: string;
+    icon: React.ElementType;
+  }[] = [
     { id: "profile", label: "Profile", icon: UserCircleIcon },
     { id: "security", label: "Security", icon: ShieldCheckIcon },
   ];
