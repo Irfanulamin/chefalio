@@ -14,6 +14,17 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const difficultyConfig = {
   beginner: {
@@ -154,44 +165,112 @@ export const CompactRecipeCard = ({
       </div>
 
       {/* Actions */}
-      <div className="shrink-0 flex items-center gap-2 self-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      <div className="shrink-0 flex items-center gap-2 self-center opacity-100 xl:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         {button == "love" && (
-          <button
-            onClick={() => handleLoveToggle()}
-            aria-label={
-              stats?.isLoved ? "Unlike this recipe" : "Like this recipe"
-            }
-            className={`p-1.5 rounded-lg transition-all duration-150 disabled:opacity-50 ${
-              stats?.isLoved
-                ? "bg-red-500/10 text-red-600 dark:bg-red-500/15 dark:text-red-400 hover:bg-red-500/20 dark:hover:bg-red-500/25"
-                : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800"
-            }`}
-          >
-            <HeartIcon
-              className="w-4.5 h-4.5"
-              weight={stats?.isLoved ? "fill" : "bold"}
-              strokeWidth={2}
-            />
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                aria-label={
+                  stats?.isLoved ? "Unlike this recipe" : "Like this recipe"
+                }
+                className={`p-1.5 rounded-lg transition-all duration-150 disabled:opacity-50 ${
+                  stats?.isLoved
+                    ? "bg-red-500/10 text-red-600 dark:bg-red-500/15 dark:text-red-400 hover:bg-red-500/20 dark:hover:bg-red-500/25"
+                    : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800"
+                }`}
+              >
+                <HeartIcon
+                  className="w-4.5 h-4.5"
+                  weight={stats?.isLoved ? "fill" : "bold"}
+                  strokeWidth={2}
+                />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="font-semibold text-base md:text-lg flex items-center gap-2">
+                  Are you absolutely sure?
+                  <HeartIcon
+                    className="text-red-500 bg-red-500/30 p-2 rounded-full"
+                    size={32}
+                    weight="fill"
+                  />
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone.{" "}
+                  {stats?.isLoved ? "Unliking" : "Liking"} this recipe will{" "}
+                  {stats?.isLoved
+                    ? "remove it from your favourites"
+                    : "add it to your favourites"}
+                  . Please confirm your choice.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="h-8 px-4">
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => handleLoveToggle()}
+                  className="text-white h-8 px-4"
+                >
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
 
         {button == "save" && (
-          <button
-            onClick={() => handleSaveToggle()}
-            aria-label={
-              stats?.isSaved ? "Unsave this recipe" : "Save this recipe"
-            }
-            className={`p-1.5 rounded-lg transition-all duration-150 disabled:opacity-50 ${
-              stats?.isSaved
-                ? "bg-blue-500/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400 hover:bg-blue-500/20 dark:hover:bg-blue-500/25"
-                : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800"
-            }`}
-          >
-            <BookmarkSimpleIcon
-              className="w-4.5 h-4.5"
-              weight={stats?.isSaved ? "fill" : "bold"}
-            />
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                aria-label={
+                  stats?.isSaved ? "Unsave this recipe" : "Save this recipe"
+                }
+                className={`p-1.5 rounded-lg transition-all duration-150 disabled:opacity-50 ${
+                  stats?.isSaved
+                    ? "bg-blue-500/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400 hover:bg-blue-500/20 dark:hover:bg-blue-500/25"
+                    : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800"
+                }`}
+              >
+                <BookmarkSimpleIcon
+                  className="w-4.5 h-4.5"
+                  weight={stats?.isSaved ? "fill" : "bold"}
+                />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="font-semibold text-base md:text-lg flex items-center gap-2">
+                  Are you absolutely sure?
+                  <BookmarkSimpleIcon
+                    className="text-blue-500 bg-blue-500/30 p-2 rounded-full"
+                    size={32}
+                    weight="fill"
+                  />
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone.{" "}
+                  {stats?.isSaved ? "Unsaving" : "Saving"} this recipe will{" "}
+                  {stats?.isSaved
+                    ? "remove it from your saved recipes"
+                    : "add it to your saved recipes"}
+                  . Please confirm your choice.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="h-8 px-4 border-none">
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => handleSaveToggle()}
+                  className="text-white h-8 px-4"
+                >
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
         <Link
           href={`/recipes/${recipe.recipeId?._id}`}

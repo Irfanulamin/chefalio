@@ -56,7 +56,7 @@ export const RecipeCard = memo(({ recipe }: { recipe: Recipe }) => {
     <div
       className="group w-full max-w-full overflow-hidden rounded-2xl 
 border border-blue-200/40 dark:border-blue-400/20 
-bg-linear-to-br from-white/60 via-blue-50/40 to-blue-100/30 
+bg-linear-to-t from-white/60 via-blue-50/40 to-blue-100/30 
 dark:from-black/80 dark:via-blue-900/20 dark:to-black/30
 shadow-[0_10px_30px_rgba(59,130,246,0.15)] 
 dark:shadow-[0_10px_30px_rgba(59,130,246,0.10)]
@@ -161,7 +161,7 @@ flex flex-col"
             <HeartIcon
               weight={stats?.isLoved ? "fill" : "bold"}
               className={cn(
-                "h-4 w-4 transition-all",
+                "h-5 w-5 transition-all",
                 stats?.isLoved ? "text-rose-500" : "",
               )}
             />
@@ -178,7 +178,7 @@ flex flex-col"
             <BookmarkSimpleIcon
               weight={stats?.isSaved ? "fill" : "bold"}
               className={cn(
-                "h-4 w-4 transition-all",
+                "h-5 w-5 transition-all",
                 stats?.isSaved ? "text-slate-900 dark:text-white" : "",
               )}
             />
@@ -189,7 +189,7 @@ flex flex-col"
             onClick={handleShareLinkToClipboard}
             className="flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
           >
-            <ShareFatIcon className="h-4 w-4" weight="bold" />
+            <ShareFatIcon className="h-5 w-5" weight="bold" />
           </button>
 
           {/* Spacer */}

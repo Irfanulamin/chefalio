@@ -20,7 +20,7 @@ function Tabs({
 }
 
 const tabsListVariants = cva(
-  "inline-flex items-center rounded-lg border border-border bg-secondary/15 dark:bg-primary/15 transition-colors",
+  "inline-flex items-center rounded-lg border border-border bg-secondary/15 dark:bg-primary/5 transition-colors",
   {
     variants: {
       variant: {

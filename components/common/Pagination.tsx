@@ -16,7 +16,7 @@ type Props = {
   setPage: (page: number) => void;
 };
 
-export const RecipePagination = ({
+export const PaginationSection = ({
   totalPages,
   currentPage,
   setPage,

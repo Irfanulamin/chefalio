@@ -166,6 +166,7 @@ export function useToggleLove() {
     onSettled: (_data, _error, id) => {
       // Revalidate in background — no visual flash since optimistic update already applied
       queryClient.invalidateQueries({ queryKey: ["recipe-stats", id] });
+      queryClient.invalidateQueries({ queryKey: ["loved-recipes"] });
     },
   });
 }
@@ -231,6 +232,7 @@ export function useToggleSave() {
 
     onSettled: (_data, _error, id) => {
       queryClient.invalidateQueries({ queryKey: ["recipe-stats", id] });
+      queryClient.invalidateQueries({ queryKey: ["saved-recipes"] }); // Also refresh saved recipes list
     },
   });
 }

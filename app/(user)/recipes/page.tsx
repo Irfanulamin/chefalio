@@ -6,8 +6,8 @@ import { useState } from "react";
 import { useDebounce } from "use-debounce";
 import { Loader2 } from "lucide-react";
 import { RecipeGrid } from "@/components/User/Recipe/RecipeGrid";
-import { RecipePagination } from "@/components/User/Recipe/RecipePagination";
 import { RecipeFilters } from "@/components/User/Recipe/RecipeFilters";
+import { PaginationSection } from "@/components/common/Pagination";
 
 // ── constants ──────────────────────────────────────────────────────────────────
 
@@ -54,7 +54,7 @@ export default function RecipesPage() {
   const { recipes, isLoading, isFetching } = useRecipes({
     search: debouncedSearch,
     page,
-    limit: 6,
+    limit: 12,
     tags: tagsParam || undefined,
     difficulty: difficulty || undefined,
     author: debouncedAuthor || undefined,
@@ -163,9 +163,16 @@ export default function RecipesPage() {
         search={search}
       />
       {/* ── GRID ── */}
+      {!isLoading && recipes && (
+        <p className="text-sm text-muted-foreground">
+          {recipes.data?.pagination.total === 0
+            ? "No recipes found"
+            : `Showing ${data?.length} of ${recipes.data?.pagination.total} recipe${recipes.data?.pagination.total !== 1 ? "s" : ""}`}
+        </p>
+      )}
       <RecipeGrid isFetching={isFetching} data={data} />
       {/* ── PAGINATION ── */}
-      <RecipePagination
+      <PaginationSection
         totalPages={totalPages}
         currentPage={currentPage}
         setPage={setPage}
