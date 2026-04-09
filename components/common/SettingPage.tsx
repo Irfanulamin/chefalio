@@ -203,9 +203,9 @@ export default function SettingsPage() {
                     <Image
                       src={profile?.profile_url || "/default-profile.png"}
                       alt="Profile"
-                      width={72}
-                      height={72}
-                      className="object-cover w-24 h-24 rounded-full border-2 border-lime-400"
+                      width={100}
+                      height={100}
+                      className="object-cover w-20 h-20 rounded-full border-4 border-lime-400"
                     />
                     <span className="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900" />
                   </div>
