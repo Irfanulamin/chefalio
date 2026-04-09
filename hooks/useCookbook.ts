@@ -104,7 +104,14 @@ export function usePaymentCookbook() {
 
     onSuccess: (data) => {
       if (data?.success === true) {
-        window.open(data.redirectUrl, "_blank");
+        const newWindow = window.open(
+          data.redirectUrl,
+          "_blank",
+          "noopener,noreferrer",
+        );
+        if (!newWindow) {
+          window.location.href = data.redirectUrl;
+        }
       }
     },
   });
