@@ -205,7 +205,7 @@ export default function SettingsPage() {
                       alt="Profile"
                       width={72}
                       height={72}
-                      className="object-cover w-18 h-18 rounded-full border-8 border-lime-400"
+                      className="object-cover w-24 h-24 rounded-full border-2 border-lime-400"
                     />
                     <span className="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900" />
                   </div>
