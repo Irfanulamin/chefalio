@@ -142,6 +142,7 @@ export const CompactPurchaseCardSkeleton = () => {
           <div className="h-4 w-16 rounded-md bg-slate-200 dark:bg-slate-800" />
           <div className="h-4 w-24 rounded-md bg-slate-200 dark:bg-slate-800" />
           <div className="h-4 w-20 rounded-md bg-slate-200 dark:bg-slate-800" />
+          <div className="h-4 w-20 rounded-md bg-slate-200 dark:bg-slate-800" />
         </div>
 
         <div className="h-4 w-16 rounded-md bg-slate-200 dark:bg-slate-800" />
@@ -238,11 +239,11 @@ export const CompactPurchaseCard = ({ purchase }: { purchase: Purchase }) => {
               {location}
             </span>
           )}
+          <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+            <CalendarIcon className="w-5 h-5 text-orange-500" />
+            {getRelativeTime(purchase.createdAt)}
+          </span>
         </div>
-        <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-          <CalendarIcon className="w-5 h-5 text-orange-500" />
-          {getRelativeTime(purchase.createdAt)}
-        </span>
       </div>
     </article>
   );
