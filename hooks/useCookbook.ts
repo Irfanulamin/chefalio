@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "./axios";
+import { useRouter } from "next/navigation";
 
 export interface Author {
   _id: string;
@@ -84,6 +85,7 @@ export function useCookbook(id: string) {
 }
 
 export function usePaymentCookbook() {
+  const router = useRouter();
   const mutation = useMutation({
     mutationFn: (payload: {
       cookbookId: string;
@@ -103,16 +105,7 @@ export function usePaymentCookbook() {
     },
 
     onSuccess: (data) => {
-      if (data?.success === true) {
-        const newWindow = window.open(
-          data.redirectUrl,
-          "_blank",
-          "noopener,noreferrer",
-        );
-        if (!newWindow) {
-          window.location.href = data.redirectUrl;
-        }
-      }
+      router.push(data?.redirectUrl);
     },
   });
 
