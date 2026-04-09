@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "./axios";
 
 export interface Author {
@@ -34,6 +34,12 @@ export interface GetCookbooksResponse {
   pagination: Pagination;
 }
 
+export interface GetCookbookResponse {
+  success: boolean;
+  message: string;
+  data: Cookbook;
+}
+
 export function useCookbooks(params?: {
   page?: number;
   limit?: number;
@@ -52,6 +58,79 @@ export function useCookbooks(params?: {
 
   return {
     cookbbooks: data,
+    isLoading,
+    isFetching,
+    error,
+  };
+}
+
+export function useCookbook(id: string) {
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: ["cookbooks", id],
+    queryFn: () =>
+      axiosInstance
+        .get<GetCookbookResponse>(`/cookbooks/${id}`)
+        .then((res) => res.data),
+    staleTime: 1000 * 60,
+    enabled: !!id,
+  });
+
+  return {
+    cookbook: data?.data,
+    isLoading,
+    isFetching,
+    error,
+  };
+}
+
+export function usePaymentCookbook() {
+  const mutation = useMutation({
+    mutationFn: (payload: {
+      cookbookId: string;
+      receiptEmail: string;
+      billingAddress: {
+        name: string;
+        address: string;
+        city: string;
+        state: string;
+        postalCode: string;
+        country: string;
+      };
+    }) => {
+      return axiosInstance
+        .post("/cookbook-purchase/payment", payload)
+        .then((res) => res.data);
+    },
+
+    onSuccess: (data) => {
+      if (data?.success === true) {
+        window.open(data.redirectUrl, "_blank");
+      }
+    },
+  });
+
+  return {
+    payCookbook: mutation.mutate,
+    payCookbookAsync: mutation.mutateAsync,
+    data: mutation.data,
+    isLoading: mutation.isPending,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
+}
+
+export function usePurchaseHistory() {
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: ["purchase-history"],
+    queryFn: () =>
+      axiosInstance
+        .get<GetCookbookResponse>("/cookbook-purchase/history")
+        .then((res) => res.data),
+    staleTime: 1000 * 60,
+  });
+
+  return {
+    purchaseHistory: data,
     isLoading,
     isFetching,
     error,

@@ -1,7 +1,12 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedRecipesSection from "./_components/SavedRecipe";
 import LovedRecipesSection from "./_components/LovedRecipe";
-import { BookmarkSimpleIcon, HeartIcon } from "@phosphor-icons/react/dist/ssr";
+import {
+  BookmarkSimpleIcon,
+  HeartIcon,
+  PackageIcon,
+} from "@phosphor-icons/react/dist/ssr";
+import OrdersSection from "./_components/Orders";
 export default function ActivityPage() {
   return (
     <>
@@ -26,12 +31,18 @@ export default function ActivityPage() {
           <TabsTrigger value="loved-recipes">
             <HeartIcon weight="fill" /> Favourites
           </TabsTrigger>
+          <TabsTrigger value="orders">
+            <PackageIcon weight="fill" /> Orders
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="saved-recipes">
           <SavedRecipesSection />
         </TabsContent>
         <TabsContent value="loved-recipes">
           <LovedRecipesSection />
+        </TabsContent>
+        <TabsContent value="orders">
+          <OrdersSection />
         </TabsContent>
       </Tabs>
     </>

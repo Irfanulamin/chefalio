@@ -9,6 +9,7 @@ import { Search, User, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { useDebounce } from "use-debounce";
+import Link from "next/link";
 
 /* ─────────────────────────────────────────
    Main Page
@@ -225,9 +226,15 @@ export default function CookbooksPage() {
                   </span>
                 </div>
 
-                <Button variant="outline" size="sm" className="w-full mt-3">
-                  View details
-                </Button>
+                <Link href={`/purchase-cookbook/${cookbook._id}`}>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full mt-3 capitalize"
+                  >
+                    Buy now
+                  </Button>
+                </Link>
               </div>
             </div>
           ))}
