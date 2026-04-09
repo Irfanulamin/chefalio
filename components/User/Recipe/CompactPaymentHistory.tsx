@@ -220,7 +220,7 @@ export const CompactPurchaseCard = ({ purchase }: { purchase: Purchase }) => {
         )}
 
         {/* Meta row */}
-        <div className="hidden md:flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
           <span className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
             <CurrencyDollarIcon className="w-5 h-5 text-primary" />
             {formatPrice(purchase.price)}
