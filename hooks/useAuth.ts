@@ -80,6 +80,9 @@ export function useAuth() {
         .then((response) => response.data),
     onSuccess: (data) => {
       queryClient.setQueryData(["me"], data);
+      if (data.role === "user") {
+        router.push("/recipes");
+      }
     },
     // 👇 do NOT redirect on error, just let it throw back to the caller
     onError: () => {},
