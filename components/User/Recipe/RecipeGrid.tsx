@@ -1,5 +1,6 @@
 import { Recipe } from "@/types/recipes.type";
 import { RecipeCard } from "./RecipeCard";
+import { useBatchRecipeStats } from "@/hooks/useRecipe";
 import { MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr";
 
 export const RecipeGrid = ({
@@ -9,15 +10,19 @@ export const RecipeGrid = ({
   isFetching: boolean;
   data: Recipe[] | undefined;
 }) => {
+  // One request for the whole page instead of N individual requests
+  const recipeIds = data?.map((r) => r._id) ?? [];
+  const { statsFor } = useBatchRecipeStats(recipeIds);
+
   return (
     <div className="flex justify-center">
       <div
-        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-200 py-3  ${
+        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-200 py-3 ${
           isFetching ? "opacity-50" : "opacity-100"
         }`}
       >
         {data?.map((recipe: Recipe) => (
-          <RecipeCard key={recipe._id} recipe={recipe} />
+          <RecipeCard key={recipe._id} recipe={recipe} statsFor={statsFor} />
         ))}
 
         {!isFetching && data?.length === 0 && (

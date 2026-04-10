@@ -6,12 +6,14 @@ import {
   SavedRecipeApiResponse,
 } from "@/types/recipes.type";
 
-interface RecipeStats {
+// Shape of one recipe's stats
+export interface RecipeStats {
   isLoved: boolean;
-  loveCount: number;
   isSaved: boolean;
-  saveCount: number;
 }
+
+// Shape of the batch response: { [recipeId]: RecipeStats }
+export type BatchStatsMap = Record<string, RecipeStats>;
 
 /* =========================
    1. RECIPES LIST HOOK
@@ -23,7 +25,7 @@ export function useRecipes(params?: {
   tags?: string;
   difficulty?: string;
   author?: string;
-  id?: string; // For single recipe fetch
+  id?: string;
 }) {
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: ["recipes", params],
@@ -40,14 +42,15 @@ export function useRecipes(params?: {
     isLoading: isSingleRecipeLoading,
     error: singleRecipeError,
   } = useQuery({
-    queryKey: ["recipe", params?.id], // ✅ unique key
+    queryKey: ["recipe", params?.id],
     queryFn: () =>
       axiosInstance
         .get<RecipeApiResponse>(`/recipes/${params?.id}`)
         .then((res) => res.data),
     staleTime: 1000 * 60,
-    enabled: !!params?.id, // ✅ prevent undefined calls
+    enabled: !!params?.id,
   });
+
   return {
     recipes: data,
     isLoading,
@@ -60,25 +63,55 @@ export function useRecipes(params?: {
 }
 
 /* =========================
-   2. RECIPE STATS HOOK
+   2. BATCH STATS HOOK
+   — replaces useRecipeStats for the grid/list.
+   — Call once with the current page's recipe IDs.
+   — Returns the full map + a helper to read one entry.
+========================= */
+export function useBatchRecipeStats(recipeIds: string[]) {
+  const { data, isLoading, isFetching } = useQuery({
+    // Key includes the sorted IDs so different pages get different cache entries
+    queryKey: ["recipe-stats-batch", [...recipeIds].sort().join(",")],
+    queryFn: () =>
+      axiosInstance
+        .post<BatchStatsMap>("/recipe-interaction/stats/batch", { recipeIds })
+        .then((res) => res.data),
+    enabled: recipeIds.length > 0,
+    staleTime: 1000 * 60,
+    placeholderData: (prev) => prev,
+  });
+
+  // Helper: statsFor(id) always returns something safe
+  const statsFor = (id: string): RecipeStats =>
+    data?.[id] ?? { isLoved: false, isSaved: false };
+
+  return { statsMap: data, statsFor, isLoading, isFetching };
+}
+
+/* =========================
+   3. SINGLE RECIPE STATS HOOK
+   — kept only for the detail page (/recipes/[id])
+   — do NOT use this in grids/lists
 ========================= */
 export function useRecipeStats(id?: string) {
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: ["recipe-stats", id],
     queryFn: () =>
       axiosInstance
-        .get(`/recipe-interaction/stats/${id}`)
+        .get<RecipeStats>(`/recipe-interaction/stats/${id}`)
         .then((res) => res.data),
     enabled: !!id,
+    staleTime: 1000 * 60,
   });
 
   return { stats: data, isLoading, isFetching, error };
 }
 
 /* =========================
-   SHARED OPTIMISTIC UPDATER
+   SHARED CACHE PATCHER
+   Patches every cached "recipes" page that contains the target id.
+   Works correctly on page 4, page 10, any page.
 ========================= */
-// Patches all cached recipe list pages that contain the target recipe
 function patchRecipesCache(
   queryClient: ReturnType<typeof useQueryClient>,
   id: string,
@@ -100,71 +133,107 @@ function patchRecipesCache(
     },
   );
 }
+
+// Patches the batch-stats cache entry that contains this recipe id
+function patchBatchStatsCache(
+  queryClient: ReturnType<typeof useQueryClient>,
+  id: string,
+  patch: Partial<RecipeStats>,
+) {
+  queryClient.setQueriesData<BatchStatsMap>(
+    { queryKey: ["recipe-stats-batch"], exact: false },
+    (old) => {
+      if (!old || !(id in old)) return old;
+      return { ...old, [id]: { ...old[id], ...patch } };
+    },
+  );
+}
+
 /* =========================
-   3. TOGGLE LOVE (LIKE)
+   4. TOGGLE LOVE
 ========================= */
 export function useToggleLove() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: string) =>
-      axiosInstance.post(`/recipe-interaction/love/${id}`),
+      axiosInstance
+        .post<{
+          isLoved: boolean;
+          success: boolean;
+        }>(`/recipe-interaction/love/${id}`)
+        .then((res) => res.data),
 
     onMutate: async (id) => {
-      await Promise.all([
-        queryClient.cancelQueries({ queryKey: ["recipe-stats", id] }),
-        queryClient.cancelQueries({ queryKey: ["recipes"] }),
-      ]);
+      // Cancel any in-flight refetches so they don't stomp our optimistic update
+      await queryClient.cancelQueries({ queryKey: ["recipe-stats-batch"] });
+      await queryClient.cancelQueries({ queryKey: ["recipe-stats", id] });
+      await queryClient.cancelQueries({ queryKey: ["recipes"] });
 
-      const previousStats = queryClient.getQueryData<RecipeStats>([
+      // Snapshot current state from the batch cache (works on any page)
+      const batchEntries = queryClient.getQueriesData<BatchStatsMap>({
+        queryKey: ["recipe-stats-batch"],
+      });
+      const currentStats = batchEntries
+        .map(([, map]) => map?.[id])
+        .find(Boolean) ?? { isLoved: false, isSaved: false };
+
+      // Snapshot for rollback
+      const previousBatch = batchEntries;
+      const previousSingle = queryClient.getQueryData<RecipeStats>([
         "recipe-stats",
         id,
       ]);
-      const previousRecipes = queryClient.getQueriesData<RecipeApiResponse>({
+
+      // Find current lovedCount from whichever cached recipes page holds this recipe
+      const allRecipePages = queryClient.getQueriesData<RecipeApiResponse>({
         queryKey: ["recipes"],
       });
+      const currentRecipe = allRecipePages
+        .flatMap(([, page]) => page?.data?.recipes ?? [])
+        .find((r) => r._id === id);
 
-      // Read current recipe from list cache
-      const cachedRecipes = previousRecipes?.[0]?.[1];
-      const currentRecipe = cachedRecipes?.data?.recipes?.find(
-        (r) => r._id === id,
-      );
+      const wasLoved = currentStats.isLoved;
 
-      // Update recipe-stats cache (isLoved toggle)
+      // Optimistically update the batch stats cache
+      patchBatchStatsCache(queryClient, id, { isLoved: !wasLoved });
+
+      // Optimistically update the single stats cache (detail page)
       queryClient.setQueryData(
         ["recipe-stats", id],
-        (old: RecipeStats | undefined) => {
-          if (!old) return old;
-          return { ...old, isLoved: !old.isLoved };
-        },
+        (old: RecipeStats | undefined) =>
+          old ? { ...old, isLoved: !wasLoved } : old,
       );
 
-      // Update recipes list cache using lovedCount from the recipe itself
+      // Optimistically update the lovedCount in the recipe list
       if (currentRecipe) {
         patchRecipesCache(queryClient, id, {
-          lovedCount: previousStats?.isLoved
+          lovedCount: wasLoved
             ? currentRecipe.lovedCount - 1
             : currentRecipe.lovedCount + 1,
         });
       }
 
-      return { previousStats, previousRecipes };
+      return { previousBatch, previousSingle, wasLoved };
     },
 
     onError: (_err, id, context) => {
-      // Roll back both caches
-      if (context?.previousStats) {
-        queryClient.setQueryData(["recipe-stats", id], context.previousStats);
-      }
-      if (context?.previousRecipes) {
-        context.previousRecipes.forEach(([queryKey, data]) => {
+      // Roll back everything
+      if (context?.previousBatch) {
+        context.previousBatch.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
         });
       }
+      if (context?.previousSingle !== undefined) {
+        queryClient.setQueryData(["recipe-stats", id], context.previousSingle);
+      }
+      // Re-fetch recipes list to restore counts
+      queryClient.invalidateQueries({ queryKey: ["recipes"] });
     },
 
     onSettled: (_data, _error, id) => {
-      // Revalidate in background — no visual flash since optimistic update already applied
+      // Re-sync in background — the optimistic update already made UI feel instant
+      queryClient.invalidateQueries({ queryKey: ["recipe-stats-batch"] });
       queryClient.invalidateQueries({ queryKey: ["recipe-stats", id] });
       queryClient.invalidateQueries({ queryKey: ["loved-recipes"] });
     },
@@ -172,73 +241,88 @@ export function useToggleLove() {
 }
 
 /* =========================
-   4. TOGGLE SAVE (BOOKMARK)
+   5. TOGGLE SAVE
 ========================= */
 export function useToggleSave() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: string) =>
-      axiosInstance.post(`/recipe-interaction/save/${id}`),
+      axiosInstance
+        .post<{
+          isSaved: boolean;
+          success: boolean;
+        }>(`/recipe-interaction/save/${id}`)
+        .then((res) => res.data),
 
     onMutate: async (id) => {
-      await Promise.all([
-        queryClient.cancelQueries({ queryKey: ["recipe-stats", id] }),
-        queryClient.cancelQueries({ queryKey: ["recipes"] }),
-      ]);
+      await queryClient.cancelQueries({ queryKey: ["recipe-stats-batch"] });
+      await queryClient.cancelQueries({ queryKey: ["recipe-stats", id] });
+      await queryClient.cancelQueries({ queryKey: ["recipes"] });
 
-      const previousStats = queryClient.getQueryData<RecipeStats>([
+      const batchEntries = queryClient.getQueriesData<BatchStatsMap>({
+        queryKey: ["recipe-stats-batch"],
+      });
+      const currentStats = batchEntries
+        .map(([, map]) => map?.[id])
+        .find(Boolean) ?? { isLoved: false, isSaved: false };
+
+      const previousBatch = batchEntries;
+      const previousSingle = queryClient.getQueryData<RecipeStats>([
         "recipe-stats",
         id,
       ]);
-      const previousRecipes = queryClient.getQueriesData<RecipeApiResponse>({
+
+      const allRecipePages = queryClient.getQueriesData<RecipeApiResponse>({
         queryKey: ["recipes"],
       });
+      const currentRecipe = allRecipePages
+        .flatMap(([, page]) => page?.data?.recipes ?? [])
+        .find((r) => r._id === id);
 
-      const cachedRecipes = previousRecipes?.[0]?.[1];
-      const currentRecipe = cachedRecipes?.data?.recipes?.find(
-        (r) => r._id === id,
-      );
+      const wasSaved = currentStats.isSaved;
+
+      patchBatchStatsCache(queryClient, id, { isSaved: !wasSaved });
 
       queryClient.setQueryData(
         ["recipe-stats", id],
-        (old: RecipeStats | undefined) => {
-          if (!old) return old;
-          return { ...old, isSaved: !old.isSaved };
-        },
+        (old: RecipeStats | undefined) =>
+          old ? { ...old, isSaved: !wasSaved } : old,
       );
 
       if (currentRecipe) {
         patchRecipesCache(queryClient, id, {
-          savedCount: previousStats?.isSaved
+          savedCount: wasSaved
             ? currentRecipe.savedCount - 1
             : currentRecipe.savedCount + 1,
         });
       }
 
-      return { previousStats, previousRecipes };
+      return { previousBatch, previousSingle, wasSaved };
     },
 
     onError: (_err, id, context) => {
-      if (context?.previousStats) {
-        queryClient.setQueryData(["recipe-stats", id], context.previousStats);
-      }
-      if (context?.previousRecipes) {
-        context.previousRecipes.forEach(([queryKey, data]) => {
+      if (context?.previousBatch) {
+        context.previousBatch.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
         });
       }
+      if (context?.previousSingle !== undefined) {
+        queryClient.setQueryData(["recipe-stats", id], context.previousSingle);
+      }
+      queryClient.invalidateQueries({ queryKey: ["recipes"] });
     },
 
     onSettled: (_data, _error, id) => {
+      queryClient.invalidateQueries({ queryKey: ["recipe-stats-batch"] });
       queryClient.invalidateQueries({ queryKey: ["recipe-stats", id] });
-      queryClient.invalidateQueries({ queryKey: ["saved-recipes"] }); // Also refresh saved recipes list
+      queryClient.invalidateQueries({ queryKey: ["saved-recipes"] });
     },
   });
 }
 
 /* =========================
-   5. SAVED RECIPES HOOK
+   6. SAVED RECIPES HOOK
 ========================= */
 export function useSavedRecipes() {
   const { data, isLoading, isFetching, error } = useQuery({
@@ -254,7 +338,7 @@ export function useSavedRecipes() {
 }
 
 /* =========================
-   6. LOVED RECIPE HOOK
+   7. LOVED RECIPES HOOK
 ========================= */
 export function useLovedRecipes() {
   const { data, isLoading, isFetching, error } = useQuery({
