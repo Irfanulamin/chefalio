@@ -12,7 +12,7 @@ export interface Recipe {
   _id: string;
   title: string;
   description: string;
-  author: Author;
+  authorId: Author; // was: author: Author
   ingredients: string[];
   instructions: Instruction[];
   tags: string[];
@@ -29,8 +29,7 @@ export interface Author {
   fullName: string;
   username: string;
   email: string;
-  userId: string;
-  image: string;
+  profile_url: string; // was: userId: string + image: string
 }
 
 export interface Instruction {

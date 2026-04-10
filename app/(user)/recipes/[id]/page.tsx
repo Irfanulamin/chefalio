@@ -5,6 +5,7 @@ import { ShareIcon } from "@phosphor-icons/react/dist/ssr";
 import { ImageCarousel } from "./_components/ImageCarousel";
 import { Instructions } from "./_components/Instructions";
 import { Recipe } from "@/types/recipes.type";
+import Image from "next/image";
 
 const DIFF: Record<string, { label: string; dot: string; pill: string }> = {
   beginner: {
@@ -43,7 +44,7 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
       return n;
     });
 
-  const initials = recipe.author.fullName
+  const initials = recipe.authorId.fullName
     .split(" ")
     .map((w) => w[0])
     .join("")
@@ -102,16 +103,26 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
           </div>
 
           <div className="flex items-center gap-4 bg-[#eeeae4] dark:bg-[#1a1714] rounded-2xl border border-[#e2ddd8] dark:border-[#35312c] p-4 mb-5 shadow-sm">
-            <div className="w-11 h-11 rounded-xl bg-[#1a1714] dark:bg-[#f0ede8] flex items-center justify-center text-sm font-black text-[#f0ede8] dark:text-[#1a1714] shrink-0">
-              {initials}
-            </div>
+            {recipe.authorId.profile_url ? (
+              <Image
+                src={recipe.authorId.profile_url}
+                alt={recipe.authorId.fullName}
+                width={200}
+                height={200}
+                className="rounded-xl w-11 h-11 object-cover ring-2 ring-primary shadow-sm"
+              />
+            ) : (
+              <div className="w-11 h-11 rounded-xl bg-[#1a1714] dark:bg-[#f0ede8] flex items-center justify-center text-sm font-black text-[#f0ede8] dark:text-[#1a1714] shrink-0">
+                {initials}
+              </div>
+            )}
 
             <div className="min-w-0 flex-1">
               <p className="font-bold text-sm text-[#1a1714] dark:text-[#f0ede8]">
-                {recipe.author.fullName}
+                {recipe.authorId.fullName}
               </p>
               <p className="text-sm text-[#9a9088] dark:text-[#6a6258] truncate mt-0.5">
-                @{recipe.author.username} · {recipe.author.email}
+                @{recipe.authorId.username} · {recipe.authorId.email}
               </p>
             </div>
 
@@ -158,7 +169,7 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
                   key={i}
                   className="flex items-center gap-3 bg-[#eeeae4] dark:bg-[#1a1714] border border-[#e2ddd8] dark:border-[#35312c] rounded-xl px-4 py-3 shadow-sm"
                 >
-                  <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                  <span className="w-2 h-2 rounded-full bg-green-700 shrink-0" />
                   <span className="text-sm font-medium text-[#3d3830] dark:text-[#c8c0b8] leading-tight">
                     {item}
                   </span>

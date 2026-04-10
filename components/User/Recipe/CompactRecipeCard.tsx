@@ -77,7 +77,7 @@ export const CompactRecipeCard = ({
     difficultyConfig[
       recipe.recipeId?.difficulty as keyof typeof difficultyConfig
     ];
-  const initials = getInitials(recipe.recipeId?.author?.fullName);
+  const initials = getInitials(recipe.recipeId?.authorId?.fullName);
   return (
     <article
       key={recipe._id}
@@ -120,13 +120,13 @@ export const CompactRecipeCard = ({
 
         {/* Author */}
         <div className="flex items-center gap-1.5 mb-2">
-          {recipe.recipeId?.author?.image ? (
+          {recipe.recipeId?.authorId?.profile_url ? (
             <Image
-              src={recipe.recipeId.author.image}
-              alt={recipe.recipeId.author.fullName}
-              width={32}
-              height={32}
-              className="w-8 h-8 rounded-full object-cover "
+              src={recipe.recipeId.authorId.profile_url}
+              alt={recipe.recipeId.authorId.fullName}
+              width={200}
+              height={200}
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-primary shadow-sm"
             />
           ) : (
             <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700/80 text-[10px] font-semibold text-slate-700 dark:text-slate-200 shrink-0">
@@ -134,7 +134,7 @@ export const CompactRecipeCard = ({
             </span>
           )}
           <p className="text-sm text-slate-600 dark:text-slate-300 truncate capitalize">
-            {recipe.recipeId?.author?.fullName ?? "Unknown author"}
+            {recipe.recipeId?.authorId?.fullName ?? "Unknown author"}
           </p>
         </div>
         {/* Description */}

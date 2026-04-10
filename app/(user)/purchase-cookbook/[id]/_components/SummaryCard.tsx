@@ -55,22 +55,22 @@ export const SummaryCard = ({ cookbook }: { cookbook: Cookbook }) => {
 
         {/* Author */}
         <div className="flex items-center gap-2 mt-3">
-          {cookbook.author.image ? (
+          {cookbook.authorId.profile_url ? (
             <Image
-              src={cookbook.author.image}
-              alt={cookbook.author.fullName}
+              src={cookbook.authorId.profile_url}
+              alt={cookbook.authorId.fullName}
               width={24}
               height={24}
               className="w-6 h-6 rounded-full object-cover"
             />
           ) : (
             <div className="w-6 h-6 rounded-full bg-blue-50 text-blue-700 text-xs flex items-center justify-center">
-              {cookbook.author.fullName.charAt(0).toUpperCase()}
+              {cookbook.authorId.fullName.charAt(0).toUpperCase()}
             </div>
           )}
 
           <span className="text-sm text-muted-foreground truncate">
-            {cookbook.author.fullName} · @{cookbook.author.username}
+            {cookbook.authorId.fullName} · @{cookbook.authorId.username}
           </span>
         </div>
 

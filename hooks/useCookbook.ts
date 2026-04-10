@@ -4,18 +4,17 @@ import { useRouter } from "next/navigation";
 
 export interface Author {
   _id: string;
-  userId: string;
   fullName: string;
   username: string;
   email: string;
-  image?: string; // optional because it's not always present
+  profile_url: string; // was: userId: string + image?: string
 }
 
 export interface Cookbook {
   _id: string;
   title: string;
   description: string;
-  author: Author;
+  authorId: Author; // was: author: Author
   cookbook_image: string;
   price: number;
   stockCount: number;

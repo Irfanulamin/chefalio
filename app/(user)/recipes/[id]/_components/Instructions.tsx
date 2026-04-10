@@ -42,7 +42,7 @@ function StepCard({
       className={`group relative rounded-2xl overflow-hidden select-none cursor-pointer transition-all duration-300 ${
         done
           ? "bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800/60"
-          : "bg-[#eeeae4] dark:bg-[#1a1714] border border-[#e2ddd8] dark:border-[#35312c] hover:border-[#c8c0b8] dark:hover:border-[#48433d]"
+          : "bg-[#eeeae4] dark:bg-black border border-[#e2ddd8] dark:border-[#35312c] hover:border-[#c8c0b8] dark:hover:border-[#48433d]"
       }`}
     >
       <div
@@ -97,7 +97,7 @@ function StepCard({
             done ? "text-emerald-400/80" : "text-[#c8c0b8] dark:text-[#3a3630]"
           }`}
         >
-          {done ? "↩ Tap to undo" : "→ Swipe right or tap to complete"}
+          {done ? "← Tap to undo" : "→ Swipe right or tap to complete"}
         </p>
       </div>
     </animated.div>
@@ -120,7 +120,7 @@ export function Instructions({
   return (
     <section className="mb-10">
       <div className="flex items-baseline justify-between mb-4">
-        <h2 className="text-xl font-black text-[#1a1714] dark:text-[#f0ede8] tracking-tight">
+        <h2 className="text-xl font-black text-black dark:text-white tracking-tight">
           Instructions
         </h2>
 

@@ -94,19 +94,19 @@ flex flex-col"
       <div className="flex flex-col gap-3 p-5 flex-1">
         {/* Author */}
         <div className="flex items-center gap-2">
-          {recipe.author.image ? (
+          {recipe.authorId.profile_url ? (
             <Image
-              src={recipe.author.image}
-              alt={recipe.author.fullName}
-              width={28}
-              height={28}
+              src={recipe.authorId.profile_url}
+              alt={recipe.authorId.fullName}
+              width={200}
+              height={200}
               loading="lazy"
               sizes="28px"
-              className="rounded-full"
+              className="rounded-full w-7 h-7 object-cover ring-2 ring-primary shadow-sm"
             />
           ) : (
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold text-slate-700 dark:text-slate-200 ring-2 ring-white dark:ring-slate-900">
-              {(recipe.author.fullName || "")
+              {(recipe.authorId.fullName || "")
                 .split(" ")
                 .map((n) => n[0])
                 .join("")
@@ -116,7 +116,7 @@ flex flex-col"
           )}
 
           <p className="text-sm font-semibold tracking-wide text-slate-500 dark:text-slate-400 capitalize">
-            {recipe.author.fullName}
+            {recipe.authorId.fullName}
           </p>
         </div>
 

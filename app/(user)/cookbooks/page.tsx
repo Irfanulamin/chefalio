@@ -146,7 +146,7 @@ export default function CookbooksPage() {
         </div>
       ) : (
         <div
-          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 place-content-evenly transition-opacity duration-200 min-h-[80vh] ${
+          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-200 py-3 ${
             isFetching ? "opacity-50" : "opacity-100"
           }`}
         >
@@ -180,17 +180,17 @@ export default function CookbooksPage() {
               {/* Body */}
               <div className="p-4">
                 <div className="flex items-center gap-2 mb-2.5">
-                  {cookbook.author.image ? (
+                  {cookbook.authorId.profile_url ? (
                     <Image
-                      src={cookbook.author.image}
-                      alt={cookbook.author.fullName}
-                      width={24}
-                      height={24}
-                      className="rounded-full"
+                      src={cookbook.authorId.profile_url}
+                      alt={cookbook.authorId.fullName}
+                      width={200}
+                      height={200}
+                      className="rounded-full w-7 h-7 object-cover ring-2 ring-primary shadow-sm"
                     />
                   ) : (
-                    <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-800 text-[10px] font-medium flex items-center justify-center shrink-0">
-                      {cookbook.author.fullName
+                    <div className="w-7 h-7 rounded-full bg-purple-100 text-purple-800 text-[10px] font-medium flex items-center justify-center shrink-0">
+                      {cookbook.authorId.fullName
                         .split(" ")
                         .map((n) => n[0])
                         .join("")
@@ -198,7 +198,7 @@ export default function CookbooksPage() {
                     </div>
                   )}
                   <span className="text-xs text-muted-foreground">
-                    {cookbook.author.fullName}
+                    {cookbook.authorId.fullName}
                   </span>
                 </div>
 

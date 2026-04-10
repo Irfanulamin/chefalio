@@ -24,15 +24,15 @@ const DIFFICULTY_STYLES: Record<Difficulty, string> = {
 };
 
 // Popular tags — swap out for whatever your app uses
-const POPULAR_TAGS = [
-  "breakfast",
-  "lunch",
-  "dinner",
-  "dessert",
+export const POPULAR_TAGS = [
   "vegetarian",
-  "chicken",
-  "gluten-free",
-  "desi",
+  "dessert",
+  "French",
+  "Italian",
+  "seafood",
+  "modernist",
+  "fine dining",
+  "Nordic",
 ];
 
 // ── component ──────────────────────────────────────────────────────────────────
