@@ -17,7 +17,10 @@ const pinyonScript = Pinyon_Script({
 });
 
 export const metadata: Metadata = {
-  title: "Chefalio",
+  title: {
+    default: "Chefalio",
+    template: "Chefalio - %s",
+  },
   description:
     "Chefalio is a recipe sharing platform and cookbook selling website built with Next.js 13, Shadcn and Tailwind CSS.",
 };

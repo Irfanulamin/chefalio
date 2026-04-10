@@ -2,6 +2,7 @@ import { Recipe } from "@/types/recipes.type";
 import { RecipeCard } from "./RecipeCard";
 import { useBatchRecipeStats } from "@/hooks/useRecipe";
 import { MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr";
+import { useMemo } from "react";
 
 export const RecipeGrid = ({
   isFetching,
@@ -11,7 +12,7 @@ export const RecipeGrid = ({
   data: Recipe[] | undefined;
 }) => {
   // One request for the whole page instead of N individual requests
-  const recipeIds = data?.map((r) => r._id) ?? [];
+  const recipeIds = useMemo(() => data?.map((r) => r._id) ?? [], [data]);
   const { statsFor } = useBatchRecipeStats(recipeIds);
 
   return (

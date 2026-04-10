@@ -8,6 +8,7 @@ import {
 import { TagIcon } from "@phosphor-icons/react";
 import { MagnifyingGlassIcon, UserIcon } from "@phosphor-icons/react/dist/ssr";
 import { Loader2, XIcon } from "lucide-react";
+import { useState } from "react";
 
 type Difficulty = "beginner" | "intermediate" | "advance";
 
@@ -18,21 +19,16 @@ type RecipeFiltersProps = {
 
   difficulty: Difficulty | "";
   selectedTags: string[];
-  tagInput: string;
   author: string;
   search: string;
 
   toggleTag: (tag: string) => void;
   toggleDifficulty: (d: Difficulty) => void;
 
-  setTagInput: React.Dispatch<React.SetStateAction<string>>;
-  setAuthor: React.Dispatch<React.SetStateAction<string>>;
-  setDifficulty: React.Dispatch<React.SetStateAction<Difficulty | "">>;
+  setAuthor: (value: string) => void; // ← plain function now
+  setDifficulty: (value: Difficulty | "") => void; // ← plain function now
 
-  resetPage: () => void;
   clearAllFilters: () => void;
-
-  handleTagInputKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   handleSearchChange: (value: string) => void;
 
   isFetching: boolean;
@@ -46,14 +42,10 @@ export const RecipeFilters = ({
   POPULAR_TAGS,
   difficulty,
   selectedTags,
-  tagInput,
   author,
   toggleTag,
   toggleDifficulty,
-  setTagInput,
   setAuthor,
-  resetPage,
-  handleTagInputKeyDown,
   handleSearchChange,
   isFetching,
   debouncedAuthor,
@@ -62,9 +54,25 @@ export const RecipeFilters = ({
   setDifficulty,
   search,
 }: RecipeFiltersProps) => {
+  // tagInput is purely local — no reason to put it in the URL
+  const [tagInput, setTagInput] = useState("");
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      const newTag = tagInput.trim().toLowerCase();
+      if (newTag && !selectedTags.includes(newTag)) {
+        toggleTag(newTag);
+      }
+      setTagInput("");
+    }
+    if (e.key === "Backspace" && tagInput === "") {
+      toggleTag(selectedTags[selectedTags.length - 1]);
+    }
+  };
+
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
-      {/* ── FILTERS ── */}
       <div className="space-y-3">
         {/* Difficulty row */}
         <div className="flex items-center gap-2 flex-wrap">
@@ -90,7 +98,6 @@ export const RecipeFilters = ({
             Tags
           </span>
           <div className="flex flex-wrap gap-2 flex-1">
-            {/* Popular preset tags */}
             {POPULAR_TAGS.map((tag) => (
               <Badge
                 key={tag}
@@ -98,14 +105,13 @@ export const RecipeFilters = ({
                 data-active={selectedTags.includes(tag)}
                 onClick={() => toggleTag(tag)}
                 className="cursor-pointer capitalize select-none transition-colors
-          data-[active=true]:bg-primary data-[active=true]:text-primary-foreground
-          data-[active=true]:border-primary p-4"
+                  data-[active=true]:bg-primary data-[active=true]:text-primary-foreground
+                  data-[active=true]:border-primary p-4"
               >
                 {tag}
               </Badge>
             ))}
 
-            {/* Custom tag input — looks like a badge */}
             <div className="flex items-center gap-1 border rounded-full px-2.5 py-0.5 text-xs border-dashed border-muted-foreground/50 focus-within:border-primary transition-colors">
               <TagIcon size={11} className="text-muted-foreground shrink-0" />
               <input
@@ -130,7 +136,6 @@ export const RecipeFilters = ({
               value={author}
               onChange={(e) => {
                 setAuthor(e.target.value);
-                resetPage();
               }}
               placeholder="search by username..."
               className="bg-transparent outline-none flex-1 text-sm placeholder:text-muted-foreground/50"
@@ -141,13 +146,11 @@ export const RecipeFilters = ({
                 className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
                 onClick={() => {
                   setAuthor("");
-                  resetPage();
                 }}
               />
             )}
           </div>
 
-          {/* show as active chip when filled */}
           {debouncedAuthor && (
             <span className="text-xs text-muted-foreground">
               showing recipes by{" "}
@@ -172,7 +175,7 @@ export const RecipeFilters = ({
                     e.stopPropagation();
                     toggleTag(tag);
                   }}
-                  className="ml-1 cursor-pointer hover:text-destructive transition-colors "
+                  className="ml-1 cursor-pointer hover:text-destructive transition-colors"
                 >
                   <XIcon size={12} />
                 </button>
@@ -187,7 +190,6 @@ export const RecipeFilters = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     setDifficulty("");
-                    resetPage();
                   }}
                   className="ml-1 cursor-pointer hover:text-destructive transition-colors"
                 >
@@ -204,7 +206,6 @@ export const RecipeFilters = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     setAuthor("");
-                    resetPage();
                   }}
                   className="ml-1 cursor-pointer hover:text-destructive transition-colors"
                 >
@@ -225,12 +226,11 @@ export const RecipeFilters = ({
         )}
       </div>
 
-      {/* ── SEARCH ── */}
+      {/* Search */}
       <InputGroup className="max-w-lg h-12 border-2 rounded-full overflow-hidden">
         <InputGroupInput
           placeholder="Search your recipes..."
           value={search}
-          className=" "
           onChange={(e) => handleSearchChange(e.target.value)}
         />
         <InputGroupAddon>

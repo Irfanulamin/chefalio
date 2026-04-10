@@ -6,6 +6,7 @@ import { ImageCarousel } from "./_components/ImageCarousel";
 import { Instructions } from "./_components/Instructions";
 import { Recipe } from "@/types/recipes.type";
 import Image from "next/image";
+import { Loader2 } from "lucide-react";
 
 const DIFF: Record<string, { label: string; dot: string; pill: string }> = {
   beginner: {
@@ -198,8 +199,16 @@ export default function SingleRecipePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { singleRecipe } = useRecipes({ id });
+  const { singleRecipe, isSingleRecipeLoading } = useRecipes({ id });
   const recipe = singleRecipe?.data as Recipe | undefined;
+
+  if (isSingleRecipeLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!recipe) return <p>Recipe not found</p>;
   return <RecipeDetail recipe={recipe} />;

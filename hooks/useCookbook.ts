@@ -66,7 +66,7 @@ export function useCookbooks(params?: {
 
 export function useCookbook(id: string) {
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: ["cookbooks", id],
+    queryKey: ["cookbook", id],
     queryFn: () =>
       axiosInstance
         .get<GetCookbookResponse>(`/cookbooks/${id}`)

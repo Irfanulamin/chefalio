@@ -63,7 +63,7 @@ export default function PaymentSuccessPage() {
             Browse cookbooks
           </Link>
           <Link
-            href="/activity"
+            href="/activity?tab=orders"
             className="block text-sm text-muted-foreground py-2.5 px-6 rounded-lg text-center border hover:bg-muted/30 transition"
           >
             Go to my activity
