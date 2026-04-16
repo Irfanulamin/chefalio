@@ -5,5 +5,9 @@ export default function GuestAuthLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <ProtectedAuthLayout>{children}</ProtectedAuthLayout>;
+  return (
+    <ProtectedAuthLayout>
+      <div className="min-h-screen">{children}</div>
+    </ProtectedAuthLayout>
+  );
 }
