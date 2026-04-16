@@ -1,6 +1,6 @@
 export const RecipeSingleSkeleton = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-8 items-stretch animate-pulse">
+    <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-8 items-stretch animate-pulse bg-background">
       {/* ── LEFT COLUMN ── */}
       <div className="lg:flex-1 flex flex-col w-full lg:w-120 gap-5">
         {/* Image carousel placeholder */}

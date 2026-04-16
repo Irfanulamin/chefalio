@@ -6,7 +6,7 @@ export const SummaryCard = ({ cookbook }: { cookbook: Cookbook }) => {
   return (
     <div className="flex gap-4 items-start border border-border rounded-xl bg-card p-4 max-w-lg mx-auto">
       {/* Image */}
-      <div className="w-28 h-28 bg-muted rounded-lg overflow-hidden shrink-0">
+      <div className="w-28 h-28 bg-background animate-pulse rounded-lg overflow-hidden shrink-0">
         {cookbook.cookbook_image ? (
           <Image
             src={cookbook.cookbook_image}

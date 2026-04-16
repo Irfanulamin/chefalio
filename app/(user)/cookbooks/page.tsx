@@ -146,7 +146,7 @@ export default function CookbooksPage() {
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-gray-200 animate-pulse rounded-xl overflow-hidden"
+                className="bg-background animate-pulse rounded-xl overflow-hidden"
               >
                 <div className="aspect-square bg-muted" />
                 <div className="p-4 space-y-2">

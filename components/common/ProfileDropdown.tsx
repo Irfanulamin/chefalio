@@ -54,7 +54,7 @@ export const ProfileDropdown = () => {
       <DropdownMenuTrigger asChild>
         <div className="outline-none focus:outline-none">
           {isProfileLoading ? (
-            <div className="w-9.5 h-9.5 rounded-full bg-muted animate-pulse ring-2 ring-background" />
+            <div className="w-9.5 h-9.5 rounded-full bg-background animate-pulse ring-2 ring-background" />
           ) : (
             <AvatarButton profile={profile} />
           )}
