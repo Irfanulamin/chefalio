@@ -1,10 +1,9 @@
 "use client";
 
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
-
-const queryClient = new QueryClient();
 
 export const MainLayoutProvider = ({
   children,
