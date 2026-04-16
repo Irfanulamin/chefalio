@@ -148,12 +148,12 @@ export default function CookbooksPage() {
                 key={i}
                 className="bg-gray-200 animate-pulse rounded-xl overflow-hidden"
               >
-                <div className="aspect-square bg-gray-500/50" />
+                <div className="aspect-square bg-muted" />
                 <div className="p-4 space-y-2">
-                  <div className="h-3 w-1/2 rounded bg-gray-500/40" />
-                  <div className="h-4 w-3/4 rounded bg-gray-500/40" />
-                  <div className="h-3 w-full rounded bg-gray-500/40" />
-                  <div className="h-8 w-full rounded bg-gray-500/40 mt-3" />
+                  <div className="h-3 w-1/2 rounded bg-muted" />
+                  <div className="h-4 w-3/4 rounded bg-muted" />
+                  <div className="h-3 w-full rounded bg-muted" />
+                  <div className="h-8 w-full rounded bg-muted mt-3" />
                 </div>
               </div>
             ))}

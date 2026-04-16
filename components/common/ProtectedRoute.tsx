@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2 } from "lucide-react"; // shadcn uses lucide under the hood
 
 type AllowedRole = "user" | "chef" | "admin";
 
@@ -22,11 +21,7 @@ export default function ProtectedRoute({
   const { user, isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return null;
   }
 
   if (!isAuthenticated) {
