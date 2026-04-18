@@ -113,39 +113,39 @@ function getRelativeTime(iso: string): string {
 
 export const CompactPurchaseCardSkeleton = () => {
   return (
-    <div className="flex items-start gap-4 px-5 py-4 bg-white dark:bg-slate-950/50 border border-slate-200/50 dark:border-slate-800/50 rounded-lg animate-pulse">
+    <div className="flex items-start gap-4 px-5 py-4 bg-background border border-slate-200/50 dark:border-slate-800/50 rounded-lg animate-pulse">
       {/* Thumbnail skeleton */}
-      <div className="shrink-0 w-36 h-36 rounded-lg bg-slate-200 dark:bg-slate-800" />
+      <div className="shrink-0 w-36 h-36 rounded-lg bg-muted" />
 
       {/* Content skeleton */}
       <div className="flex-1 min-w-0 space-y-3">
         {/* Title + badge */}
         <div className="flex items-center gap-2">
-          <div className="h-5 w-48 rounded-md bg-slate-200 dark:bg-slate-800" />
-          <div className="h-4 w-12 rounded-md bg-slate-200 dark:bg-slate-800" />
+          <div className="h-5 w-48 rounded-md bg-muted" />
+          <div className="h-4 w-12 rounded-md bg-muted" />
         </div>
 
         {/* Author */}
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 shrink-0" />
-          <div className="h-4 w-32 rounded-md bg-slate-200 dark:bg-slate-800" />
+          <div className="w-8 h-8 rounded-full bg-muted shrink-0" />
+          <div className="h-4 w-32 rounded-md bg-muted" />
         </div>
 
         {/* Description */}
         <div className="space-y-1.5">
-          <div className="h-3 w-full rounded-md bg-slate-200 dark:bg-slate-800" />
-          <div className="h-3 w-3/4 rounded-md bg-slate-200 dark:bg-slate-800" />
+          <div className="h-3 w-full rounded-md bg-muted" />
+          <div className="h-3 w-3/4 rounded-md bg-muted" />
         </div>
 
         {/* Meta row */}
         <div className="hidden md:flex items-center gap-4">
-          <div className="h-4 w-16 rounded-md bg-slate-200 dark:bg-slate-800" />
-          <div className="h-4 w-24 rounded-md bg-slate-200 dark:bg-slate-800" />
-          <div className="h-4 w-20 rounded-md bg-slate-200 dark:bg-slate-800" />
-          <div className="h-4 w-20 rounded-md bg-slate-200 dark:bg-slate-800" />
+          <div className="h-4 w-16 rounded-md bg-muted" />
+          <div className="h-4 w-24 rounded-md bg-muted" />
+          <div className="h-4 w-20 rounded-md bg-muted" />
+          <div className="h-4 w-20 rounded-md bg-muted" />
         </div>
 
-        <div className="h-4 w-16 rounded-md bg-slate-200 dark:bg-slate-800" />
+        <div className="h-4 w-16 rounded-md bg-muted" />
       </div>
     </div>
   );
