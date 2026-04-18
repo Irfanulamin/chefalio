@@ -6,10 +6,10 @@ const GUEST_ROUTES = [
   "/register",
   "/forgot-password",
   "/reset-password",
-  "/",
 ];
 
 const isGuestRoute = () =>
+  window.location.pathname === "/" ||
   GUEST_ROUTES.some((route) => window.location.pathname.startsWith(route));
 
 axiosInstance.interceptors.response.use(
