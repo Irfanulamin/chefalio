@@ -47,7 +47,13 @@ export function useCookbooks(params?: {
   author?: string;
 }) {
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: ["cookbooks", params],
+    queryKey: [
+      "cookbooks",
+      params?.search,
+      params?.page,
+      params?.limit,
+      params?.author,
+    ],
     queryFn: () =>
       axiosInstance
         .get<GetCookbooksResponse>("/cookbooks", { params })
@@ -57,7 +63,7 @@ export function useCookbooks(params?: {
   });
 
   return {
-    cookbbooks: data,
+    cookbooks: data,
     isLoading,
     isFetching,
     error,

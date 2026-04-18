@@ -42,7 +42,7 @@ export default function CookbooksPage() {
   const [debouncedSearch] = useDebounce(search, 500);
   const [debouncedAuthor] = useDebounce(author, 500);
 
-  const { cookbbooks, isLoading, isFetching } = useCookbooks({
+  const { cookbooks, isLoading, isFetching } = useCookbooks({
     search: debouncedSearch,
     page,
     limit: 12,
@@ -59,8 +59,8 @@ export default function CookbooksPage() {
   const clearAllFilters = () => updateParams({ search: null, author: null });
 
   const hasActiveFilters = search.trim() !== "" || author.trim() !== "";
-  const totalPages = cookbbooks?.pagination?.totalPages || 1;
-  const currentPage = cookbbooks?.pagination?.page || page;
+  const totalPages = cookbooks?.pagination?.totalPages || 1;
+  const currentPage = cookbooks?.pagination?.page || page;
 
   return (
     <>
@@ -132,11 +132,11 @@ export default function CookbooksPage() {
         </div>
 
         {/* ── Results summary ── */}
-        {!isLoading && cookbbooks && (
+        {!isLoading && cookbooks && (
           <p className="text-sm text-muted-foreground">
-            {cookbbooks.pagination.total === 0
+            {cookbooks.pagination.total === 0
               ? "No cookbooks found"
-              : `Showing ${cookbbooks.data.length} of ${cookbbooks.pagination.total} cookbook${cookbbooks.pagination.total !== 1 ? "s" : ""}`}
+              : `Showing ${cookbooks.data.length} of ${cookbooks.pagination.total} cookbook${cookbooks.pagination.total !== 1 ? "s" : ""}`}
           </p>
         )}
 
@@ -158,7 +158,7 @@ export default function CookbooksPage() {
               </div>
             ))}
           </div>
-        ) : cookbbooks?.data.length === 0 ? (
+        ) : cookbooks?.data.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center min-h-[60vh] gap-3">
             <p className="text-lg font-medium">No cookbooks found</p>
             <p className="text-sm text-muted-foreground max-w-xs">
@@ -177,7 +177,7 @@ export default function CookbooksPage() {
               isFetching ? "opacity-50" : "opacity-100"
             }`}
           >
-            {cookbbooks?.data.map((cookbook) => (
+            {cookbooks?.data.map((cookbook) => (
               <div
                 key={cookbook._id}
                 className="group bg-background border border-border/40 rounded-xl overflow-hidden hover:border-border hover:-translate-y-1 transition-all duration-200 cursor-pointer"
@@ -211,8 +211,8 @@ export default function CookbooksPage() {
                       <Image
                         src={cookbook.authorId.profile_url}
                         alt={cookbook.authorId.fullName}
-                        width={200}
-                        height={200}
+                        width={28}
+                        height={28}
                         className="rounded-full w-7 h-7 object-cover ring-2 ring-primary shadow-sm"
                       />
                     ) : (

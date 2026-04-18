@@ -28,7 +28,15 @@ export function useRecipes(params?: {
   author?: string;
 }) {
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: ["recipes", params],
+    queryKey: [
+      "recipes",
+      params?.search,
+      params?.page,
+      params?.limit,
+      params?.tags,
+      params?.difficulty,
+      params?.author,
+    ],
     queryFn: () =>
       axiosInstance
         .get<RecipeApiResponse>("/recipes/all", { params })

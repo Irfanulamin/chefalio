@@ -15,6 +15,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import z from "zod";
+import { useProfile } from "@/hooks/useAuth";
 
 const InfoRow = ({
   icon: Icon,
@@ -43,7 +44,9 @@ const InfoRow = ({
 );
 
 export default function SettingsPage() {
-  const { profile, updateProfile, changePassword } = useAuth();
+  const { profile, updateProfile } = useProfile();
+  const { changePassword } = useAuth();
+
   const [activeTab, setActiveTab] = useState<"security" | "profile">("profile");
 
   const profileFieldDefinitions = [

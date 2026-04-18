@@ -16,6 +16,7 @@ import {
   SignOutIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
+import { useProfile } from "@/hooks/useAuth";
 
 interface AvatarButtonProps {
   profile?: {
@@ -47,7 +48,8 @@ const AvatarButton = ({ profile }: AvatarButtonProps) => {
 };
 
 export const ProfileDropdown = () => {
-  const { profile, isProfileLoading, logout } = useAuth();
+  const { profile, isProfileLoading } = useProfile();
+  const { logout } = useAuth();
 
   return (
     <DropdownMenu>
