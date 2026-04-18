@@ -1,6 +1,6 @@
 "use client";
 import { use, useState } from "react";
-import { useRecipes } from "@/hooks/useRecipe";
+import { useSingleRecipe } from "@/hooks/useRecipe";
 import { ShareIcon } from "@phosphor-icons/react/dist/ssr";
 import { ImageCarousel } from "./_components/ImageCarousel";
 import { Instructions } from "./_components/Instructions";
@@ -257,7 +257,7 @@ export default function SingleRecipePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { singleRecipe, isSingleRecipeLoading } = useRecipes({ id });
+  const { singleRecipe, isSingleRecipeLoading } = useSingleRecipe(id);
   const recipe = singleRecipe?.data as Recipe | undefined;
 
   if (isSingleRecipeLoading) return <RecipeSingleSkeleton />;

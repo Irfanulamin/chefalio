@@ -26,7 +26,6 @@ export function useRecipes(params?: {
   tags?: string;
   difficulty?: string;
   author?: string;
-  id?: string;
 }) {
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: ["recipes", params],
@@ -38,28 +37,29 @@ export function useRecipes(params?: {
     placeholderData: (prev) => prev,
   });
 
-  const {
-    data: singleRecipe,
-    isLoading: isSingleRecipeLoading,
-    error: singleRecipeError,
-  } = useQuery({
-    queryKey: ["recipe", params?.id],
-    queryFn: () =>
-      axiosInstance
-        .get<RecipeApiResponse>(`/recipes/${params?.id}`)
-        .then((res) => res.data),
-    staleTime: 1000 * 60,
-    enabled: !!params?.id,
-  });
-
   return {
     recipes: data,
     isLoading,
     isFetching,
     error,
-    singleRecipe,
-    isSingleRecipeLoading,
-    singleRecipeError,
+  };
+}
+
+export function useSingleRecipe(id?: string) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["recipe", id],
+    queryFn: () =>
+      axiosInstance
+        .get<RecipeApiResponse>(`/recipes/${id}`)
+        .then((res) => res.data),
+    staleTime: 1000 * 60 * 5,
+    enabled: !!id,
+  });
+
+  return {
+    singleRecipe: data,
+    isSingleRecipeLoading: isLoading,
+    singleRecipeError: error,
   };
 }
 
@@ -187,7 +187,7 @@ export function useToggleLove() {
       const wasLoved = currentStats.isLoved;
 
       // Optimistically update the batch stats cache
-      patchBatchStatsCache( id, { isLoved: !wasLoved });
+      patchBatchStatsCache(id, { isLoved: !wasLoved });
 
       // Optimistically update the single stats cache (detail page)
       queryClient.setQueryData(
@@ -271,7 +271,7 @@ export function useToggleSave() {
 
       const wasSaved = currentStats.isSaved;
 
-      patchBatchStatsCache( id, { isSaved: !wasSaved });
+      patchBatchStatsCache(id, { isSaved: !wasSaved });
 
       queryClient.setQueryData(
         ["recipe-stats", id],
@@ -280,7 +280,7 @@ export function useToggleSave() {
       );
 
       if (currentRecipe) {
-        patchRecipesCache( id, {
+        patchRecipesCache(id, {
           savedCount: wasSaved
             ? currentRecipe.savedCount - 1
             : currentRecipe.savedCount + 1,
