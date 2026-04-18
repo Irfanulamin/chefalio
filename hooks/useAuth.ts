@@ -57,6 +57,8 @@ export function useAuth() {
     retry: false,
     staleTime: 5 * 60 * 1000,
     throwOnError: false,
+    refetchInterval: 5 * 60 * 1000, // polls every 5 min
+    refetchIntervalInBackground: false, // only when tab is active
   });
 
   const loginMutation = useMutation({

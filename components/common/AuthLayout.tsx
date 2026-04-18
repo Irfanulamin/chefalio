@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 interface AuthLayoutProps {
   imageSrc: string;
@@ -15,6 +15,15 @@ export default function AuthLayout({
   children,
 }: AuthLayoutProps) {
   const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  // check if already cached on mount
+  useLayoutEffect(() => {
+    if (imgRef.current?.complete) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLoaded(true);
+    }
+  }, []);
 
   return (
     <div
@@ -56,10 +65,14 @@ export default function AuthLayout({
                 </div>
               )}
               <Image
+                ref={imgRef}
                 src={imageSrc}
                 alt={imageAlt}
                 fill
-                className="object-cover object-center"
+                priority
+                className={`object-cover object-center transition-opacity duration-500 ${
+                  loaded ? "opacity-100" : "opacity-0"
+                }`}
                 onLoad={() => setLoaded(true)}
                 onError={() => setLoaded(true)}
               />
