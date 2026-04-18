@@ -11,9 +11,6 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error?.response?.status === 401) {
       queryClient.clear();
-      if (!window.location.pathname.startsWith("/login")) {
-        window.location.href = "/login";
-      }
     }
 
     const message =
