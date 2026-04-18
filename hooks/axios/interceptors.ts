@@ -1,6 +1,5 @@
-import { queryClient } from "@/lib/queryClient";
 import axiosInstance from "./axiosInstance";
-// 👈 create this shared instance
+import { queryClient } from "@/lib/queryClient";
 
 axiosInstance.interceptors.request.use(
   (config) => config,
@@ -10,13 +9,11 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // 👇 Handle expired/invalid JWT globally
     if (error?.response?.status === 401) {
       queryClient.clear();
       if (!window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
       }
-      return Promise.reject(error); // still reject so callers know
     }
 
     const message =

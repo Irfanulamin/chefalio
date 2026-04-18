@@ -55,7 +55,8 @@ export function useAuth() {
     queryFn: () =>
       axiosInstance.get<Me>("/auth/me").then((response) => response.data),
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    throwOnError: false,
   });
 
   const loginMutation = useMutation({
