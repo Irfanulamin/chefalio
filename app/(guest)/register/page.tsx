@@ -73,7 +73,10 @@ export default function RegisterPage() {
   ];
 
   return (
-    <AuthLayout imageSrc="/register.png" imageAlt="Chefalio Register">
+    <AuthLayout
+      imageSrc="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530581/register_eu7mjh.png"
+      imageAlt="Chefalio Register"
+    >
       <div>
         <h1 className="text-2xl font-semibold">Create Account</h1>
         <p className="text-sm text-gray-500">

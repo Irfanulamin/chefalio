@@ -8,77 +8,77 @@ const features = [
   {
     title: "Recipes From Top Chefs",
     desc: "Discover exclusive recipes shared by professional chefs from around the world. Learn new cooking techniques and elevate your meals with expert guidance.",
-    icon: "/assets/cog.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530590/cog_rrkps7.png",
   },
   {
     title: "Advanced Recipe Filters",
     desc: "Quickly find recipes by filtering ingredients, cuisine type, dietary preferences, cooking time, and difficulty level.",
-    icon: "/assets/noodle.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530590/noodle_ln5vc8.png",
   },
   {
     title: "Cookbook Marketplace",
     desc: "Browse and purchase curated cookbooks created by professional chefs. Explore collections of recipes organized into beautifully structured cookbooks.",
-    icon: "/assets/cylinder.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530590/cylinder_opmyav.png",
   },
   {
     title: "Secure Cookbook Purchases",
     desc: "Order digital cookbooks securely and access them anytime from your personal library.",
-    icon: "/assets/spring.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530590/spring_ueztxu.png",
   },
   {
     title: "Chef Recipe Publishing",
     desc: "Chefs can upload and publish their own recipes, share cooking instructions, and showcase their culinary expertise to a global audience.",
-    icon: "/assets/tube.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530591/tube_mlirz9.png",
   },
   {
     title: "Chef Cookbook Creation",
     desc: "Create and sell premium cookbooks by organizing multiple recipes into a single curated collection.",
-    icon: "/assets/star.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530591/star_k1pqyi.png",
   },
   {
     title: "Chef Revenue Opportunities",
     desc: "Monetize your culinary knowledge by selling cookbooks and premium recipes directly to food lovers.",
-    icon: "/assets/cog.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530590/cog_rrkps7.png",
   },
   {
     title: "Recipe Engagement Insights",
     desc: "Track recipe performance with analytics including views, likes, saves, and purchases.",
-    icon: "/assets/noodle.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530590/noodle_ln5vc8.png",
   },
   {
     title: "Admin Analytics Dashboard",
     desc: "Admins can monitor platform engagement including recipe popularity, cookbook sales, and overall user activity.",
-    icon: "/assets/cylinder.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530590/cylinder_opmyav.png",
   },
   {
     title: "User Management System",
     desc: "Admins can manage users, chefs, and roles while maintaining a healthy and secure platform environment.",
-    icon: "/assets/spring.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530590/spring_ueztxu.png",
   },
   {
     title: "Secure Authentication System",
     desc: "User accounts are protected with encrypted password hashing and secure authentication processes.",
-    icon: "/assets/tube.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530591/tube_mlirz9.png",
   },
   {
     title: "JWT-Based Authorization",
     desc: "Chefalio uses JWT tokens to ensure secure session management and protect private routes.",
-    icon: "/assets/star.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530591/star_k1pqyi.png",
   },
   {
     title: "HTTPOnly Cookie Security",
     desc: "Authentication tokens are stored in HTTPOnly cookies to prevent XSS attacks and keep user sessions safe.",
-    icon: "/assets/cog.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530590/cog_rrkps7.png",
   },
   {
     title: "Personal Recipe Library",
     desc: "Save your favorite recipes and purchased cookbooks in one place. Easily revisit dishes you love and organize your personal cooking collection.",
-    icon: "/assets/noodle.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530590/noodle_ln5vc8.png",
   },
   {
     title: "Smart Search",
     desc: "Quickly find recipes, chefs, and cookbooks using a powerful search system designed to deliver the most relevant culinary content instantly.",
-    icon: "/assets/cylinder.png",
+    icon: "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530590/cylinder_opmyav.png",
   },
 ];
 

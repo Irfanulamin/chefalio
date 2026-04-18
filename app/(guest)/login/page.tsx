@@ -58,7 +58,10 @@ function LoginForm() {
   const justReset = searchParams.get("reset") === "success";
 
   return (
-    <AuthLayout imageSrc="/login.png" imageAlt="Chefalio Login">
+    <AuthLayout
+      imageSrc="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530582/login_wcwztq.png"
+      imageAlt="Chefalio Login"
+    >
       <div>
         <h1 className="text-2xl font-semibold mb-2">Sign In</h1>
 

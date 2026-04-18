@@ -140,7 +140,7 @@ export const AboutUs = () => {
                 <div className="mt-6 flex items-center gap-3">
                   <div className="h-9 w-9 rounded-full overflow-hidden bg-primary/20">
                     <Image
-                      src="/about-us.png"
+                      src="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530583/about-us_mrtdt2.png"
                       width={36}
                       height={36}
                       alt="founder"

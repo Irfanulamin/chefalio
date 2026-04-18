@@ -204,7 +204,10 @@ export default function SettingsPage() {
                 <div className="flex items-end justify-between -mt-10 mb-5">
                   <div className="relative">
                     <Image
-                      src={profile?.profile_url || "/default-profile.png"}
+                      src={
+                        profile?.profile_url ||
+                        "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530580/default-profile_j24ibg.png"
+                      }
                       alt="Profile"
                       width={100}
                       height={100}

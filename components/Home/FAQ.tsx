@@ -72,7 +72,7 @@ export const FAQ = () => {
             className="lg:sticky lg:top-24 shrink-0 flex justify-center lg:justify-start"
           >
             <Image
-              src="/about-us.png"
+              src="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530583/about-us_mrtdt2.png"
               alt="FAQ illustration"
               width={260}
               height={260}

@@ -215,7 +215,7 @@ export const Banner = () => {
               }}
             >
               <Image
-                src="/assets/star.png"
+                src="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530591/star_k1pqyi.png"
                 alt="Banner Image"
                 width={500}
                 height={500}
