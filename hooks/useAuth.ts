@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import axiosInstance from "./axios/interceptors";
+import { queryClient } from "@/lib/queryClient";
 
 interface Me {
   userId: string;
@@ -47,7 +48,6 @@ interface changePasswordPayload {
 }
 
 export function useAuth() {
-  const queryClient = useQueryClient();
   const router = useRouter();
 
   const { data: user, isLoading } = useQuery({

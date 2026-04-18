@@ -1,4 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import axiosInstance from "./axios/interceptors";
 import {
   Recipe,
@@ -112,11 +113,7 @@ export function useRecipeStats(id?: string) {
    Patches every cached "recipes" page that contains the target id.
    Works correctly on page 4, page 10, any page.
 ========================= */
-function patchRecipesCache(
-  queryClient: ReturnType<typeof useQueryClient>,
-  id: string,
-  patch: Partial<Recipe>,
-) {
+function patchRecipesCache(id: string, patch: Partial<Recipe>) {
   queryClient.setQueriesData<RecipeApiResponse>(
     { queryKey: ["recipes"], exact: false },
     (old) => {
@@ -135,11 +132,7 @@ function patchRecipesCache(
 }
 
 // Patches the batch-stats cache entry that contains this recipe id
-function patchBatchStatsCache(
-  queryClient: ReturnType<typeof useQueryClient>,
-  id: string,
-  patch: Partial<RecipeStats>,
-) {
+function patchBatchStatsCache(id: string, patch: Partial<RecipeStats>) {
   queryClient.setQueriesData<BatchStatsMap>(
     { queryKey: ["recipe-stats-batch"], exact: false },
     (old) => {
@@ -153,8 +146,6 @@ function patchBatchStatsCache(
    4. TOGGLE LOVE
 ========================= */
 export function useToggleLove() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (id: string) =>
       axiosInstance
@@ -196,7 +187,7 @@ export function useToggleLove() {
       const wasLoved = currentStats.isLoved;
 
       // Optimistically update the batch stats cache
-      patchBatchStatsCache(queryClient, id, { isLoved: !wasLoved });
+      patchBatchStatsCache( id, { isLoved: !wasLoved });
 
       // Optimistically update the single stats cache (detail page)
       queryClient.setQueryData(
@@ -207,7 +198,7 @@ export function useToggleLove() {
 
       // Optimistically update the lovedCount in the recipe list
       if (currentRecipe) {
-        patchRecipesCache(queryClient, id, {
+        patchRecipesCache(id, {
           lovedCount: wasLoved
             ? currentRecipe.lovedCount - 1
             : currentRecipe.lovedCount + 1,
@@ -244,8 +235,6 @@ export function useToggleLove() {
    5. TOGGLE SAVE
 ========================= */
 export function useToggleSave() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (id: string) =>
       axiosInstance
@@ -282,7 +271,7 @@ export function useToggleSave() {
 
       const wasSaved = currentStats.isSaved;
 
-      patchBatchStatsCache(queryClient, id, { isSaved: !wasSaved });
+      patchBatchStatsCache( id, { isSaved: !wasSaved });
 
       queryClient.setQueryData(
         ["recipe-stats", id],
@@ -291,7 +280,7 @@ export function useToggleSave() {
       );
 
       if (currentRecipe) {
-        patchRecipesCache(queryClient, id, {
+        patchRecipesCache( id, {
           savedCount: wasSaved
             ? currentRecipe.savedCount - 1
             : currentRecipe.savedCount + 1,
