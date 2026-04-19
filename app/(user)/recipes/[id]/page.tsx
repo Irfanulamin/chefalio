@@ -7,6 +7,7 @@ import { Instructions } from "./_components/Instructions";
 import { Recipe } from "@/types/recipes.type";
 import Image from "next/image";
 import { RecipeSingleSkeleton } from "@/components/User/Recipe/RecipeSingleSkeleton";
+import Link from "next/link";
 
 const DIFF: Record<string, { label: string; dot: string; pill: string }> = {
   beginner: {
@@ -123,12 +124,13 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
             </div>
 
             {/* Author card */}
-            <div
+            <Link
+              href={`/chefs/${recipe.authorId._id}`}
               className="flex items-center gap-4 rounded-2xl border p-4 mb-5 shadow-sm
                 bg-[#eeeae4] dark:bg-[#1a1714]
                 border-[#e2ddd8] dark:border-[#35312c]
                 animate-in slide-in-from-bottom-3 fade-in duration-500 delay-150
-                hover:shadow-md transition-shadow"
+                hover:shadow-md transition-shadow cursor-pointer"
             >
               {recipe.authorId.profile_url ? (
                 <Image
@@ -156,7 +158,7 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
               <span className="text-[10px] font-bold uppercase tracking-widest text-[#b0a898] dark:text-[#5a5248]">
                 Chef
               </span>
-            </div>
+            </Link>
 
             {/* Tags */}
             <div

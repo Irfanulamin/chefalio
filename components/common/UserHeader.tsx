@@ -18,6 +18,7 @@ import { ProfileDropdown } from "./ProfileDropdown";
 const navLinks = [
   { label: "Recipes", href: "/recipes" },
   { label: "Cookbooks", href: "/cookbooks" },
+  { label: "Chefs", href: "/chefs" },
   { label: "Activity", href: "/activity" },
 ];
 

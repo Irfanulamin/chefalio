@@ -16,12 +16,10 @@ export default function CookbooksPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // ── Read state from URL ────────────────────────────────────────────────────
   const search = searchParams.get("search") ?? "";
   const author = searchParams.get("author") ?? "";
   const page = Number(searchParams.get("page") ?? "1");
 
-  // ── URL updater — merges a partial change into current params ──────────────
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -38,7 +36,6 @@ export default function CookbooksPage() {
     [searchParams, router],
   );
 
-  // ── Debounce only for API calls, URL updates immediately ──────────────────
   const [debouncedSearch] = useDebounce(search, 500);
   const [debouncedAuthor] = useDebounce(author, 500);
 
@@ -49,7 +46,6 @@ export default function CookbooksPage() {
     author: debouncedAuthor || undefined,
   });
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
   const handleSearchChange = (value: string) =>
     updateParams({ search: value || null });
 
@@ -78,7 +74,7 @@ export default function CookbooksPage() {
           </p>
         </div>
 
-        {/* ── Filters ── */}
+        {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           {/* Search */}
           <div className="relative flex-1 max-w-sm">
@@ -131,7 +127,7 @@ export default function CookbooksPage() {
           )}
         </div>
 
-        {/* ── Results summary ── */}
+        {/* Results summary */}
         {!isLoading && cookbooks && (
           <p className="text-sm text-muted-foreground">
             {cookbooks.pagination.total === 0
@@ -140,7 +136,7 @@ export default function CookbooksPage() {
           </p>
         )}
 
-        {/* ── Grid ── */}
+        {/* Grid */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -180,7 +176,7 @@ export default function CookbooksPage() {
             {cookbooks?.data.map((cookbook) => (
               <div
                 key={cookbook._id}
-                className="group bg-background border border-border/40 rounded-xl overflow-hidden hover:border-border hover:-translate-y-1 transition-all duration-200 cursor-pointer"
+                className="group bg-background border border-border/40 rounded-xl overflow-hidden hover:border-border hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col"
               >
                 {/* Image */}
                 <div className="relative aspect-square overflow-hidden bg-muted">
@@ -205,8 +201,11 @@ export default function CookbooksPage() {
                 </div>
 
                 {/* Body */}
-                <div className="p-4">
-                  <div className="flex items-center gap-2 mb-2.5">
+                <div className="p-4 flex flex-col flex-1">
+                  <Link
+                    href={`/chefs/${cookbook.authorId._id}`}
+                    className="flex items-center gap-2 mb-2.5"
+                  >
                     {cookbook.authorId.profile_url ? (
                       <Image
                         src={cookbook.authorId.profile_url}
@@ -227,7 +226,7 @@ export default function CookbooksPage() {
                     <span className="text-xs text-muted-foreground">
                       {cookbook.authorId.fullName}
                     </span>
-                  </div>
+                  </Link>
 
                   <p className="font-medium text-[15px] leading-snug mb-1.5">
                     {cookbook.title}
@@ -236,32 +235,35 @@ export default function CookbooksPage() {
                     {cookbook.description}
                   </p>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-xl font-medium">
-                      ${cookbook.price.toFixed(2)}
-                    </span>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-                      <span
-                        className={cn(
-                          "w-1.5 h-1.5 rounded-full",
-                          cookbook.stockCount <= 3
-                            ? "bg-orange-500"
-                            : "bg-green-600",
-                        )}
-                      />
-                      {cookbook.stockCount <= 3 ? "Almost gone" : "In stock"}
-                    </span>
-                  </div>
+                  {/* Price + button — always pinned to bottom */}
+                  <div className="mt-auto">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xl font-medium">
+                        ${cookbook.price.toFixed(2)}
+                      </span>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <span
+                          className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            cookbook.stockCount <= 3
+                              ? "bg-orange-500"
+                              : "bg-green-600",
+                          )}
+                        />
+                        {cookbook.stockCount <= 3 ? "Almost gone" : "In stock"}
+                      </span>
+                    </div>
 
-                  <Link href={`/purchase-cookbook/${cookbook._id}`}>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="w-full mt-3 capitalize"
-                    >
-                      Buy now
-                    </Button>
-                  </Link>
+                    <Link href={`/purchase-cookbook/${cookbook._id}`}>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="w-full capitalize"
+                      >
+                        Buy now
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}

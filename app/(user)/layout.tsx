@@ -18,6 +18,7 @@ export default function UserLayout({
           { label: "Recipes", href: "/recipes" },
           { label: "Cookbooks", href: "/cookbooks" },
           { label: "Activity", href: "/activity" },
+          { label: "Chefs", href: "/chefs" },
         ]}
       />
     </ProtectedRoute>

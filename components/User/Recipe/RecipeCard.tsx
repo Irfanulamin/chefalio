@@ -68,7 +68,7 @@ transition-all duration-300
 hover:-translate-y-1 
 hover:shadow-[0_15px_40px_rgba(59,130,246,0.25)] 
 dark:hover:shadow-[0_15px_40px_rgba(59,130,246,0.20)]
-flex flex-col"
+flex flex-col cursor-pointer"
       >
         {/* Image */}
         <div className="relative h-52 w-full overflow-hidden">
@@ -97,7 +97,10 @@ flex flex-col"
         {/* Body */}
         <div className="flex flex-col gap-3 p-5 flex-1">
           {/* Author */}
-          <div className="flex items-center gap-2">
+          <Link
+            href={`/chefs/${recipe.authorId._id}`}
+            className="flex items-center gap-2"
+          >
             {recipe.authorId.profile_url ? (
               <Image
                 src={recipe.authorId.profile_url}
@@ -122,7 +125,7 @@ flex flex-col"
             <p className="text-sm font-semibold tracking-wide text-slate-500 dark:text-slate-400 capitalize">
               {recipe.authorId.fullName}
             </p>
-          </div>
+          </Link>
 
           {/* Title & Description */}
           <div>

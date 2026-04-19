@@ -62,7 +62,7 @@ function StepCard({
           className="absolute inset-0 opacity-20 pointer-events-none"
           style={{
             background:
-              "linear-gradient(105deg, transparent 40%, rgba(52,211,153,0.15) 50%, transparent 60%)",
+              "linear-gradient(105deg, transparent 35%, rgba(34,197,94,0.55) 80%, transparent 85%)",
             backgroundSize: "200% 100%",
             animation: "shimmer 2s ease-in-out infinite",
           }}
