@@ -199,11 +199,21 @@ export default function ChefProfilePage() {
             <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-4">
               <span className="flex items-center gap-1.5 text-sm px-3 py-1 rounded-full border border-border/60 bg-muted/10">
                 <ChefHat className="w-4 h-4 text-primary" />
-                {recipePagination?.total ?? "—"} Recipes
+                {recipePagination?.total ? (
+                  `${recipePagination.total} `
+                ) : (
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                )}
+                Recipes
               </span>
               <span className="flex items-center gap-1.5 text-sm px-3 py-1 rounded-full border border-border/60 bg-muted/10">
                 <BookOpen className="w-4 h-4 text-primary" />
-                {cookbookPagination?.total ?? "—"} Cookbooks
+                {cookbookPagination?.total ? (
+                  `${cookbookPagination.total} `
+                ) : (
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                )}
+                Cookbooks
               </span>
             </div>
           </div>
