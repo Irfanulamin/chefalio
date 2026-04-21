@@ -71,7 +71,7 @@ export function useAuth() {
       if (data.role === "user") {
         router.push("/recipes");
       } else if (data.role === "chef") {
-        router.push("/settings/chef");
+        router.push("/chef/dashboard");
       }
     },
     // 👇 do NOT redirect on error, just let it throw back to the caller
@@ -87,6 +87,8 @@ export function useAuth() {
       queryClient.setQueryData(["me"], data);
       if (data.role === "user") {
         router.push("/recipes");
+      } else if (data.role === "chef") {
+        router.push("/chef/dashboard");
       }
     },
     // 👇 do NOT redirect on error, just let it throw back to the caller
