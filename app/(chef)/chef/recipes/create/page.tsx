@@ -35,7 +35,7 @@ export default function CreateRecipePage() {
     <>
       <title>Create Recipe – Chefalio Chef</title>
 
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Back nav */}
         <Link
           href="/chef/recipes"
