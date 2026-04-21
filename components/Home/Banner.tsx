@@ -3,13 +3,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
 import {
   motion,
-  useScroll,
-  useTransform,
   useMotionValue,
-  useSpring,
   useAnimationFrame,
   cubicBezier,
-  useMotionTemplate,
 } from "framer-motion";
 import Image from "next/image";
 import { useRef } from "react";
@@ -17,20 +13,7 @@ import { useRef } from "react";
 export const Banner = () => {
   const sectionRef = useRef<HTMLElement>(null);
 
-  // Scroll-based parallax
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
-
-  // Star floats up as user scrolls down
-  const starX = useTransform(scrollYProgress, [0, 1], ["0%", "-25%"]);
-  const starOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.4]);
-  const starScale = useTransform(scrollYProgress, [0, 1], [1, 0.88]);
-
-  // Ambient floating animation values
   const floatY = useMotionValue(0);
-  const floatYSpring = useSpring(floatY, { stiffness: 60, damping: 12 });
   const floatRotate = useMotionValue(0);
 
   useAnimationFrame((t) => {
@@ -38,10 +21,6 @@ export const Banner = () => {
     floatRotate.set(Math.sin(t / 2400) * 2.5);
   });
 
-  const textBlur = useTransform(scrollYProgress, [0, 0.5], [0, 12]);
-  const textOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-
-  // Text stagger container
   const containerVariants = {
     hidden: {},
     visible: {
@@ -79,7 +58,7 @@ export const Banner = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
-      className="relative pt-2 md:pt-8 pb-10 md:pb-20 bg-[radial-gradient(ellipse_200%_100%_at_bottom_left,#E6F3B8,#fff_66%)] dark:bg-[radial-gradient(ellipse_200%_100%_at_bottom_left,#C8E17A,#000_66%)] overflow-hidden min-h-[90dvh] flex items-center"
+      className="relative pt-2 md:pt-8 pb-10 md:pb-20 bg-[radial-gradient(ellipse_200%_100%_at_bottom_left,#E6F3B8,#fff_66%)] dark:bg-[radial-gradient(ellipse_200%_100%_at_bottom_left,#C8E17A,#000_66%)] overflow-hidden min-h-[calc(100dvh-120px)] flex items-center"
     >
       <motion.div
         className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full bg-primary/10 blur-3xl pointer-events-none"
@@ -104,10 +83,6 @@ export const Banner = () => {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            style={{
-              filter: useMotionTemplate`blur(${textBlur}px)`,
-              opacity: textOpacity,
-            }}
           >
             <motion.div variants={slideUp} className="mb-4">
               <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20">
@@ -164,14 +139,14 @@ export const Banner = () => {
             >
               <div className="flex -space-x-2">
                 {[
-                  "https://i.ibb.co.com/Vwj1n8p/Prescription-Blue-Light-Glasses-Frames-Women-Men-or-Non-Prescription-Lenses-anti-reflective-Blue-Lig.jpg",
-                  "https://i.ibb.co.com/ZNXLKLB/Hailey-Baldwin-Bolon-Eyewear-2017-Campaign.jpg",
-                  "https://i.ibb.co.com/YQfnzrJ/y2k-Sunglasses.jpg",
-                  "https://i.ibb.co.com/nDBT9Nd/Ray-Ban-Glasses.jpg",
+                  "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776520734/profile_pictures/dinswstuu3n8kywxcyik.jpg",
+                  "https://res.cloudinary.com/djgwnvlrb/image/upload/v1775778681/profile_pictures/nhsmxspcuf66rmg5xlsv.jpg",
+                  "https://res.cloudinary.com/djgwnvlrb/image/upload/v1775778506/profile_pictures/xkc4ykbvoxgjlqbobyxa.jpg",
+                  "https://res.cloudinary.com/djgwnvlrb/image/upload/v1775778337/profile_pictures/wbdbvjrzxwuee9p2vt7x.jpg",
                 ].map((src, i) => (
                   <motion.div
                     key={i}
-                    className="w-7 h-7 rounded-full overflow-hidden border-2 border-background ring-1 ring-primary/10"
+                    className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.8 + i * 0.08, duration: 0.4 }}
@@ -179,9 +154,9 @@ export const Banner = () => {
                     <Image
                       src={src}
                       alt="Chef"
-                      width={28}
-                      height={28}
-                      className="w-full h-full object-cover"
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 object-cover grayscale rounded-full"
                     />
                   </motion.div>
                 ))}
@@ -193,7 +168,7 @@ export const Banner = () => {
             </motion.div>
           </motion.div>
           <motion.div
-            className=" mt-20 md:mt-0 md:h-162.5 relative"
+            className="hidden md:block md:mt-0 md:h-162.5 relative"
             initial={{ opacity: 0, scale: 0.85, filter: "blur(12px)" }}
             animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
             transition={{
@@ -201,19 +176,8 @@ export const Banner = () => {
               delay: 0.45,
               ease: [0.22, 1, 0.36, 1],
             }}
-            style={{ x: starX, opacity: starOpacity, scale: starScale }}
           >
-            <motion.div
-              className="absolute inset-0 rounded-full bg-primary/20 blur-3xl scale-75 -z-10"
-              animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.7, 0.85, 0.7] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.div
-              style={{
-                y: floatYSpring,
-                rotate: floatRotate,
-              }}
-            >
+            <motion.div>
               <Image
                 src="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530591/star_k1pqyi.png"
                 alt="Banner Image"
@@ -222,28 +186,6 @@ export const Banner = () => {
                 className="blur-[1.5px] hover:blur-[3px] transition-all ease-in delay-300"
               />
             </motion.div>
-            <motion.div
-              className="absolute top-10 right-10 w-3 h-3 rounded-full bg-primary shadow-lg shadow-accent hover:blur-sm transition-all"
-              animate={{
-                x: [0, 12, 0, -12, 0],
-                y: [0, -12, 0, 12, 0],
-                opacity: [0.7, 1, 0.7],
-              }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.div
-              className="absolute bottom-20 left-8 w-2 h-2 rounded-full bg-primary/60  hover:blur-sm transition-all"
-              animate={{
-                x: [0, -8, 0, 8, 0],
-                y: [0, 10, 0, -10, 0],
-              }}
-              transition={{
-                duration: 6,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 1,
-              }}
-            />
           </motion.div>
         </div>
       </div>
