@@ -58,7 +58,7 @@ export const Banner = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
-      className="relative pt-2 md:pt-8 pb-10 md:pb-20 bg-[radial-gradient(ellipse_200%_100%_at_bottom_left,#E6F3B8,#fff_66%)] dark:bg-[radial-gradient(ellipse_200%_100%_at_bottom_left,#C8E17A,#000_66%)] overflow-hidden min-h-[calc(100dvh-120px)] flex items-center"
+      className="relative pt-2 md:pt-8 pb-10 md:pb-20 bg-[radial-gradient(ellipse_200%_100%_at_bottom_left,#E6F3B8,#fff_66%)] dark:bg-[radial-gradient(ellipse_200%_100%_at_bottom_left,#C8E17A,#000_66%)] overflow-hidden h-[calc(100dvh-120px)] flex items-center"
     >
       <motion.div
         className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full bg-primary/10 blur-3xl pointer-events-none"
@@ -97,14 +97,14 @@ export const Banner = () => {
 
             <motion.h1
               variants={slideLeft}
-              className="text-5xl font-bold tracking-tighter bg-linear-to-b dark:from-white from-black to-primary bg-clip-text text-transparent"
+              className="text-xl md:text-2xl lg:text-3xl xl:text-5xl font-bold tracking-tighter bg-linear-to-b dark:from-white from-black to-primary bg-clip-text text-transparent"
             >
               PRECISION IN EVERY RECIPE. CONFIDENCE IN EVERY DISH.
             </motion.h1>
 
             <motion.p
               variants={slideUp}
-              className="text-xl text-muted-foreground dark:text-white/80 tracking-tight mt-6"
+              className="text-base lg:text-xl text-muted-foreground dark:text-white/80 tracking-tight mt-6"
             >
               Join our community of food lovers and explore a world of delicious
               recipes. Whether you&apos;re a seasoned chef or just starting out,
@@ -168,7 +168,6 @@ export const Banner = () => {
             </motion.div>
           </motion.div>
           <motion.div
-            className="hidden md:block md:mt-0 md:h-162.5 relative"
             initial={{ opacity: 0, scale: 0.85, filter: "blur(12px)" }}
             animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
             transition={{
@@ -177,15 +176,7 @@ export const Banner = () => {
               ease: [0.22, 1, 0.36, 1],
             }}
           >
-            <motion.div>
-              <Image
-                src="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530591/star_k1pqyi.png"
-                alt="Banner Image"
-                width={500}
-                height={500}
-                className="blur-[1.5px] hover:blur-[3px] transition-all ease-in delay-300"
-              />
-            </motion.div>
+            Hi
           </motion.div>
         </div>
       </div>
