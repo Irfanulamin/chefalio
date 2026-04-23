@@ -10,7 +10,7 @@ export default function UserLayout({
   return (
     <ProtectedRoute allowedRoles={["user"]}>
       <UserHeader />
-      <div className="min-h-screen container max-w-7xl mx-auto px-1.5 xl:px-0 ">
+      <div className="min-h-screen container max-w-7xl mx-auto px-1.5 md:px-3 xl:px-0 ">
         {children}
       </div>
       <AuthenticatedFooter
