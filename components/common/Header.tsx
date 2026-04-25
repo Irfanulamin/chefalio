@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRightIcon, ListIcon, XIcon } from "@phosphor-icons/react";
+import { ListIcon, XIcon } from "@phosphor-icons/react";
 import { ToggleThemeButton } from "./ToggleThemeButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -129,55 +129,12 @@ const MobileAuth = ({
 export const Header = () => {
   const router = useRouter();
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [bannerVisible, setBannerVisible] = useState(true);
   const { user, isLoading, logout } = useAuth();
 
   const closeSheet = () => setSheetOpen(false);
 
   return (
     <div className="sticky top-0 z-50 backdrop-blur-sm">
-      {/* ── Promo Banner ── */}
-      <AnimatePresence>
-        {bannerVisible && (
-          <motion.div
-            initial={{ y: -40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -40, opacity: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="relative flex flex-col sm:flex-row justify-center items-center py-2.5 dark:bg-primary bg-black text-white dark:text-black text-sm gap-1.5 font-medium tracking-wide"
-          >
-            <Link
-              href="/login"
-              className="text-center sm:text-left hover:underline"
-            >
-              Try it free, no credit card required!
-            </Link>
-
-            <motion.span
-              animate={{ x: [0, 4, 0] }}
-              transition={{
-                repeat: Infinity,
-                duration: 1.5,
-                ease: "easeInOut",
-              }}
-              className="mt-1 sm:mt-0"
-            >
-              <ArrowRightIcon size={16} />
-            </motion.span>
-
-            <motion.button
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setBannerVisible(false)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-0.5 rounded-full opacity-70 hover:opacity-100 transition-opacity"
-              aria-label="Dismiss banner"
-            >
-              <XIcon size={15} />
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* ── Main Nav Bar ── */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
