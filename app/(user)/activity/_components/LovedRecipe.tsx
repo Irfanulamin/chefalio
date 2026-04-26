@@ -14,7 +14,7 @@ export default function LovedRecipesSection() {
   if (isLoading || isFetching) {
     return (
       <section>
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
+        <div className="rounded-2xl border border-lime-200 dark:border-lime-700 overflow-hidden bg-white dark:bg-lime-900 divide-y divide-lime-100 dark:divide-lime-800">
           {Array.from({ length: 2 }).map((_, i) => (
             <CompactRecipeSkeletonCard key={i} />
           ))}
@@ -45,14 +45,14 @@ export default function LovedRecipesSection() {
 
   if (!recipes || recipes.length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-8 py-16 text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-5">
-          <BookmarkSimpleIcon className="w-7 h-7 text-slate-400" />
+      <div className="rounded-2xl border border-lime-200 dark:border-lime-700 bg-white dark:bg-lime-900 px-8 py-16 text-center">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-lime-100 dark:bg-lime-800 mb-5">
+          <BookmarkSimpleIcon className="w-7 h-7 text-lime-400" />
         </div>
-        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">
+        <h3 className="text-base font-semibold text-lime-800 dark:text-lime-200 mb-2">
           No loved recipes yet
         </h3>
-        <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+        <p className="text-sm text-lime-500 dark:text-lime-400 max-w-xs mx-auto">
           Recipes you love will appear here. Start exploring and like the ones
           you like.
         </p>
@@ -62,7 +62,7 @@ export default function LovedRecipesSection() {
 
   return (
     <>
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800 shadow-lg dark:shadow-blue-950">
+      <div className="rounded-2xl border border-lime-200 dark:border-lime-700 overflow-hidden divide-y divide-lime-100 dark:divide-lime-800 shadow-lg dark:shadow-lime-950">
         {recipes.map((recipe) => {
           return (
             <CompactRecipeCard key={recipe._id} recipe={recipe} button="love" />

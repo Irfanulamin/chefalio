@@ -20,9 +20,9 @@ export const RecipeGrid = ({
     !isFetching && !handleRecipeLoading && (!data || data.length === 0);
 
   return (
-    <div className="flex justify-center">
+    <div className="w-full">
       <div
-        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-200 py-3 ${
+        className={`grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4  gap-6 transition-opacity duration-200 py-3 w-full ${
           isFetching ? "opacity-50" : "opacity-100"
         }`}
       >
