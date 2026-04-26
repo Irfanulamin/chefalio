@@ -13,9 +13,11 @@ export const RecipeGrid = ({
   isFetching: boolean;
   data: Recipe[] | undefined;
 }) => {
-  // One request for the whole page instead of N individual requests
   const recipeIds = useMemo(() => data?.map((r) => r._id) ?? [], [data]);
   const { statsFor } = useBatchRecipeStats(recipeIds);
+
+  const isEmpty =
+    !isFetching && !handleRecipeLoading && (!data || data.length === 0);
 
   return (
     <div className="flex justify-center">
@@ -28,7 +30,26 @@ export const RecipeGrid = ({
           <RecipeCard key={recipe._id} recipe={recipe} statsFor={statsFor} />
         ))}
 
-        {handleRecipeLoading && (
+        {handleRecipeLoading &&
+          Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-background p-6 rounded-2xl border border-border"
+            >
+              <div className="space-y-4 animate-pulse">
+                <div className="h-6 w-1/3 rounded-md bg-muted" />
+                <div className="h-4 w-full rounded-md bg-muted" />
+                <div className="h-4 w-5/6 rounded-md bg-muted" />
+                <div className="h-32 w-full rounded-xl bg-muted" />
+                <div className="flex gap-3">
+                  <div className="h-10 w-24 rounded-lg bg-muted" />
+                  <div className="h-10 w-24 rounded-lg bg-muted" />
+                </div>
+              </div>
+            </div>
+          ))}
+
+        {isEmpty && (
           <div className="col-span-full flex flex-col items-center justify-center py-16 text-muted-foreground">
             <MagnifyingGlassIcon size={48} className="mb-3 opacity-30" />
             <p className="text-sm">No recipes found</p>
