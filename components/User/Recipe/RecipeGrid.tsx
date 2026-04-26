@@ -34,7 +34,7 @@ export const RecipeGrid = ({
           Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="bg-background p-6 rounded-2xl border border-border"
+              className="bg-background p-6 rounded-2xl border border-border w-full animate-pulse"
             >
               <div className="space-y-4 animate-pulse">
                 <div className="h-6 w-1/3 rounded-md bg-muted" />
