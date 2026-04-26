@@ -80,7 +80,7 @@ export const Banner = () => {
         }}
       />
 
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 md:px-8 lg:px-16 xl:px-0">
         <div className="md:flex items-between justify-between gap-12">
           <motion.div
             className="md:w-120 lg:w-200 xl:w-250"
