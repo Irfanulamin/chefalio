@@ -5,9 +5,11 @@ import { MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr";
 import { useMemo } from "react";
 
 export const RecipeGrid = ({
+  handleRecipeLoading,
   isFetching,
   data,
 }: {
+  handleRecipeLoading: boolean;
   isFetching: boolean;
   data: Recipe[] | undefined;
 }) => {
@@ -26,7 +28,7 @@ export const RecipeGrid = ({
           <RecipeCard key={recipe._id} recipe={recipe} statsFor={statsFor} />
         ))}
 
-        {!isFetching && data?.length === 0 && (
+        {handleRecipeLoading && (
           <div className="col-span-full flex flex-col items-center justify-center py-16 text-muted-foreground">
             <MagnifyingGlassIcon size={48} className="mb-3 opacity-30" />
             <p className="text-sm">No recipes found</p>

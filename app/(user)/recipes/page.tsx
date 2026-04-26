@@ -8,7 +8,6 @@ import { useDebounce } from "use-debounce";
 import { RecipeGrid } from "@/components/User/Recipe/RecipeGrid";
 import { RecipeFilters } from "@/components/User/Recipe/RecipeFilters";
 import { PaginationSection } from "@/components/common/Pagination";
-import { GridLoader } from "@/components/ui/GridLoading";
 
 const DIFFICULTIES = ["beginner", "intermediate", "advance"] as const;
 type Difficulty = (typeof DIFFICULTIES)[number];
@@ -102,14 +101,7 @@ export default function RecipesPage() {
     search || selectedTags.length || difficulty || debouncedAuthor,
   );
 
-  if (isLoading && !recipes) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-        <GridLoader label="Loading recipes..." />
-      </div>
-    );
-  }
-
+  const handleRecipeLoading = isLoading && !recipes;
   return (
     <>
       <title>Chefalio - Recipes</title>
@@ -152,7 +144,11 @@ export default function RecipesPage() {
           </p>
         )}
 
-        <RecipeGrid isFetching={isFetching} data={data} />
+        <RecipeGrid
+          handleRecipeLoading={handleRecipeLoading}
+          isFetching={isFetching}
+          data={data}
+        />
 
         <PaginationSection
           totalPages={totalPages}
