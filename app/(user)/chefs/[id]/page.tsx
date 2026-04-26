@@ -208,7 +208,7 @@ export default function ChefProfilePage() {
                 {recipePagination?.total ? (
                   `${recipePagination.total} `
                 ) : (
-                  <Loader2 className="text-primary animate-pulse" />
+                  <Loader2 className="text-primary animate-pulse w-4 h-4" />
                 )}
                 Recipes
               </span>
@@ -217,7 +217,7 @@ export default function ChefProfilePage() {
                 {cookbookPagination?.total ? (
                   `${cookbookPagination.total} `
                 ) : (
-                  <Loader2 className="text-primary animate-pulse" />
+                  <Loader2 className="text-primary animate-pulse w-4 h-4" />
                 )}
                 Cookbooks
               </span>
