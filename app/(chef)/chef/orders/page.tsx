@@ -18,7 +18,6 @@ import {
   ReceiptIcon,
   CaretDownIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -27,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
+import { GridLoader } from "@/components/ui/GridLoading";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -205,7 +205,7 @@ function OrderRow({
                   disabled={isUpdating}
                 >
                   {isUpdating ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <GridLoader label="Updating status..." />
                   ) : (
                     <>
                       Update Status
@@ -324,8 +324,7 @@ export default function ChefOrdersPage() {
           </div>
           {isFetching && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Refreshing…
+              <GridLoader label="Refreshing orders..." />
             </div>
           )}
         </div>
@@ -383,7 +382,7 @@ export default function ChefOrdersPage() {
         {/* Content */}
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <GridLoader label="Loading orders..." />
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 gap-4">

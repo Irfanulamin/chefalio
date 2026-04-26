@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { GridLoader } from "@/components/ui/GridLoading";
 import {
   InputGroup,
   InputGroupAddon,
@@ -7,7 +8,7 @@ import {
 } from "@/components/ui/input-group";
 import { TagIcon } from "@phosphor-icons/react";
 import { MagnifyingGlassIcon, UserIcon } from "@phosphor-icons/react/dist/ssr";
-import { Loader2, XIcon } from "lucide-react";
+import { XIcon } from "lucide-react";
 import { useState } from "react";
 
 type Difficulty = "beginner" | "intermediate" | "advance";
@@ -235,7 +236,7 @@ export const RecipeFilters = ({
         />
         <InputGroupAddon>
           {isFetching ? (
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <GridLoader label="Searching..." />
           ) : (
             <MagnifyingGlassIcon weight="bold" size={32} />
           )}

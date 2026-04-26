@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2 } from "lucide-react";
+import { GridLoader } from "../ui/GridLoading";
 
 type AllowedRole = "user" | "chef" | "admin";
 
@@ -24,7 +24,7 @@ export default function ProtectedRoute({
   if (isLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <GridLoader label="Checking authentication..." />
       </div>
     );
   }

@@ -8,8 +8,8 @@ import {
   ArrowLeftIcon,
   PencilSimpleIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { Loader2 } from "lucide-react";
 import RecipeForm from "@/components/Chef/RecipeForm";
+import { GridLoader } from "@/components/ui/GridLoading";
 
 export default function EditRecipePage() {
   const router = useRouter();
@@ -38,7 +38,7 @@ export default function EditRecipePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <GridLoader label="Loading recipe..." />
       </div>
     );
   }

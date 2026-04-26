@@ -5,10 +5,10 @@ import { Recipe } from "@/types/recipes.type";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { useDebounce } from "use-debounce";
-import { Loader2 } from "lucide-react";
 import { RecipeGrid } from "@/components/User/Recipe/RecipeGrid";
 import { RecipeFilters } from "@/components/User/Recipe/RecipeFilters";
 import { PaginationSection } from "@/components/common/Pagination";
+import { GridLoader } from "@/components/ui/GridLoading";
 
 const DIFFICULTIES = ["beginner", "intermediate", "advance"] as const;
 type Difficulty = (typeof DIFFICULTIES)[number];
@@ -105,7 +105,7 @@ export default function RecipesPage() {
   if (isLoading && !recipes) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <GridLoader label="Loading recipes..." />
       </div>
     );
   }

@@ -3,6 +3,13 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { motion, useInView, cubicBezier } from "framer-motion";
+import {
+  ChefHatIcon,
+  LightbulbIcon,
+  PersonSimpleCircleIcon,
+  UsersIcon,
+} from "@phosphor-icons/react/dist/ssr";
+import type { Icon } from "@phosphor-icons/react";
 
 function StatCard({
   number,
@@ -52,19 +59,23 @@ export const AboutUs = () => {
     { number: "4.8★", label: "App rating" },
   ];
 
-  const VALUES = [
+  const VALUES: {
+    icon: Icon;
+    title: string;
+    body: string;
+  }[] = [
     {
-      icon: "◆",
+      icon: PersonSimpleCircleIcon,
       title: "Accessibility first",
       body: "Cooking should never feel intimidating. We design every feature so beginners and professionals alike feel right at home.",
     },
     {
-      icon: "◈",
+      icon: UsersIcon,
       title: "Community-driven",
       body: "Our platform grows with its users. Every review, tip, and remix makes the whole network smarter and more inspiring.",
     },
     {
-      icon: "✦",
+      icon: LightbulbIcon,
       title: "Radical transparency",
       body: "Ingredient sourcing, nutritional data, chef credentials — we surface the information that lets you cook with confidence.",
     },
@@ -122,9 +133,7 @@ export const AboutUs = () => {
 
             <div className="absolute inset-0 rounded-3xl border border-black/10 dark:border-white/10 bg-linear-to-br from-black/6 dark:from-white/6 to-black/2 dark:to-white/2 p-8 flex flex-col justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary text-xs">
-                  ✦
-                </div>
+                <ChefHatIcon weight="bold" className="text-primary text-2xl" />
                 <span className="text-black/40 dark:text-white/40 text-sm font-medium">
                   Chefalio · Mission
                 </span>
@@ -208,34 +217,35 @@ export const AboutUs = () => {
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-5">
-          {VALUES.map((v, i) => (
-            <motion.div
-              key={v.title}
-              initial={{ opacity: 0, y: 32 }}
-              animate={valuesInView ? { opacity: 1, y: 0 } : {}}
-              transition={{
-                duration: 0.6,
-                ease: [0.22, 1, 0.36, 1],
-                delay: i * 0.1,
-              }}
-              whileHover={{ y: -10, transition: { duration: 0.25 } }}
-              className="group relative rounded-2xl border border-black/8 dark:border-white/8 bg-black/3 dark:bg-white/3 p-7 cursor-default overflow-hidden"
-            >
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-linear-to-br from-primary/8 to-transparent pointer-events-none" />
+          {VALUES.map((v, i) => {
+            const Icon = v.icon;
+            return (
+              <motion.div
+                key={v.title}
+                initial={{ opacity: 0, y: 32 }}
+                animate={valuesInView ? { opacity: 1, y: 0 } : {}}
+                transition={{
+                  duration: 0.6,
+                  ease: [0.22, 1, 0.36, 1],
+                  delay: i * 0.1,
+                }}
+                whileHover={{ y: -10, transition: { duration: 0.25 } }}
+                className="group relative rounded-2xl border border-black/8 dark:border-white/8 bg-black/3 dark:bg-white/3 p-7 cursor-default overflow-hidden"
+              >
+                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-linear-to-br from-primary/8 to-transparent pointer-events-none" />
 
-              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 text-primary text-lg">
-                {v.icon}
-              </div>
+                <Icon weight="fill" className="text-primary text-2xl mb-4" />
 
-              <h3 className="text-lg font-semibold text-black dark:text-white">
-                {v.title}
-              </h3>
+                <h3 className="text-lg font-semibold text-black dark:text-white">
+                  {v.title}
+                </h3>
 
-              <p className="mt-2 text-sm text-black/50 dark:text-white/50 leading-relaxed">
-                {v.body}
-              </p>
-            </motion.div>
-          ))}
+                <p className="mt-2 text-sm text-black/50 dark:text-white/50 leading-relaxed">
+                  {v.body}
+                </p>
+              </motion.div>
+            );
+          })}
         </div>
       </section>
     </div>

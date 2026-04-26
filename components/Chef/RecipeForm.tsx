@@ -12,10 +12,10 @@ import {
   ArrowDownIcon,
   XIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { Loader2 } from "lucide-react";
 import z from "zod";
 import { Recipe } from "@/types/recipes.type";
 import Image from "next/image";
+import GridLoader from "../ui/GridLoading";
 
 const DIFFICULTIES = ["beginner", "intermediate", "advance"] as const;
 const DIFFICULTY_STYLES: Record<string, string> = {
@@ -448,8 +448,7 @@ export default function RecipeForm({
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Saving...
+              <GridLoader label="Saving..." />
             </>
           ) : (
             submitLabel

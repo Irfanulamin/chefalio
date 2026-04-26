@@ -26,8 +26,8 @@ import {
   ChartBarIcon,
   SparkleIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { Loader2 } from "lucide-react";
 import Image from "next/image";
+import GridLoader from "@/components/ui/GridLoading";
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   beginner: "#EEFABD",
@@ -80,7 +80,7 @@ export default function ChefDashboardPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <GridLoader label="Loading dashboard..." />
       </div>
     );
   }

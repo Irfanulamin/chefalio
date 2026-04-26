@@ -16,7 +16,6 @@ import {
   CurrencyDollarIcon,
   StackIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -29,6 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import GridLoader from "@/components/ui/GridLoading";
 
 function CookbookCard({
   cookbook,
@@ -138,7 +138,7 @@ function CookbookCard({
                   className="bg-red-500 hover:bg-red-600 rounded-xl"
                 >
                   {isDeleting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <GridLoader label="Deleting cookbook..." />
                   ) : (
                     "Delete"
                   )}
@@ -214,7 +214,7 @@ export default function ChefCookbooksPage() {
         {/* Content */}
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <GridLoader label="Chef cookbooks..." />
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 gap-4">

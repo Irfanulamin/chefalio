@@ -3,10 +3,10 @@
 import { useForm } from "@tanstack/react-form";
 import { FormField } from "@/components/common/FormField";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import z from "zod";
 import { Cookbook } from "@/hooks/useCookbook";
 import Image from "next/image";
+import { GridLoader } from "../ui/GridLoading";
 
 interface CookbookFormValues {
   title: string;
@@ -142,8 +142,7 @@ export default function CookbookForm({
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Saving...
+              <GridLoader label="Saving..." />
             </>
           ) : (
             submitLabel

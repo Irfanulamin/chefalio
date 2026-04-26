@@ -8,8 +8,8 @@ import {
   ArrowLeftIcon,
   PencilSimpleIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { Loader2 } from "lucide-react";
 import CookbookForm from "@/components/Chef/CookbookForn";
+import { GridLoader } from "@/components/ui/GridLoading";
 
 export default function EditCookbookPage() {
   const router = useRouter();
@@ -51,7 +51,7 @@ export default function EditCookbookPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <GridLoader label="Loading cookbook..." />
       </div>
     );
   }

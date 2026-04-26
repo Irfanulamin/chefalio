@@ -15,7 +15,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
-import { Loader2, BookOpen, ChefHat } from "lucide-react";
+import { BookOpen, ChefHat } from "lucide-react";
+import { GridLoader } from "@/components/ui/GridLoading";
 
 function ChefCookbookCard({
   cookbook,
@@ -151,7 +152,7 @@ export default function ChefProfilePage() {
   if (isChefLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <GridLoader label="Loading chef profile..." />
       </div>
     );
   }
@@ -202,7 +203,7 @@ export default function ChefProfilePage() {
                 {recipePagination?.total ? (
                   `${recipePagination.total} `
                 ) : (
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <GridLoader label="Loading recipe count..." />
                 )}
                 Recipes
               </span>
@@ -211,7 +212,7 @@ export default function ChefProfilePage() {
                 {cookbookPagination?.total ? (
                   `${cookbookPagination.total} `
                 ) : (
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <GridLoader label="Loading cookbook count..." />
                 )}
                 Cookbooks
               </span>

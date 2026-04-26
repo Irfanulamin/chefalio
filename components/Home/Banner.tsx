@@ -11,6 +11,7 @@ import {
   cubicBezier,
 } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { useRef } from "react";
 
 export const Banner = () => {
@@ -80,9 +81,9 @@ export const Banner = () => {
       />
 
       <div className="container mx-auto px-4">
-        <div className="md:flex items-between gap-12">
+        <div className="md:flex items-between justify-between gap-12">
           <motion.div
-            className="md:w-150 lg:w-250"
+            className="md:w-120 lg:w-200 xl:w-250"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -121,20 +122,22 @@ export const Banner = () => {
               variants={slideUp}
               className="mt-6 flex items-center gap-4"
             >
-              <Button className="group" size="lg">
-                Get Started
-                <motion.span
-                  className="inline-flex"
-                  animate={{ x: [0, 3, 0] }}
-                  transition={{
-                    duration: 1.8,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <ArrowRightIcon size={18} />
-                </motion.span>
-              </Button>
+              <Link href="/recipes" className="inline-flex items-center gap-2">
+                <Button className="group" size="lg">
+                  Get Started
+                  <motion.span
+                    className="inline-flex"
+                    animate={{ x: [0, 3, 0] }}
+                    transition={{
+                      duration: 1.8,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <ArrowRightIcon size={18} />
+                  </motion.span>
+                </Button>
+              </Link>
             </motion.div>
             <motion.div
               variants={slideUp}
