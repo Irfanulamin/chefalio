@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/input-group";
 import { TagIcon } from "@phosphor-icons/react";
 import { MagnifyingGlassIcon, UserIcon } from "@phosphor-icons/react/dist/ssr";
-import { XIcon } from "lucide-react";
+import { Loader2, XIcon } from "lucide-react";
 import { useState } from "react";
 
 type Difficulty = "beginner" | "intermediate" | "advance";
@@ -236,7 +236,7 @@ export const RecipeFilters = ({
         />
         <InputGroupAddon>
           {isFetching ? (
-            <GridLoader label="Searching..." />
+            <Loader2 className="animate-spin" />
           ) : (
             <MagnifyingGlassIcon weight="bold" size={32} />
           )}
