@@ -14,13 +14,20 @@ type Props = {
   totalPages: number;
   currentPage: number;
   setPage: (page: number) => void;
+  scrollTargetRef?: React.RefObject<HTMLElement | null>;
 };
 
 export const PaginationSection = ({
   totalPages,
   currentPage,
   setPage,
+  scrollTargetRef,
 }: Props) => {
+  const handlePageChange = (page: number) => {
+    setPage(page);
+    scrollTargetRef?.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const getPages = (): (number | "ellipsis")[] => {
     const pages: (number | "ellipsis")[] = [];
 
@@ -52,7 +59,7 @@ export const PaginationSection = ({
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                setPage(Math.max(currentPage - 1, 1));
+                handlePageChange(Math.max(currentPage - 1, 1));
               }}
             />
           </PaginationItem>
@@ -74,7 +81,7 @@ export const PaginationSection = ({
                   isActive={item === currentPage}
                   onClick={(e) => {
                     e.preventDefault();
-                    setPage(item);
+                    handlePageChange(item);
                   }}
                 >
                   {item}
@@ -89,7 +96,7 @@ export const PaginationSection = ({
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                setPage(Math.min(currentPage + 1, totalPages));
+                handlePageChange(Math.min(currentPage + 1, totalPages));
               }}
             />
           </PaginationItem>

@@ -3,7 +3,7 @@
 import { useRecipes } from "@/hooks/useRecipe";
 import { Recipe } from "@/types/recipes.type";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useDebounce } from "use-debounce";
 import { RecipeGrid } from "@/components/User/Recipe/RecipeGrid";
 import { RecipeFilters } from "@/components/User/Recipe/RecipeFilters";
@@ -102,10 +102,11 @@ export default function RecipesPage() {
   );
 
   const handleRecipeLoading = isLoading && !recipes;
+  const scrollRef = useRef<HTMLDivElement>(null);
   return (
     <>
       <title>Chefalio - Recipes</title>
-      <div className="space-y-6 my-3 md:my-6 max-w-7xl mx-auto px-3">
+      <div ref={scrollRef} className="space-y-6 my-3 md:my-6 max-w-7xl mx-auto px-3">
         <div>
           <h2 className="text-5xl font-pinyon-script font-bold text-primary italic capitalize mb-2 tracking-widest">
             Recipes
@@ -154,6 +155,7 @@ export default function RecipesPage() {
           totalPages={totalPages}
           currentPage={currentPage}
           setPage={(p) => updateParams({ page: String(p) })}
+          scrollTargetRef={scrollRef}
         />
       </div>
     </>

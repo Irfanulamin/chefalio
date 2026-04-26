@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { BookOpen, ChefHat } from "lucide-react";
 import { GridLoader } from "@/components/ui/GridLoading";
 
@@ -149,6 +149,8 @@ export default function ChefProfilePage() {
   const recipeIds = useMemo(() => recipes?.map((r) => r._id) ?? [], [recipes]);
   const { statsFor } = useBatchRecipeStats(recipeIds);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   if (isChefLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
@@ -175,7 +177,10 @@ export default function ChefProfilePage() {
 
   return (
     <>
-      <div className="space-y-8 my-3 md:my-8 max-w-7xl mx-auto px-3">
+      <div
+        ref={scrollRef}
+        className="space-y-8 my-3 md:my-8 max-w-7xl mx-auto px-3"
+      >
         {/* ── Chef Hero ─────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 rounded-2xl border border-border/40 bg-background">
           {/* Avatar */}
@@ -296,6 +301,7 @@ export default function ChefProfilePage() {
           totalPages={totalPages}
           currentPage={page}
           setPage={(p) => updateParams({ page: String(p) })}
+          scrollTargetRef={scrollRef}
         />
 
         {/* ── Related Chefs ─────────────────────────────────────────────── */}

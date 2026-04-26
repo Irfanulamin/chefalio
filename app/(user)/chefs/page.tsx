@@ -8,7 +8,7 @@ import { Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useDebounce } from "use-debounce";
 
 export default function ChefsPage() {
@@ -44,11 +44,12 @@ export default function ChefsPage() {
 
   const totalPages = chefs?.pagination?.totalPages || 1;
   const currentPage = chefs?.pagination?.page || page;
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
       <title>Chefalio - Chefs</title>
-      <div className="space-y-6 my-3 md:my-6 max-w-7xl mx-auto px-3">
+      <div ref={scrollRef} className="space-y-6 my-3 md:my-6 max-w-7xl mx-auto px-3">
         {/* Header */}
         <div>
           <h2 className="text-5xl font-pinyon-script font-bold text-primary italic capitalize mb-2 tracking-widest">
@@ -172,6 +173,7 @@ export default function ChefsPage() {
           totalPages={totalPages}
           currentPage={currentPage}
           setPage={(p) => updateParams({ page: String(p) })}
+          scrollTargetRef={scrollRef}
         />
       </div>
     </>
