@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import axiosInstance from "@/hooks/axios/interceptors";
 import { Recipe } from "@/types/recipes.type";
 import { Cookbook } from "@/hooks/useCookbook";
@@ -77,6 +77,8 @@ export interface ChefEngagementAnalyticsResponse {
 
 // ─── Chef Earnings Analytics (cookbook-purchase) ──────────────────────────────
 
+export type RevenuePeriod = 'daily' | 'weekly' | 'monthly' | 'lifetime';
+
 export interface SalesGraphPoint {
   date: string;
   amount: number;
@@ -88,6 +90,7 @@ export interface ChefEarningsData {
   totalProfit: number;
   profitRate: string;
   totalOrders: number;
+  period: string;
   salesGraph: SalesGraphPoint[];
 }
 
@@ -404,41 +407,49 @@ export function useDeleteCookbook() {
 
 // ─── Chef Engagement Analytics ────────────────────────────────────────────────
 
-export function useChefEngagementAnalytics() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["chef-engagement-analytics"],
+export function useChefEngagementAnalytics(period: RevenuePeriod = "lifetime") {
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: ["chef-engagement-analytics", period],
     queryFn: () =>
       axiosInstance
         .get<ChefEngagementAnalyticsResponse>(
           "/recipe-interaction/analytics/chef",
+          { params: { period } },
         )
         .then((res) => res.data),
     staleTime: 1000 * 60 * 5,
+    placeholderData: keepPreviousData,
   });
 
   return {
     engagementData: data,
     recipes: data?.recipes ?? [],
     isLoading,
+    isFetching,
     error,
   };
 }
 
 // ─── Chef Earnings Analytics ──────────────────────────────────────────────────
 
-export function useChefEarningsAnalytics() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["chef-earnings-analytics"],
+export function useChefEarningsAnalytics(period: RevenuePeriod = "lifetime") {
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: ["chef-earnings-analytics", period],
     queryFn: () =>
       axiosInstance
-        .get<ChefEarningsAnalyticsResponse>("/cookbook-purchase/analytics/chef")
+        .get<ChefEarningsAnalyticsResponse>(
+          "/cookbook-purchase/analytics/chef",
+          { params: { period } },
+        )
         .then((res) => res.data),
     staleTime: 1000 * 60 * 5,
+    placeholderData: keepPreviousData,
   });
 
   return {
     earnings: data?.data,
     isLoading,
+    isFetching,
     error,
   };
 }

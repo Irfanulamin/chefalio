@@ -18,48 +18,22 @@ import {
   ForkKnifeIcon,
   BookOpenIcon,
   GearSixIcon,
-  CaretLeftIcon,
-  CaretRightIcon,
   ChefHatIcon,
   ChartLineUpIcon,
   ListIcon,
+  SidebarSimpleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { PackageIcon } from "lucide-react";
 
 const navItems = [
-  {
-    label: "Dashboard",
-    href: "/chef/dashboard",
-    icon: HouseLineIcon,
-  },
-  {
-    label: "Analytics",
-    href: "/chef/analytics",
-    icon: ChartLineUpIcon,
-  },
-  {
-    label: "My Recipes",
-    href: "/chef/recipes",
-    icon: ForkKnifeIcon,
-  },
-  {
-    label: "My Cookbooks",
-    href: "/chef/cookbooks",
-    icon: BookOpenIcon,
-  },
-  {
-    label: "Orders",
-    href: "/chef/orders",
-    icon: PackageIcon,
-  },
-  {
-    label: "Settings",
-    href: "/chef/settings",
-    icon: GearSixIcon,
-  },
+  { label: "Dashboard", href: "/chef/dashboard", icon: HouseLineIcon },
+  { label: "Analytics", href: "/chef/analytics", icon: ChartLineUpIcon },
+  { label: "Recipes", href: "/chef/recipes", icon: ForkKnifeIcon },
+  { label: "Cookbooks", href: "/chef/cookbooks", icon: BookOpenIcon },
+  { label: "Orders", href: "/chef/orders", icon: PackageIcon },
+  { label: "Settings", href: "/chef/settings", icon: GearSixIcon },
 ];
 
-/** Shared nav link list — used in both sidebar and Sheet */
 function NavLinks({
   pathname,
   collapsed = false,
@@ -70,7 +44,7 @@ function NavLinks({
   onNavigate?: () => void;
 }) {
   return (
-    <nav className="flex-1 px-2 py-4 space-y-1">
+    <nav className="flex-1 px-2 pt-2 pb-4 space-y-0.5">
       {navItems.map(({ label, href, icon: Icon }) => {
         const isActive = pathname === href || pathname.startsWith(href + "/");
         return (
@@ -80,22 +54,22 @@ function NavLinks({
             title={collapsed ? label : undefined}
             onClick={onNavigate}
             className={[
-              "flex items-center gap-3 px-2.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
+              "relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors",
               isActive
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground",
-              collapsed ? "justify-center" : "",
+                ? "text-foreground bg-zinc-100 dark:bg-zinc-800 font-medium"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-foreground hover:bg-zinc-100/70 dark:hover:bg-zinc-800/50 font-normal",
+              collapsed ? "justify-center px-2" : "",
             ].join(" ")}
           >
+            {isActive && (
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[2px] rounded-full bg-primary" />
+            )}
             <Icon
-              size={18}
+              size={16}
               weight={isActive ? "fill" : "regular"}
               className="shrink-0"
             />
             {!collapsed && <span>{label}</span>}
-            {isActive && !collapsed && (
-              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
-            )}
           </Link>
         );
       })}
@@ -103,15 +77,14 @@ function NavLinks({
   );
 }
 
-/** Logo mark used in sidebar and Sheet */
 function Logo({ showText = true }: { showText?: boolean }) {
   return (
-    <Link href="/chef/dashboard" className="flex items-center gap-2">
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm shrink-0">
-        <ChefHatIcon size={16} weight="fill" className="text-black" />
+    <Link href="/chef/dashboard" className="flex items-center gap-2.5 min-w-0">
+      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary shrink-0">
+        <ChefHatIcon size={14} weight="fill" className="text-black" />
       </span>
       {showText && (
-        <span className="text-lg font-extrabold tracking-tight text-foreground">
+        <span className="text-sm font-semibold tracking-tight text-foreground truncate">
           Chefalio
         </span>
       )}
@@ -130,73 +103,66 @@ export default function ChefLayout({
 
   return (
     <ProtectedRoute allowedRoles={["chef"]}>
-      <div className="flex min-h-screen bg-background">
-        {/* ── Desktop Sidebar (hidden on mobile) ── */}
+      <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
+        {/* Desktop Sidebar */}
         <aside
           className={[
-            "fixed left-0 top-0 z-40 hidden md:flex h-full flex-col border-r border-border/60",
-            "bg-white dark:bg-zinc-950 transition-all duration-300 ease-in-out",
-            collapsed ? "w-16" : "w-60",
+            "fixed left-0 top-0 z-40 hidden md:flex h-full flex-col",
+            "border-r border-zinc-200 dark:border-zinc-800",
+            "bg-white dark:bg-zinc-950",
+            "transition-[width] duration-200",
+            collapsed ? "w-14" : "w-56",
           ].join(" ")}
         >
-          {/* Logo */}
-          <div className="flex h-16 items-center justify-between px-3 border-b border-border/40">
+          {/* Header */}
+          <div className="flex h-14 items-center justify-between px-3 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
             {collapsed ? (
-              <Link href="/chef/dashboard" className="mx-auto">
+              <button
+                onClick={() => setCollapsed(false)}
+                className="mx-auto flex h-7 w-7 items-center justify-center rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                title="Expand sidebar"
+              >
                 <Logo showText={false} />
-              </Link>
+              </button>
             ) : (
               <>
                 <Logo />
                 <button
                   onClick={() => setCollapsed(true)}
-                  className="flex h-6 w-6 items-center justify-center rounded-md hover:bg-accent transition-colors"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                  title="Collapse sidebar"
                 >
-                  <CaretLeftIcon size={14} className="text-muted-foreground" />
+                  <SidebarSimpleIcon size={15} />
                 </button>
               </>
             )}
           </div>
 
           <NavLinks pathname={pathname} collapsed={collapsed} />
-
-          {/* Expand toggle at bottom when collapsed */}
-          {collapsed && (
-            <div className="p-2 border-t border-border/40">
-              <button
-                onClick={() => setCollapsed(false)}
-                className="flex w-full items-center justify-center h-8 rounded-lg hover:bg-accent transition-colors"
-              >
-                <CaretRightIcon size={14} className="text-muted-foreground" />
-              </button>
-            </div>
-          )}
         </aside>
 
-        {/* ── Main content ── */}
+        {/* Main */}
         <div
           className={[
-            "flex-1 flex flex-col transition-all duration-300 ease-in-out",
-            // desktop offset
-            "md:ml-60",
-            collapsed ? "md:ml-16" : "md:ml-60",
+            "flex-1 flex flex-col min-w-0",
+            collapsed ? "md:ml-14" : "md:ml-56",
+            "transition-[margin] duration-200",
           ].join(" ")}
         >
           {/* Top bar */}
-          <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/40 bg-background/80 backdrop-blur-xl px-4 md:px-6">
-            {/* Mobile: hamburger sheet trigger */}
+          <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 md:px-5 shrink-0">
             <div className="flex items-center gap-3">
+              {/* Mobile hamburger */}
               <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger asChild>
-                  <button className="flex md:hidden h-8 w-8 items-center justify-center rounded-lg hover:bg-accent transition-colors">
-                    <ListIcon size={18} className="text-foreground" />
+                  <button className="flex md:hidden h-8 w-8 items-center justify-center rounded-lg text-zinc-500 hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                    <ListIcon size={16} />
                   </button>
                 </SheetTrigger>
-
-                <SheetContent side="left" className="w-64 p-0 flex flex-col">
-                  <SheetHeader className="px-6 pt-6 pb-2">
-                    <SheetTitle className="text-2xl font-extrabold tracking-tight text-primary">
-                      Chefalio
+                <SheetContent side="left" className="w-56 p-0 flex flex-col bg-white dark:bg-zinc-950">
+                  <SheetHeader className="px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
+                    <SheetTitle asChild>
+                      <Logo />
                     </SheetTitle>
                   </SheetHeader>
                   <NavLinks
@@ -206,24 +172,23 @@ export default function ChefLayout({
                 </SheetContent>
               </Sheet>
 
-              {/* Desktop label */}
-              <span className="hidden md:inline text-xs text-muted-foreground uppercase tracking-widest font-medium">
-                Chef Portal
+              <span className="hidden md:inline text-sm font-medium text-foreground capitalize">
+                {navItems.find(
+                  (n) =>
+                    pathname === n.href || pathname.startsWith(n.href + "/"),
+                )?.label ?? "Chef"}
               </span>
-
-              {/* Mobile: show logo text inline in header */}
-              <span className="flex md:hidden text-sm font-extrabold tracking-tight text-foreground">
+              <span className="flex md:hidden text-sm font-semibold text-foreground">
                 Chefalio
               </span>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <ToggleThemeButton />
               <ProfileDropdown />
             </div>
           </header>
 
-          {/* Page content */}
           <main className="flex-1 p-4 md:p-6">{children}</main>
         </div>
       </div>

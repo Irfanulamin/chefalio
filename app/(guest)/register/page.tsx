@@ -9,9 +9,11 @@ import { toast } from "sonner";
 import * as z from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function RegisterPage() {
-  const { register, isLoading } = useAuth();
+  const { register } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const registerSchema = z.object({
     fullName: z
@@ -30,6 +32,7 @@ export default function RegisterPage() {
     defaultValues: { fullName: "", username: "", email: "", password: "" },
     validators: { onSubmit: registerSchema },
     onSubmit: async ({ value }) => {
+      setIsSubmitting(true);
       try {
         await register(value);
         toast.success("Account created successfully!", {
@@ -41,6 +44,8 @@ export default function RegisterPage() {
             ? err.message
             : "Failed to create account. Please try again.";
         toast.error(errorMessage, { position: "bottom-right" });
+      } finally {
+        setIsSubmitting(false);
       }
     },
   });
@@ -85,7 +90,7 @@ export default function RegisterPage() {
       </div>
       <div className="h-px bg-zinc-100 dark:bg-zinc-800 mb-6" />
       <form
-        className="space-y-4"
+        className={`space-y-4 transition-opacity duration-200 ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -100,9 +105,9 @@ export default function RegisterPage() {
         <Button
           type="submit"
           className="w-full rounded-lg py-5"
-          disabled={isLoading}
+          disabled={isSubmitting}
         >
-          {isLoading ? "Creating account..." : "Create Account"}
+          {isSubmitting ? "Creating account..." : "Create Account"}
         </Button>
       </form>
 

@@ -401,7 +401,14 @@ export const FormField = ({
                 type={type}
                 value={field.state.value}
                 onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
+                onChange={(e) => {
+                  if (type === "number") {
+                    const parsed = parseFloat(e.target.value);
+                    field.handleChange(isNaN(parsed) ? 0 : parsed);
+                  } else {
+                    field.handleChange(e.target.value);
+                  }
+                }}
                 placeholder={placeholder}
                 aria-invalid={isInvalid}
                 autoComplete="off"

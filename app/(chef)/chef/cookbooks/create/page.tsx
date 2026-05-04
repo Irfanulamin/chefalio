@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useCreateCookbook } from "@/hooks/useChefs";
-import { ArrowLeftIcon, BookOpenIcon } from "@phosphor-icons/react/dist/ssr";
+import { ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr";
 import CookbookForm from "@/components/Chef/CookbookForn";
 
 export default function CreateCookbookPage() {
@@ -57,11 +57,10 @@ export default function CreateCookbookPage() {
         </Link>
 
         <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
-            <BookOpenIcon size={22} weight="fill" className="text-primary" />
-            Create New Cookbook
+          <h1 className="text-base font-semibold text-foreground">
+            Create Cookbook
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-sm text-zinc-400 mt-0.5">
             Fill in the details to publish your cookbook for sale.
           </p>
         </div>

@@ -10,11 +10,12 @@ import * as z from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 
 function LoginForm() {
-  const { login, isLoading } = useAuth();
+  const { login } = useAuth();
   const searchParams = useSearchParams();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loginSchema = z.object({
     usernameOrEmail: z
@@ -27,6 +28,7 @@ function LoginForm() {
     defaultValues: { usernameOrEmail: "", password: "" },
     validators: { onSubmit: loginSchema },
     onSubmit: async ({ value }) => {
+      setIsSubmitting(true);
       try {
         await login(value);
         toast.success("Signed in successfully!", { position: "bottom-right" });
@@ -36,6 +38,8 @@ function LoginForm() {
             ? err.message
             : "Login failed. Please try again.";
         toast.error(errorMessage, { position: "bottom-right" });
+      } finally {
+        setIsSubmitting(false);
       }
     },
   });
@@ -77,7 +81,7 @@ function LoginForm() {
       </div>
       <div className="h-px bg-zinc-100 dark:bg-zinc-800 mb-6" />
       <form
-        className="space-y-4"
+        className={`space-y-4 transition-opacity duration-200 ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -100,9 +104,9 @@ function LoginForm() {
         <Button
           type="submit"
           className="w-full rounded-lg py-5 tracking-wide"
-          disabled={isLoading}
+          disabled={isSubmitting}
         >
-          {isLoading ? "Signing in..." : "Sign In"}
+          {isSubmitting ? "Signing in..." : "Sign In"}
         </Button>
       </form>
 

@@ -4,10 +4,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useMyRecipes, useUpdateRecipe } from "@/hooks/useChefs";
-import {
-  ArrowLeftIcon,
-  PencilSimpleIcon,
-} from "@phosphor-icons/react/dist/ssr";
+import { ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr";
 import RecipeForm from "@/components/Chef/RecipeForm";
 import { GridLoader } from "@/components/ui/GridLoading";
 
@@ -73,16 +70,11 @@ export default function EditRecipePage() {
 
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
-            <PencilSimpleIcon
-              size={22}
-              weight="fill"
-              className="text-primary"
-            />
+          <h1 className="text-base font-semibold text-foreground">
             Edit Recipe
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Editing: <strong>{recipe.title}</strong>
+          <p className="text-sm text-zinc-400 mt-0.5">
+            Editing: <strong className="text-foreground font-medium">{recipe.title}</strong>
           </p>
         </div>
 

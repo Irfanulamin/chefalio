@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useCreateRecipe } from "@/hooks/useChefs";
-import { ArrowLeftIcon, ForkKnifeIcon } from "@phosphor-icons/react/dist/ssr";
+import { ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr";
 import RecipeForm from "@/components/Chef/RecipeForm";
 
 export default function CreateRecipePage() {
@@ -47,11 +47,10 @@ export default function CreateRecipePage() {
 
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
-            <ForkKnifeIcon size={22} weight="fill" className="text-primary" />
-            Create New Recipe
+          <h1 className="text-base font-semibold text-foreground">
+            Create Recipe
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-sm text-zinc-400 mt-0.5">
             Fill in the details below to publish your recipe.
           </p>
         </div>

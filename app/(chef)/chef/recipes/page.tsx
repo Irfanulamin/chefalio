@@ -12,7 +12,6 @@ import {
   TrashIcon,
   ForkKnifeIcon,
   MagnifyingGlassIcon,
-  WarningCircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { toast } from "sonner";
 import {
@@ -26,15 +25,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { GridLoader } from "@/components/ui/GridLoading";
 
-const DIFFICULTY_STYLES: Record<string, string> = {
-  beginner:
-    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300",
-  intermediate:
-    "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300",
-  advance: "bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300",
+const DIFFICULTY_BADGE: Record<string, string> = {
+  beginner: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  intermediate: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  advance: "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 };
 
 function RecipeRow({
@@ -47,107 +43,98 @@ function RecipeRow({
   isDeleting: boolean;
 }) {
   return (
-    <div className="flex items-center gap-4 p-4 rounded-xl border border-border/60 bg-white dark:bg-zinc-900 hover:shadow-sm transition-shadow">
-      {/* Thumbnail */}
-      <div className="relative h-16 w-24 rounded-lg overflow-hidden shrink-0">
-        <Image
-          src={recipe.images[0]}
-          alt={recipe.title}
-          fill
-          className="object-cover"
-          sizes="96px"
-        />
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="text-sm font-semibold text-foreground truncate">
-            {recipe.title}
-          </h3>
-          <Badge
-            className={`text-[10px] font-semibold uppercase tracking-wider border-0 px-2 py-0.5 ${DIFFICULTY_STYLES[recipe.difficulty]}`}
-          >
-            {recipe.difficulty}
-          </Badge>
+    <tr className="group border-b border-zinc-100 dark:border-zinc-800 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
+      <td className="py-3 pl-4 pr-3">
+        <div className="flex items-center gap-3">
+          <div className="relative h-10 w-14 rounded-lg overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
+            <Image
+              src={recipe.images[0]}
+              alt={recipe.title}
+              fill
+              className="object-cover"
+              sizes="56px"
+            />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground truncate max-w-[240px]">
+              {recipe.title}
+            </p>
+            <p className="text-xs text-zinc-400 mt-0.5 line-clamp-1 max-w-[240px]">
+              {recipe.description}
+            </p>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-          {recipe.description}
-        </p>
-        <div className="flex items-center gap-3 mt-1.5">
-          <span className="text-xs text-muted-foreground">
-            ❤️ {recipe.lovedCount.toLocaleString()}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            🔖 {recipe.savedCount.toLocaleString()}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {recipe.tags
-              .slice(0, 2)
-              .map((t) => `#${t}`)
-              .join(" ")}
-          </span>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center gap-2 shrink-0">
-        <Link href={`/chef/recipes/${recipe._id}/edit`}>
-          <Button variant="outline" size="sm" className="h-8 gap-1.5">
-            <PencilSimpleIcon size={14} weight="bold" />
-            Edit
-          </Button>
-        </Link>
-
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1.5 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900/50"
+      </td>
+      <td className="py-3 px-3 hidden sm:table-cell">
+        <span
+          className={`inline-flex px-2 py-0.5 rounded-md text-[11px] font-medium capitalize ${DIFFICULTY_BADGE[recipe.difficulty]}`}
+        >
+          {recipe.difficulty}
+        </span>
+      </td>
+      <td className="py-3 px-3 hidden md:table-cell">
+        <div className="flex flex-wrap gap-1">
+          {recipe.tags.slice(0, 2).map((t) => (
+            <span
+              key={t}
+              className="px-1.5 py-0.5 text-[11px] rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
             >
-              <TrashIcon size={14} weight="bold" />
-              Delete
+              #{t}
+            </span>
+          ))}
+        </div>
+      </td>
+      <td className="py-3 px-3 hidden lg:table-cell text-xs text-zinc-400 tabular-nums">
+        {recipe.lovedCount.toLocaleString()} / {recipe.savedCount.toLocaleString()}
+      </td>
+      <td className="py-3 pl-3 pr-4">
+        <div className="flex items-center gap-1.5 justify-end">
+          <Link href={`/chef/recipes/${recipe._id}/edit`}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 gap-1.5 text-xs text-zinc-500 hover:text-foreground px-2.5"
+            >
+              <PencilSimpleIcon size={13} />
+              Edit
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent className="rounded-2xl">
-            <AlertDialogHeader>
-              <div className="flex items-center gap-3 mb-1">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30">
-                  <WarningCircleIcon
-                    size={20}
-                    weight="fill"
-                    className="text-red-500"
-                  />
-                </span>
-                <AlertDialogTitle>Delete Recipe</AlertDialogTitle>
-              </div>
-              <AlertDialogDescription>
-                Are you sure you want to delete{" "}
-                <strong>&quot;{recipe.title}&quot;</strong>? This action cannot
-                be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="rounded-xl">
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onDelete(recipe._id)}
-                disabled={isDeleting}
-                className="bg-red-500 hover:bg-red-600 rounded-xl"
+          </Link>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
               >
-                {isDeleting ? (
-                  <GridLoader label="Deleting recipe..." />
-                ) : (
-                  "Delete"
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-    </div>
+                <TrashIcon size={13} />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="rounded-xl max-w-sm">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete recipe?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  <strong>&quot;{recipe.title}&quot;</strong> will be permanently
+                  removed. This cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="rounded-lg h-9">
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => onDelete(recipe._id)}
+                  disabled={isDeleting}
+                  className="bg-red-500 hover:bg-red-600 rounded-lg h-9 text-white"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </td>
+    </tr>
   );
 }
 
@@ -165,9 +152,7 @@ export default function ChefRecipesPage() {
   const handleDelete = (id: string) => {
     deleteRecipe(id, {
       onSuccess: () =>
-        toast.success("Recipe deleted successfully!", {
-          position: "bottom-right",
-        }),
+        toast.success("Recipe deleted.", { position: "bottom-right" }),
       onError: () =>
         toast.error("Failed to delete recipe.", { position: "bottom-right" }),
     });
@@ -175,89 +160,105 @@ export default function ChefRecipesPage() {
 
   return (
     <>
-      <title>My Recipes – Chefalio Chef</title>
+      <title>Recipes – Chefalio</title>
 
-      <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="space-y-5 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
-              <ForkKnifeIcon size={22} weight="fill" className="text-primary" />
+            <h1 className="text-base font-semibold text-foreground">
               My Recipes
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Manage all your published recipes
+            <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
+              {myRecipes.length} recipe{myRecipes.length !== 1 ? "s" : ""}{" "}
+              published
             </p>
           </div>
           <Link href="/chef/recipes/create">
-            <Button className="gap-2 rounded-xl">
-              <PlusIcon size={16} weight="bold" />
+            <Button size="sm" className="gap-1.5 h-8 text-xs rounded-lg">
+              <PlusIcon size={13} weight="bold" />
               New Recipe
             </Button>
           </Link>
         </div>
 
         {/* Search */}
-        <div className="relative max-w-sm">
+        <div className="relative max-w-xs">
           <MagnifyingGlassIcon
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
           />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search recipes..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-border bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-shadow"
+            placeholder="Search recipes or tags…"
+            className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow placeholder:text-zinc-400"
           />
         </div>
 
-        {/* Content */}
+        {/* Table */}
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <GridLoader label="Loading recipes..." />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 gap-4">
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent">
-              <ForkKnifeIcon
-                size={26}
-                weight="duotone"
-                className="text-primary"
-              />
+          <div className="rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 py-16 flex flex-col items-center gap-3 text-center">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
+              <ForkKnifeIcon size={20} className="text-zinc-400" />
             </span>
-            <div className="text-center">
-              <p className="text-sm font-semibold text-foreground">
-                {search ? "No recipes match your search" : "No recipes yet"}
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {search ? "No recipes found" : "No recipes yet"}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-zinc-400 mt-0.5">
                 {search
-                  ? "Try a different keyword"
+                  ? "Try a different search term"
                   : "Create your first recipe to get started"}
               </p>
             </div>
             {!search && (
               <Link href="/chef/recipes/create">
-                <Button size="sm" className="rounded-xl gap-2">
-                  <PlusIcon size={14} weight="bold" />
+                <Button size="sm" className="rounded-lg gap-1.5 h-8 text-xs mt-1">
+                  <PlusIcon size={13} weight="bold" />
                   Create Recipe
                 </Button>
               </Link>
             )}
           </div>
         ) : (
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">
-              {filtered.length} recipe{filtered.length !== 1 ? "s" : ""}
-            </p>
-            {filtered.map((recipe) => (
-              <RecipeRow
-                key={recipe._id}
-                recipe={recipe}
-                onDelete={handleDelete}
-                isDeleting={isDeleting}
-              />
-            ))}
+          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                  <th className="py-2.5 pl-4 pr-3 text-left text-xs font-medium text-zinc-400">
+                    Recipe
+                  </th>
+                  <th className="py-2.5 px-3 text-left text-xs font-medium text-zinc-400 hidden sm:table-cell">
+                    Difficulty
+                  </th>
+                  <th className="py-2.5 px-3 text-left text-xs font-medium text-zinc-400 hidden md:table-cell">
+                    Tags
+                  </th>
+                  <th className="py-2.5 px-3 text-left text-xs font-medium text-zinc-400 hidden lg:table-cell">
+                    Loves / Saves
+                  </th>
+                  <th className="py-2.5 pl-3 pr-4 text-right text-xs font-medium text-zinc-400">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((recipe) => (
+                  <RecipeRow
+                    key={recipe._id}
+                    recipe={recipe}
+                    onDelete={handleDelete}
+                    isDeleting={isDeleting}
+                  />
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
