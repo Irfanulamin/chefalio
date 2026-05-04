@@ -91,7 +91,7 @@ function RecipeRow({
         <div className="flex items-center gap-1.5 justify-end">
           <Link href={`/chef/recipes/${recipe._id}/edit`}>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               className="h-7 gap-1.5 text-xs text-zinc-500 hover:text-foreground px-2.5"
             >
@@ -103,7 +103,7 @@ function RecipeRow({
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 className="h-7 px-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
               >

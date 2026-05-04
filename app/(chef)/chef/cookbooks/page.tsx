@@ -80,7 +80,7 @@ function CookbookCard({
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 className="h-8 px-2.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"
               >
