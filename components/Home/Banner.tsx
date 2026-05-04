@@ -101,7 +101,7 @@ export const Banner = () => {
 
             <motion.h1
               variants={slideLeft}
-              className="text-xl md:text-2xl lg:text-3xl xl:text-5xl font-bold tracking-tighter bg-linear-to-b dark:from-white from-black to-primary bg-clip-text text-transparent"
+              className="text-3xl xl:text-5xl font-bold tracking-tighter bg-linear-to-b dark:from-white from-black to-primary bg-clip-text text-transparent"
             >
               PRECISION IN EVERY RECIPE. CONFIDENCE IN EVERY DISH.
             </motion.h1>

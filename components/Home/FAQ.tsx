@@ -51,7 +51,7 @@ export const FAQ = () => {
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
           className="mb-16 text-center"
         >
-          <h2 className="text-5xl md:text-7xl font-bold text-primary leading-[1.15] tracking-tight mb-4">
+          <h2 className="text-3xl md:text-7xl font-bold text-primary leading-[1.15] tracking-tight mb-4">
             Questions, <br />
             <em className="not-italic text-black dark:text-white">
               Answered honestly.

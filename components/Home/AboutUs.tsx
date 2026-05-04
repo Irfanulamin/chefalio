@@ -91,7 +91,7 @@ export const AboutUs = () => {
           initial={{ opacity: 0, y: 24 }}
           animate={passionInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="mx-auto max-w-3xl text-center text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.05]"
+          className="mx-auto max-w-3xl text-center text-3xl md:text-7xl font-bold tracking-tight leading-[1.05]"
         >
           Where passion
           <br />
@@ -102,7 +102,7 @@ export const AboutUs = () => {
           initial={{ opacity: 0, y: 24 }}
           animate={passionInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="mx-auto mt-6 max-w-xl text-center text-lg text-black/70 dark:text-white/70 leading-relaxed"
+          className="mx-auto mt-6 max-w-xl text-center text-base md:text-lg text-black/70 dark:text-white/70 leading-relaxed"
         >
           Chefalio connects millions of food lovers with world-class chefs —
           making extraordinary cooking accessible to everyone, everywhere.
@@ -179,7 +179,7 @@ export const AboutUs = () => {
               Our mission
             </span>
 
-            <h2 className="mt-3 text-4xl md:text-5xl font-bold leading-tighter tracking-tight">
+            <h2 className="mt-3 text-3xl md:text-5xl font-bold leading-tighter tracking-tight">
               Revolutionising how the world{" "}
               <span className="text-primary">discovers food</span>
             </h2>
@@ -210,10 +210,10 @@ export const AboutUs = () => {
           transition={{ duration: 0.6 }}
           className="mb-14 text-center"
         >
-          <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+          <span className="text-xs font-semibold uppercase tracking-wide text-primary">
             What drives us
           </span>
-          <h2 className="mt-3 text-4xl font-bold">Our core values</h2>
+          <h2 className="mt-3 text-3xl md:text-4xl font-bold">Our core values</h2>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-5">

@@ -118,7 +118,7 @@ export const Features = () => {
       >
         <motion.h2
           variants={fadeUp}
-          className="text-5xl md:text-7xl tracking-tighter font-bold bg-linear-to-b from-black to-primary dark:from-white dark:to-primary bg-clip-text text-transparent"
+          className="text-3xl md:text-7xl tracking-tighter font-bold bg-linear-to-b from-black to-primary dark:from-white dark:to-primary bg-clip-text text-transparent"
         >
           Discover What Chefalio Can Do
         </motion.h2>
@@ -158,7 +158,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
       <div className="w-fit transition-transform duration-300 ease-out group-hover:scale-[1.08] group-hover:-translate-y-0.5">
         <Image src={feature.icon} width={50} height={50} alt="icon" />
       </div>
-      <h3 className="text-2xl font-semibold tracking-tight mb-2 mt-4 transition-colors duration-300 group-hover:text-primary">
+      <h3 className="text-xl lg:text-2xl font-semibold tracking-tight mb-2 mt-4 transition-colors duration-300 group-hover:text-primary">
         {feature.title}
       </h3>
       <div className="relative">
