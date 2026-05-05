@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, FileRejection } from "react-dropzone";
 import { Field, FieldDescription, FieldLabel } from "../ui/field";
 import {
   InputGroup,
@@ -61,6 +61,8 @@ const ErrorToast = ({ message, onDismiss }: ToastProps) => {
 
 // ── Image Dropzone ────────────────────────────────────────────────────────────
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB — matches backend limit
+
 const ACCEPTED_MIME = [
   "image/png",
   "image/jpeg",
@@ -78,6 +80,7 @@ interface ImageDropzoneFieldProps {
   multiple?: boolean;
   isInvalid?: boolean;
   fieldName: string;
+  maxSize?: number;
 }
 
 const ImageDropzoneField = ({
@@ -87,6 +90,7 @@ const ImageDropzoneField = ({
   multiple = false,
   isInvalid = false,
   fieldName,
+  maxSize = MAX_FILE_SIZE,
 }: ImageDropzoneFieldProps) => {
   const files = useMemo(
     () => (Array.isArray(rawFiles) ? rawFiles : []),
@@ -103,10 +107,26 @@ const ImageDropzoneField = ({
   }, [previews]);
 
   const onDrop = useCallback(
-    (accepted: File[], rejected: { file: File }[]) => {
+    (accepted: File[], rejected: FileRejection[]) => {
       if (rejected.length > 0) {
-        const names = rejected.map((r) => r.file.name).join(", ");
-        setToast(`Only image files are allowed. Rejected: ${names}`);
+        const tooBig = rejected.filter((r) =>
+          r.errors.some((e) => e.code === "file-too-large"),
+        );
+        const wrongType = rejected.filter((r) =>
+          r.errors.some((e) => e.code === "file-invalid-type"),
+        );
+
+        if (tooBig.length > 0) {
+          const limitMB = Math.round(maxSize / (1024 * 1024));
+          const names = tooBig.map((r) => r.file.name).join(", ");
+          setToast(
+            `${names} ${tooBig.length === 1 ? "exceeds" : "exceed"} the ${limitMB} MB limit.`,
+          );
+        } else if (wrongType.length > 0) {
+          setToast(
+            `Invalid file type: ${wrongType.map((r) => r.file.name).join(", ")}`,
+          );
+        }
         return;
       }
 
@@ -118,7 +138,7 @@ const ImageDropzoneField = ({
 
       onChange(multiple ? [...files, ...accepted] : [accepted[0]]);
     },
-    [files, multiple, onChange],
+    [files, maxSize, multiple, onChange],
   );
 
   const { getRootProps, getInputProps, isDragActive, isDragReject } =
@@ -128,6 +148,7 @@ const ImageDropzoneField = ({
         "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".avif"],
       },
       multiple,
+      maxSize,
       onFileDialogCancel: onBlur,
     });
 
@@ -252,7 +273,7 @@ const ImageDropzoneField = ({
                 <span className="text-sky-500 underline underline-offset-2 decoration-dotted">
                   browse
                 </span>
-                {" · PNG, JPG, GIF, WEBP, SVG, AVIF"}
+                {` · PNG, JPG, GIF, WEBP, SVG, AVIF · Max ${Math.round(maxSize / (1024 * 1024))} MB each`}
               </p>
             </div>
           </>
@@ -306,6 +327,7 @@ interface FormFieldProps {
   rows?: number;
   maxLength?: number;
   multiple?: boolean;
+  maxSize?: number;
 }
 
 export const FormField = ({
@@ -318,6 +340,7 @@ export const FormField = ({
   rows,
   maxLength,
   multiple = false,
+  maxSize,
 }: FormFieldProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -345,6 +368,7 @@ export const FormField = ({
                 multiple={multiple}
                 isInvalid={isInvalid}
                 fieldName={field.name}
+                maxSize={maxSize}
               />
             ) : isTextArea ? (
               <InputGroup>

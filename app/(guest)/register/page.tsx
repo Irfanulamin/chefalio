@@ -4,6 +4,7 @@ import AuthLayout from "@/components/common/AuthLayout";
 import { FormField } from "@/components/common/FormField";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
+import { OAuthButtons } from "@/components/common/OAuthButtons";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -110,6 +111,19 @@ export default function RegisterPage() {
           {isSubmitting ? "Creating account..." : "Create Account"}
         </Button>
       </form>
+
+      <div className="relative my-2">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-zinc-200 dark:border-zinc-700" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white dark:bg-zinc-950 px-2 text-zinc-400">
+            or sign up with
+          </span>
+        </div>
+      </div>
+
+      <OAuthButtons />
 
       <p className="text-sm text-center text-gray-500 tracking-wide">
         Already have an account?{" "}
