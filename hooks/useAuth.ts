@@ -72,6 +72,8 @@ export function useAuth() {
         router.push("/recipes");
       } else if (data.role === "chef") {
         router.push("/chef/dashboard");
+      } else if (data.role === "admin") {
+        router.push("/admin/dashboard");
       }
     },
     // 👇 do NOT redirect on error, just let it throw back to the caller
@@ -89,6 +91,8 @@ export function useAuth() {
         router.push("/recipes");
       } else if (data.role === "chef") {
         router.push("/chef/dashboard");
+      } else if (data.role === "admin") {
+        router.push("/admin/dashboard");
       }
     },
     // 👇 do NOT redirect on error, just let it throw back to the caller
@@ -173,3 +177,4 @@ export function useProfile() {
     isUpdatingProfile: updateMeMutation.isPending,
   };
 }
+
