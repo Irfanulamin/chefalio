@@ -18,7 +18,7 @@ export interface AdminUser {
   role: "user" | "chef" | "admin";
   profile_url: string;
   isActive: boolean;
-  authProvider: "local" | "google" | "facebook";
+  authProvider: "local" | "google";
 }
 
 export interface AllUsersResponse {

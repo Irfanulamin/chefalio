@@ -1,5 +1,6 @@
 import Footer from "@/components/common/Footer";
 import { Header } from "@/components/common/Header";
+import GuestOnlyRoute from "@/components/common/GuestOnlyRoute";
 
 export default function GuestLayout({
   children,
@@ -7,10 +8,10 @@ export default function GuestLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <GuestOnlyRoute>
       <Header />
       {children}
       <Footer />
-    </>
+    </GuestOnlyRoute>
   );
 }
