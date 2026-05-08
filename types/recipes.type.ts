@@ -62,3 +62,10 @@ export interface SavedRecipe {
   savedAt: string | null;
   updatedAt: string;
 }
+
+export interface RecipeStats {
+  isLoved: boolean;
+  isSaved: boolean;
+}
+
+export type BatchStatsMap = Record<string, RecipeStats>;

@@ -1,44 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "./axios";
 import { useRouter } from "next/navigation";
+import type {
+  Cookbook,
+  GetCookbooksResponse,
+  GetCookbookResponse,
+} from "@/types/cookbook.type";
 
-export interface Author {
-  _id: string;
-  fullName: string;
-  username: string;
-  email: string;
-  profile_url: string; // was: userId: string + image?: string
-}
-
-export interface Cookbook {
-  _id: string;
-  title: string;
-  description: string;
-  authorId: Author; // was: author: Author
-  cookbook_image: string;
-  price: number;
-  stockCount: number;
-}
-
-export interface Pagination {
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-export interface GetCookbooksResponse {
-  success: boolean;
-  message: string;
-  data: Cookbook[];
-  pagination: Pagination;
-}
-
-export interface GetCookbookResponse {
-  success: boolean;
-  message: string;
-  data: Cookbook;
-}
+export type { Cookbook, GetCookbooksResponse, GetCookbookResponse };
 
 export function useCookbooks(params?: {
   page?: number;

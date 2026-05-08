@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useMyCookbooks, useDeleteCookbook } from "@/hooks/useChefs";
-import { Cookbook } from "@/hooks/useCookbook";
+import type { Cookbook } from "@/types/cookbook.type";
 import { Button } from "@/components/ui/button";
 import {
   PlusIcon,

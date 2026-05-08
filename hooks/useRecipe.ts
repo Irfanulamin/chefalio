@@ -1,20 +1,15 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import axiosInstance from "./axios/interceptors";
-import {
+import type {
   Recipe,
   RecipeApiResponse,
   SavedRecipeApiResponse,
+  RecipeStats,
+  BatchStatsMap,
 } from "@/types/recipes.type";
 
-// Shape of one recipe's stats
-export interface RecipeStats {
-  isLoved: boolean;
-  isSaved: boolean;
-}
-
-// Shape of the batch response: { [recipeId]: RecipeStats }
-export type BatchStatsMap = Record<string, RecipeStats>;
+export type { RecipeStats, BatchStatsMap };
 
 /* =========================
    1. RECIPES LIST HOOK
@@ -75,13 +70,9 @@ export function useSingleRecipe(id?: string) {
 
 /* =========================
    2. BATCH STATS HOOK
-   — replaces useRecipeStats for the grid/list.
-   — Call once with the current page's recipe IDs.
-   — Returns the full map + a helper to read one entry.
 ========================= */
 export function useBatchRecipeStats(recipeIds: string[]) {
   const { data, isLoading, isFetching } = useQuery({
-    // Key includes the sorted IDs so different pages get different cache entries
     queryKey: ["recipe-stats-batch", [...recipeIds].sort().join(",")],
     queryFn: () =>
       axiosInstance
@@ -92,7 +83,6 @@ export function useBatchRecipeStats(recipeIds: string[]) {
     placeholderData: (prev) => prev,
   });
 
-  // Helper: statsFor(id) always returns something safe
   const statsFor = (id: string): RecipeStats =>
     data?.[id] ?? { isLoved: false, isSaved: false };
 
@@ -101,8 +91,6 @@ export function useBatchRecipeStats(recipeIds: string[]) {
 
 /* =========================
    3. SINGLE RECIPE STATS HOOK
-   — kept only for the detail page (/recipes/[id])
-   — do NOT use this in grids/lists
 ========================= */
 export function useRecipeStats(id?: string) {
   const { data, isLoading, isFetching, error } = useQuery({
@@ -120,8 +108,6 @@ export function useRecipeStats(id?: string) {
 
 /* =========================
    SHARED CACHE PATCHER
-   Patches every cached "recipes" page that contains the target id.
-   Works correctly on page 4, page 10, any page.
 ========================= */
 function patchRecipesCache(id: string, patch: Partial<Recipe>) {
   queryClient.setQueriesData<RecipeApiResponse>(
@@ -141,7 +127,6 @@ function patchRecipesCache(id: string, patch: Partial<Recipe>) {
   );
 }
 
-// Patches the batch-stats cache entry that contains this recipe id
 function patchBatchStatsCache(id: string, patch: Partial<RecipeStats>) {
   queryClient.setQueriesData<BatchStatsMap>(
     { queryKey: ["recipe-stats-batch"], exact: false },
@@ -166,12 +151,10 @@ export function useToggleLove() {
         .then((res) => res.data),
 
     onMutate: async (id) => {
-      // Cancel any in-flight refetches so they don't stomp our optimistic update
       await queryClient.cancelQueries({ queryKey: ["recipe-stats-batch"] });
       await queryClient.cancelQueries({ queryKey: ["recipe-stats", id] });
       await queryClient.cancelQueries({ queryKey: ["recipes"] });
 
-      // Snapshot current state from the batch cache (works on any page)
       const batchEntries = queryClient.getQueriesData<BatchStatsMap>({
         queryKey: ["recipe-stats-batch"],
       });
@@ -179,14 +162,12 @@ export function useToggleLove() {
         .map(([, map]) => map?.[id])
         .find(Boolean) ?? { isLoved: false, isSaved: false };
 
-      // Snapshot for rollback
       const previousBatch = batchEntries;
       const previousSingle = queryClient.getQueryData<RecipeStats>([
         "recipe-stats",
         id,
       ]);
 
-      // Find current lovedCount from whichever cached recipes page holds this recipe
       const allRecipePages = queryClient.getQueriesData<RecipeApiResponse>({
         queryKey: ["recipes"],
       });
@@ -196,17 +177,14 @@ export function useToggleLove() {
 
       const wasLoved = currentStats.isLoved;
 
-      // Optimistically update the batch stats cache
       patchBatchStatsCache(id, { isLoved: !wasLoved });
 
-      // Optimistically update the single stats cache (detail page)
       queryClient.setQueryData(
         ["recipe-stats", id],
         (old: RecipeStats | undefined) =>
           old ? { ...old, isLoved: !wasLoved } : old,
       );
 
-      // Optimistically update the lovedCount in the recipe list
       if (currentRecipe) {
         patchRecipesCache(id, {
           lovedCount: wasLoved
@@ -219,7 +197,6 @@ export function useToggleLove() {
     },
 
     onError: (_err, id, context) => {
-      // Roll back everything
       if (context?.previousBatch) {
         context.previousBatch.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
@@ -228,12 +205,10 @@ export function useToggleLove() {
       if (context?.previousSingle !== undefined) {
         queryClient.setQueryData(["recipe-stats", id], context.previousSingle);
       }
-      // Re-fetch recipes list to restore counts
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
     },
 
     onSettled: (_data, _error, id) => {
-      // Re-sync in background — the optimistic update already made UI feel instant
       queryClient.invalidateQueries({ queryKey: ["recipe-stats-batch"] });
       queryClient.invalidateQueries({ queryKey: ["recipe-stats", id] });
       queryClient.invalidateQueries({ queryKey: ["loved-recipes"] });

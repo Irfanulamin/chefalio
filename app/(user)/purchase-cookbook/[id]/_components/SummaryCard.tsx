@@ -1,4 +1,4 @@
-import { Cookbook } from "@/hooks/useCookbook";
+import type { Cookbook } from "@/types/cookbook.type";
 import Image from "next/image";
 
 export const SummaryCard = ({ cookbook }: { cookbook: Cookbook }) => {

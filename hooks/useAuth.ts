@@ -2,50 +2,18 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import axiosInstance from "./axios/interceptors";
 import { queryClient } from "@/lib/queryClient";
+import type {
+  Me,
+  LoginPayload,
+  RegisterPayload,
+  ForgotPasswordPayload,
+  ResetPasswordPayload,
+  Profile,
+  UpdateUserPayload,
+  ChangePasswordPayload,
+} from "@/types/auth.type";
 
-interface Me {
-  userId: string;
-  role: string;
-}
-
-interface LoginPayload {
-  usernameOrEmail: string;
-  password: string;
-}
-
-interface RegisterPayload {
-  fullName: string;
-  username: string;
-  email: string;
-  password: string;
-}
-
-interface forgotPasswordPayload {
-  email: string;
-}
-
-interface ResetPasswordPayload {
-  resetToken: string;
-  newPassword: string;
-}
-
-interface Profile {
-  fullName: string;
-  username: string;
-  email: string;
-  profile_url: string;
-  role: string;
-}
-
-interface UpdateUserPayload {
-  fullName?: string;
-  image?: File[]; // this will be a File object or URL string
-}
-
-interface changePasswordPayload {
-  currentPassword: string;
-  newPassword: string;
-}
+export type { Me, LoginPayload, RegisterPayload, Profile, UpdateUserPayload };
 
 export function useAuth() {
   const router = useRouter();
@@ -76,7 +44,6 @@ export function useAuth() {
         router.push("/admin/dashboard");
       }
     },
-    // 👇 do NOT redirect on error, just let it throw back to the caller
     onError: () => {},
   });
 
@@ -95,7 +62,6 @@ export function useAuth() {
         router.push("/admin/dashboard");
       }
     },
-    // 👇 do NOT redirect on error, just let it throw back to the caller
     onError: () => {},
   });
 
@@ -108,23 +74,21 @@ export function useAuth() {
   });
 
   const forgotPasswordMutation = useMutation({
-    mutationFn: (data: forgotPasswordPayload) =>
+    mutationFn: (data: ForgotPasswordPayload) =>
       axiosInstance.post("/auth/forgot-password", data),
-    // No need to handle onSuccess or onError here, the form can handle it directly
   });
 
   const resetPasswordMutation = useMutation({
     mutationFn: (data: ResetPasswordPayload) =>
       axiosInstance.post("/auth/reset-password", data),
     onSuccess: () => {
-      // Pass a flag via query param so the login page can show a toast
       router.push("/login?reset=success");
     },
     onError: () => {},
   });
 
   const changePasswordMutation = useMutation({
-    mutationFn: (data: changePasswordPayload) =>
+    mutationFn: (data: ChangePasswordPayload) =>
       axiosInstance.post("/auth/change-password", data),
     onSuccess: () => {},
   });
@@ -133,8 +97,8 @@ export function useAuth() {
     user,
     isLoading,
     isAuthenticated: !!user,
-    register: registerMutation.mutateAsync, // mutateAsync re-throws so the form can catch it
-    login: loginMutation.mutateAsync, // mutateAsync re-throws so the form can catch it
+    register: registerMutation.mutateAsync,
+    login: loginMutation.mutateAsync,
     logout: logoutMutation.mutate,
     isLoginLoading: loginMutation.isPending,
     forgotPassword: forgotPasswordMutation.mutateAsync,
@@ -177,4 +141,3 @@ export function useProfile() {
     isUpdatingProfile: updateMeMutation.isPending,
   };
 }
-

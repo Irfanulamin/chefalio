@@ -4,7 +4,7 @@ import { useForm } from "@tanstack/react-form";
 import { FormField } from "@/components/common/FormField";
 import { Button } from "@/components/ui/button";
 import z from "zod";
-import { Cookbook } from "@/hooks/useCookbook";
+import type { Cookbook } from "@/types/cookbook.type";
 import Image from "next/image";
 
 interface CookbookFormValues {

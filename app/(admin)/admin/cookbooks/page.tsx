@@ -6,7 +6,7 @@ import {
   useAdminDeleteCookbook,
   useAdminUpdateCookbook,
 } from "@/hooks/useAdmin";
-import type { Cookbook } from "@/hooks/useCookbook";
+import type { Cookbook } from "@/types/cookbook.type";
 import Image from "next/image";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";

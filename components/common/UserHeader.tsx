@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ProfileDropdown } from "./ProfileDropdown";
+import { AIAssistantSheet } from "./AIAssistantSheet";
 
 const navLinks = [
   { label: "Recipes", href: "/recipes" },
@@ -39,6 +40,7 @@ export const UserHeader = () => {
             {/* Desktop */}
             <nav className="hidden lg:flex gap-x-7 gap-y-4 text-muted-foreground items-center">
               <ToggleThemeButton />
+              <AIAssistantSheet />
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
@@ -60,6 +62,7 @@ export const UserHeader = () => {
             {/* Mobile */}
             <div className="lg:hidden flex items-center gap-3">
               <ToggleThemeButton />
+              <AIAssistantSheet />
               <ProfileDropdown />
               <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger asChild>
