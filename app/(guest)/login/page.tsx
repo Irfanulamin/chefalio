@@ -61,6 +61,16 @@ function LoginForm() {
   ];
 
   const justReset = searchParams.get("reset") === "success";
+  const oauthError = searchParams.get("error");
+
+  const oauthErrorMessages: Record<string, string> = {
+    oauth_failed: "Google sign-in was cancelled or failed. Please try again.",
+    account_deactivated:
+      "Your account has been deactivated. Please contact support.",
+  };
+  const oauthErrorMessage = oauthError
+    ? (oauthErrorMessages[oauthError] ?? "Something went wrong. Please try again.")
+    : null;
 
   return (
     <AuthLayout
@@ -73,6 +83,10 @@ function LoginForm() {
         {justReset ? (
           <div className="flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/30 px-4 py-3 text-sm text-[#7A9A20] dark:text-primary">
             Password reset successfully. Sign in with your new password.
+          </div>
+        ) : oauthErrorMessage ? (
+          <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+            {oauthErrorMessage}
           </div>
         ) : (
           <p className="text-sm text-gray-500">
