@@ -149,20 +149,19 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 py-5 md:py-10">
+      <div className="max-w-7xl mx-auto px-3 my-4 md:my-8 space-y-6">
         {/* Page header */}
-        <div className="mb-10">
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Account Settings
+        <div className="pb-5 border-b border-zinc-200 dark:border-zinc-800">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Settings
           </h1>
-          <p className="mt-1 text-sm text-zinc-400 dark:text-zinc-500">
-            Manage your profile and security preferences to keep your account up
-            to date and secure.
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400 max-w-xl">
+            Manage your profile and security preferences to keep your account up to date and secure.
           </p>
         </div>
 
         {/* Tab bar */}
-        <div className="flex gap-1 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 mb-8 w-fit">
+        <div className="flex gap-1 p-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 w-fit">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -171,8 +170,8 @@ export default function SettingsPage() {
               className={[
                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                 activeTab === id
-                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 shadow-sm border border-zinc-200 dark:border-zinc-700"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200",
+                  ? "bg-white dark:bg-zinc-900 text-foreground shadow-sm border border-zinc-200 dark:border-zinc-700"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-foreground",
               ].join(" ")}
             >
               <Icon
@@ -188,17 +187,9 @@ export default function SettingsPage() {
         {activeTab === "profile" && (
           <div className="space-y-6">
             {/* Profile card */}
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
               {/* Banner */}
-              <div className="h-24 from-lime-400 via-lime-500 to-green-500 relative bg-linear-to-r">
-                <div
-                  className="absolute inset-0 opacity-30"
-                  style={{
-                    backgroundImage: `radial-gradient(circle at 20% 50%, rgba(56,189,248,0.3) 0%, transparent 50%),
-                                      radial-gradient(circle at 80% 50%, rgba(167,139,250,0.2) 0%, transparent 50%)`,
-                  }}
-                />
-              </div>
+              <div className="h-20 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700" />
 
               <div className="px-6 pb-6">
                 <div className="flex items-end justify-between -mt-10 mb-5">
@@ -211,22 +202,22 @@ export default function SettingsPage() {
                       alt="Profile"
                       width={100}
                       height={100}
-                      className="object-cover w-20 h-20 rounded-full border-4 border-lime-400"
+                      className="object-cover w-20 h-20 rounded-full border-4 border-white dark:border-zinc-900"
                     />
                     <span className="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900" />
                   </div>
                 </div>
 
                 <div className="mb-5">
-                  <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 leading-tight">
+                  <h2 className="text-lg font-bold text-foreground leading-tight">
                     {profile?.fullName || "Your Name"}
                   </h2>
-                  <p className="text-sm text-zinc-400 dark:text-zinc-500">
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
                     @{profile?.username || "username"}
                   </p>
                 </div>
 
-                <div className="rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 px-4 py-1">
+                <div className="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 px-4 py-1">
                   <InfoRow
                     icon={EnvelopeIcon}
                     label="Email"
@@ -246,7 +237,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
@@ -282,7 +273,7 @@ export default function SettingsPage() {
         {activeTab === "security" && (
           <div className="space-y-6">
             {/* Security status card */}
-            <div className="rounded-2xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/90 dark:bg-emerald-950/20 p-5 flex items-start gap-4">
+            <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/20 p-5 flex items-start gap-4">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800">
                 <ShieldCheckIcon
                   size={20}
@@ -303,7 +294,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Password form */}
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
               <div className="flex items-center gap-3 mb-6">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
                   <LockKeyIcon

@@ -52,9 +52,9 @@ export function ImageCarousel({
   return (
     <div className="mb-10">
       <div
-        className="relative bg-[#eeeae4] dark:bg-[#1a1714] rounded-3xl p-3
-          shadow-sm border border-[#e2ddd8] dark:border-[#35312c]
-          transition-shadow duration-300 hover:shadow-lg dark:hover:shadow-black/40"
+        className="relative bg-zinc-100 dark:bg-zinc-900 rounded-2xl p-3
+          border border-zinc-200 dark:border-zinc-800
+          transition-shadow duration-300 hover:shadow-md"
       >
         {/* Main image */}
         <div className="relative rounded-2xl overflow-hidden w-full aspect-square mb-3">
@@ -140,7 +140,7 @@ export function ImageCarousel({
                     transition-all duration-200 ring-2
                     ${
                       activeIndex === i
-                        ? "opacity-100 ring-[#1a1714] dark:ring-[#f0ede8] scale-[1.04]"
+                        ? "opacity-100 ring-zinc-900 dark:ring-zinc-100 scale-[1.04]"
                         : "opacity-50 ring-transparent hover:opacity-70 hover:scale-[1.02]"
                     }`}
                 >

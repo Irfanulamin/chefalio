@@ -13,15 +13,15 @@ import { memo, useCallback } from "react";
 const difficultyConfig: Record<string, { label: string; className: string }> = {
   beginner: {
     label: "Beginner",
-    className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+    className: "bg-emerald-600 text-white",
   },
   intermediate: {
     label: "Intermediate",
-    className: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    className: "bg-amber-500 text-white",
   },
   advance: {
     label: "Advanced",
-    className: "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    className: "bg-red-600 text-white",
   },
 };
 
