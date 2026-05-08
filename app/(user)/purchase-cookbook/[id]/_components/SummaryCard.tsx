@@ -74,12 +74,26 @@ export const SummaryCard = ({ cookbook }: { cookbook: Cookbook }) => {
           </span>
         </div>
 
-        {/* Price (important for checkout) */}
+        {/* Price */}
         <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Price</span>
-          <span className="text-lg font-semibold text-foreground">
-            ${cookbook.price.toFixed(2)}
-          </span>
+          {(cookbook.discount ?? 0) > 0 ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground line-through">
+                ${cookbook.price.toFixed(2)}
+              </span>
+              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded-full">
+                -{cookbook.discount}%
+              </span>
+              <span className="text-lg font-semibold text-foreground">
+                ${(cookbook.price * (1 - cookbook.discount / 100)).toFixed(2)}
+              </span>
+            </div>
+          ) : (
+            <span className="text-lg font-semibold text-foreground">
+              ${cookbook.price.toFixed(2)}
+            </span>
+          )}
         </div>
       </div>
     </div>

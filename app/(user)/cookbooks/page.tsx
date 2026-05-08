@@ -180,6 +180,11 @@ export default function CookbooksPage() {
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
+                  {(cookbook.discount ?? 0) > 0 && (
+                    <span className="absolute top-2.5 left-2.5 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-500 text-white">
+                      -{cookbook.discount}%
+                    </span>
+                  )}
                   <span
                     className={cn(
                       "absolute top-2.5 right-2.5 text-[11px] font-medium px-2 py-0.5 rounded-md",
@@ -232,18 +237,36 @@ export default function CookbooksPage() {
 
                   <div className="mt-auto pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                     <div>
-                      <p className="text-lg font-bold text-foreground">
-                        ${cookbook.price.toFixed(2)}
-                      </p>
-                      <p className="text-[11px] text-zinc-400 flex items-center gap-1">
-                        <span
-                          className={cn(
-                            "w-1.5 h-1.5 rounded-full inline-block",
-                            cookbook.stockCount <= 3 ? "bg-orange-500" : "bg-emerald-500",
-                          )}
-                        />
-                        {cookbook.stockCount <= 3 ? "Almost gone" : "In stock"}
-                      </p>
+                      {(cookbook.discount ?? 0) > 0 ? (
+                        <>
+                          <div className="flex items-baseline gap-1.5">
+                            <p className="text-lg font-bold text-foreground">
+                              ${(cookbook.price * (1 - cookbook.discount / 100)).toFixed(2)}
+                            </p>
+                            <p className="text-xs text-zinc-400 line-through">
+                              ${cookbook.price.toFixed(2)}
+                            </p>
+                          </div>
+                          <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                            {cookbook.discount}% off
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-lg font-bold text-foreground">
+                            ${cookbook.price.toFixed(2)}
+                          </p>
+                          <p className="text-[11px] text-zinc-400 flex items-center gap-1">
+                            <span
+                              className={cn(
+                                "w-1.5 h-1.5 rounded-full inline-block",
+                                cookbook.stockCount <= 3 ? "bg-orange-500" : "bg-emerald-500",
+                              )}
+                            />
+                            {cookbook.stockCount <= 3 ? "Almost gone" : "In stock"}
+                          </p>
+                        </>
+                      )}
                     </div>
                     <Link href={`/purchase-cookbook/${cookbook._id}`}>
                       <Button

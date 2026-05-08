@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   useAdminCookbooks,
   useAdminDeleteCookbook,
   useAdminUpdateCookbook,
+  useAdminApplyGlobalDiscount,
 } from "@/hooks/useAdmin";
 import type { Cookbook } from "@/types/cookbook.type";
 import Image from "next/image";
@@ -17,6 +18,7 @@ import {
   CaretLeftIcon,
   CaretRightIcon,
   PencilSimpleIcon,
+  TagIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import {
   AlertDialog,
@@ -38,12 +40,21 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
+const DISCOUNT_PRESETS = [
+  { label: "Off", value: 0 },
+  { label: "5%", value: 5 },
+  { label: "10%", value: 10 },
+  { label: "15%", value: 15 },
+];
+
 export default function AdminCookbooksPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounce(search, 400);
   const [page, setPage] = useState(1);
   const [editTarget, setEditTarget] = useState<Cookbook | null>(null);
-  const [editForm, setEditForm] = useState({ price: "", stockCount: "" });
+  const [editForm, setEditForm] = useState({ price: "", stockCount: "", discount: "" });
+  const [sortBy, setSortBy] = useState<"none" | "price-asc" | "price-desc" | "stock-asc" | "stock-desc">("none");
+  const [pendingGlobalDiscount, setPendingGlobalDiscount] = useState<number | null>(null);
 
   const { cookbooks, pagination, isLoading, isFetching } = useAdminCookbooks({
     page,
@@ -53,6 +64,16 @@ export default function AdminCookbooksPage() {
 
   const deleteCookbook = useAdminDeleteCookbook();
   const updateCookbook = useAdminUpdateCookbook();
+  const applyGlobalDiscount = useAdminApplyGlobalDiscount();
+
+  const sortedCookbooks = useMemo(() => {
+    const list = [...cookbooks];
+    if (sortBy === "price-asc") list.sort((a, b) => a.price - b.price);
+    else if (sortBy === "price-desc") list.sort((a, b) => b.price - a.price);
+    else if (sortBy === "stock-asc") list.sort((a, b) => a.stockCount - b.stockCount);
+    else if (sortBy === "stock-desc") list.sort((a, b) => b.stockCount - a.stockCount);
+    return list;
+  }, [cookbooks, sortBy]);
 
   async function handleDelete(id: string) {
     try {
@@ -68,6 +89,7 @@ export default function AdminCookbooksPage() {
     setEditForm({
       price: String(cookbook.price),
       stockCount: String(cookbook.stockCount),
+      discount: String(cookbook.discount ?? 0),
     });
   }
 
@@ -76,19 +98,39 @@ export default function AdminCookbooksPage() {
     if (!editTarget) return;
     const price = parseFloat(editForm.price);
     const stockCount = parseInt(editForm.stockCount, 10);
+    const discount = parseInt(editForm.discount, 10);
     if (isNaN(price) || price < 0 || isNaN(stockCount) || stockCount < 0) {
       toast.error("Invalid price or stock count");
+      return;
+    }
+    if (isNaN(discount) || discount < 0 || discount > 15) {
+      toast.error("Discount must be between 0% and 15%");
       return;
     }
     try {
       await updateCookbook.mutateAsync({
         id: editTarget._id,
-        payload: { price, stockCount },
+        payload: { price, stockCount, discount },
       });
       toast.success("Cookbook updated");
       setEditTarget(null);
     } catch {
       toast.error("Failed to update cookbook");
+    }
+  }
+
+  async function handleGlobalDiscount() {
+    if (pendingGlobalDiscount === null) return;
+    try {
+      await applyGlobalDiscount.mutateAsync(pendingGlobalDiscount);
+      toast.success(
+        pendingGlobalDiscount === 0
+          ? "Global discount removed"
+          : `${pendingGlobalDiscount}% discount applied to all cookbooks`,
+      );
+      setPendingGlobalDiscount(null);
+    } catch {
+      toast.error("Failed to apply global discount");
     }
   }
 
@@ -103,7 +145,7 @@ export default function AdminCookbooksPage() {
         <div>
           <h1 className="text-lg font-semibold text-foreground">Cookbooks</h1>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
-            {pagination?.total ?? 0} total cookbooks
+            Manage cookbook listings — edit pricing, stock, discount, and remove any cookbook · {pagination?.total ?? 0} total
           </p>
         </div>
 
@@ -118,7 +160,7 @@ export default function AdminCookbooksPage() {
             </DialogHeader>
             {editTarget && (
               <form onSubmit={handleUpdate} className="space-y-4 pt-1">
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 min-w-0">
                   <div className="relative h-10 w-10 rounded-md overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
                     {editTarget.cookbook_image && (
                       <Image
@@ -130,7 +172,7 @@ export default function AdminCookbooksPage() {
                       />
                     )}
                   </div>
-                  <p className="text-sm font-medium text-foreground truncate">
+                  <p className="text-sm font-medium text-foreground truncate min-w-0 flex-1">
                     {editTarget.title}
                   </p>
                 </div>
@@ -171,6 +213,38 @@ export default function AdminCookbooksPage() {
                     />
                   </div>
                 </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                    Discount (0–15%)
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    {DISCOUNT_PRESETS.map((p) => (
+                      <button
+                        key={p.value}
+                        type="button"
+                        onClick={() => setEditForm((f) => ({ ...f, discount: String(p.value) }))}
+                        className={[
+                          "flex-1 py-1.5 text-xs rounded-lg border transition-colors",
+                          parseInt(editForm.discount, 10) === p.value
+                            ? "border-primary bg-primary/10 text-primary font-medium"
+                            : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground",
+                        ].join(" ")}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    type="number"
+                    min="0"
+                    max="15"
+                    step="1"
+                    value={editForm.discount}
+                    onChange={(e) => setEditForm((f) => ({ ...f, discount: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    placeholder="Custom (0-15)"
+                  />
+                </div>
                 <DialogFooter>
                   <button
                     type="button"
@@ -192,22 +266,109 @@ export default function AdminCookbooksPage() {
           </DialogContent>
         </Dialog>
 
-        {/* Search */}
-        <div className="relative max-w-sm">
-          <MagnifyingGlassIcon
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none"
-          />
-          <input
-            type="text"
-            placeholder="Search cookbooks..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-          />
+        {/* Global Discount Section */}
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
+            <TagIcon size={16} className="text-zinc-400" />
+            <span className="text-sm font-medium text-foreground">Global Discount</span>
+          </div>
+          <p className="text-xs text-zinc-400 flex-1 min-w-0">
+            Apply a site-wide discount to all cookbooks at once (max 15%).
+          </p>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {DISCOUNT_PRESETS.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => setPendingGlobalDiscount(p.value)}
+                className={[
+                  "px-3 py-1.5 text-xs rounded-lg border transition-colors",
+                  pendingGlobalDiscount === p.value
+                    ? "border-primary bg-primary/10 text-primary font-medium"
+                    : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground",
+                ].join(" ")}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                disabled={pendingGlobalDiscount === null || applyGlobalDiscount.isPending}
+                className="px-3 py-1.5 text-xs rounded-lg bg-primary text-black font-medium hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
+              >
+                {applyGlobalDiscount.isPending ? "Applying…" : "Apply"}
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Apply global discount?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {pendingGlobalDiscount === 0
+                    ? "This will remove the discount from all cookbooks."
+                    : `This will apply a ${pendingGlobalDiscount}% discount to all cookbooks on the platform.`}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setPendingGlobalDiscount(null)}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleGlobalDiscount}
+                  className="bg-primary text-black hover:bg-primary/90 border-0"
+                >
+                  Confirm
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+
+        {/* Search + Sort */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative max-w-sm flex-1">
+            <MagnifyingGlassIcon
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none"
+            />
+            <input
+              type="text"
+              placeholder="Search cookbooks..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            />
+          </div>
+
+          {/* Sort buttons */}
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-xs text-zinc-400 mr-1">Sort:</span>
+            {(
+              [
+                { label: "None", value: "none" },
+                { label: "Price ↑", value: "price-asc" },
+                { label: "Price ↓", value: "price-desc" },
+                { label: "Stock ↑", value: "stock-asc" },
+                { label: "Stock ↓", value: "stock-desc" },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setSortBy(opt.value)}
+                className={[
+                  "px-2.5 py-1 text-xs rounded-lg border transition-colors",
+                  sortBy === opt.value
+                    ? "border-primary bg-primary/10 text-primary font-medium"
+                    : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground",
+                ].join(" ")}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Table */}
@@ -226,6 +387,7 @@ export default function AdminCookbooksPage() {
                     <th className="text-left px-4 py-3 hidden sm:table-cell"><Skeleton className="h-3 w-12" /></th>
                     <th className="text-left px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-10" /></th>
                     <th className="text-left px-4 py-3 hidden lg:table-cell"><Skeleton className="h-3 w-10" /></th>
+                    <th className="text-left px-4 py-3 hidden xl:table-cell"><Skeleton className="h-3 w-14" /></th>
                     <th className="px-4 py-3 w-10" />
                     <th className="px-4 py-3 w-10" />
                   </tr>
@@ -250,6 +412,7 @@ export default function AdminCookbooksPage() {
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-12" /></td>
                       <td className="px-4 py-3 hidden lg:table-cell"><Skeleton className="h-3 w-10" /></td>
+                      <td className="px-4 py-3 hidden xl:table-cell"><Skeleton className="h-5 w-14 rounded-full" /></td>
                       <td className="px-4 py-3"><Skeleton className="h-7 w-7 rounded-lg" /></td>
                       <td className="px-4 py-3"><Skeleton className="h-7 w-7 rounded-lg" /></td>
                     </tr>
@@ -257,7 +420,7 @@ export default function AdminCookbooksPage() {
                 </tbody>
               </table>
             </div>
-          ) : cookbooks.length === 0 ? (
+          ) : sortedCookbooks.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 gap-2 text-zinc-400">
               <BookOpenIcon size={24} />
               <p className="text-sm">No cookbooks found</p>
@@ -279,12 +442,15 @@ export default function AdminCookbooksPage() {
                     <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wide hidden lg:table-cell">
                       Stock
                     </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wide hidden xl:table-cell">
+                      Discount
+                    </th>
                     <th className="px-4 py-3 w-10" />
                     <th className="px-4 py-3 w-10" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                  {cookbooks.map((cookbook) => (
+                  {sortedCookbooks.map((cookbook) => (
                     <tr
                       key={cookbook._id}
                       className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"
@@ -338,6 +504,15 @@ export default function AdminCookbooksPage() {
                         >
                           {cookbook.stockCount} left
                         </span>
+                      </td>
+                      <td className="px-4 py-3 hidden xl:table-cell">
+                        {(cookbook.discount ?? 0) > 0 ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                            -{cookbook.discount}%
+                          </span>
+                        ) : (
+                          <span className="text-xs text-zinc-400">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <button

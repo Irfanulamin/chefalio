@@ -58,7 +58,7 @@ export default function AdminOrdersPage() {
         <div>
           <h1 className="text-lg font-semibold text-foreground">Orders</h1>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
-            {pagination?.total ?? 0} total orders
+            View and track all cookbook purchases across the platform · {pagination?.total ?? 0} total
           </p>
         </div>
 

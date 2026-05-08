@@ -8,6 +8,7 @@ export interface Cookbook {
   cookbook_image: string;
   price: number;
   stockCount: number;
+  discount: number;
 }
 
 export interface GetCookbooksResponse {

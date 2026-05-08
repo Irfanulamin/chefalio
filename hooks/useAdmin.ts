@@ -241,12 +241,29 @@ export function useAdminUpdateCookbook() {
       payload: {
         price?: number;
         stockCount?: number;
+        discount?: number;
         title?: string;
         description?: string;
       };
     }) =>
       axiosInstance
         .patch(`/cookbooks/admin/${id}`, payload)
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-cookbooks"] });
+    },
+  });
+}
+
+// ─── Admin Apply Global Discount ──────────────────────────────────────────────
+
+export function useAdminApplyGlobalDiscount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (discount: number) =>
+      axiosInstance
+        .patch("/cookbooks/admin/discount/global", { discount })
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-cookbooks"] });

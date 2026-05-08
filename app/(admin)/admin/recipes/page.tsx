@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAdminRecipes, useAdminDeleteRecipe } from "@/hooks/useAdmin";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -27,6 +27,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
+const DIFFICULTY_ORDER: Record<string, number> = {
+  beginner: 0,
+  intermediate: 1,
+  advance: 2,
+};
+
 const DIFFICULTY_COLORS: Record<string, string> = {
   beginner:
     "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
@@ -39,12 +45,25 @@ export default function AdminRecipesPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounce(search, 400);
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<"none" | "difficulty-asc" | "difficulty-desc" | "engagement">("none");
 
   const { recipes, pagination, isLoading, isFetching } = useAdminRecipes({
     page,
     limit: 20,
     search: debouncedSearch,
   });
+
+  const sortedRecipes = useMemo(() => {
+    const list = [...recipes];
+    if (sortBy === "difficulty-asc") {
+      list.sort((a, b) => (DIFFICULTY_ORDER[a.difficulty] ?? 0) - (DIFFICULTY_ORDER[b.difficulty] ?? 0));
+    } else if (sortBy === "difficulty-desc") {
+      list.sort((a, b) => (DIFFICULTY_ORDER[b.difficulty] ?? 0) - (DIFFICULTY_ORDER[a.difficulty] ?? 0));
+    } else if (sortBy === "engagement") {
+      list.sort((a, b) => (b.lovedCount * 2 + b.savedCount * 1.5) - (a.lovedCount * 2 + a.savedCount * 1.5));
+    }
+    return list;
+  }, [recipes, sortBy]);
 
   const deleteRecipe = useAdminDeleteRecipe();
 
@@ -68,12 +87,13 @@ export default function AdminRecipesPage() {
         <div>
           <h1 className="text-lg font-semibold text-foreground">Recipes</h1>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
-            {pagination?.total ?? 0} total recipes
+            Search, review, or permanently delete any recipe published on the platform · {pagination?.total ?? 0} total
           </p>
         </div>
 
-        {/* Search */}
-        <div className="relative max-w-sm">
+        {/* Search + Sort */}
+        <div className="flex flex-wrap items-center gap-2">
+        <div className="relative max-w-sm flex-1">
           <MagnifyingGlassIcon
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none"
@@ -88,6 +108,33 @@ export default function AdminRecipesPage() {
             }}
             className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
           />
+        </div>
+
+          {/* Sort buttons */}
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-xs text-zinc-400 mr-1">Sort:</span>
+            {(
+              [
+                { label: "None", value: "none" },
+                { label: "Difficulty ↑", value: "difficulty-asc" },
+                { label: "Difficulty ↓", value: "difficulty-desc" },
+                { label: "Engagement", value: "engagement" },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setSortBy(opt.value)}
+                className={[
+                  "px-2.5 py-1 text-xs rounded-lg border transition-colors",
+                  sortBy === opt.value
+                    ? "border-primary bg-primary/10 text-primary font-medium"
+                    : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground",
+                ].join(" ")}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Table */}
@@ -132,7 +179,7 @@ export default function AdminRecipesPage() {
                 </tbody>
               </table>
             </div>
-          ) : recipes.length === 0 ? (
+          ) : sortedRecipes.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 gap-2 text-zinc-400">
               <ForkKnifeIcon size={24} />
               <p className="text-sm">No recipes found</p>
@@ -158,7 +205,7 @@ export default function AdminRecipesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                  {recipes.map((recipe) => (
+                  {sortedRecipes.map((recipe) => (
                     <tr
                       key={recipe._id}
                       className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"

@@ -163,7 +163,7 @@ export default function AdminUsersPage() {
           <div>
             <h1 className="text-lg font-semibold text-foreground">Users</h1>
             <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
-              {pagination?.total ?? 0} total users
+              Create accounts, activate/deactivate, change roles, or permanently delete users · {pagination?.total ?? 0} total
             </p>
           </div>
           <button
