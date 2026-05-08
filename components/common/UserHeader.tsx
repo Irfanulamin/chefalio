@@ -10,11 +10,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-//import { useAuth } from "@/hooks/axios";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ProfileDropdown } from "./ProfileDropdown";
-import { AIAssistantSheet } from "./AIAssistantSheet";
+// import { AIAssistantSheet } from "./AIAssistantSheet";
+import { NotificationBell } from "./NotificationBell";
 
 const navLinks = [
   { label: "Recipes", href: "/recipes" },
@@ -26,7 +26,6 @@ const navLinks = [
 export const UserHeader = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const pathname = usePathname();
-  //const { user, isLoading, logout } = useAuth();
 
   return (
     <div className="sticky top-0 z-50 backdrop-blur-sm">
@@ -40,7 +39,8 @@ export const UserHeader = () => {
             {/* Desktop */}
             <nav className="hidden lg:flex gap-x-7 gap-y-4 text-muted-foreground items-center">
               <ToggleThemeButton />
-              <AIAssistantSheet />
+              {/* <AIAssistantSheet /> */}
+              <NotificationBell />
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
@@ -62,7 +62,8 @@ export const UserHeader = () => {
             {/* Mobile */}
             <div className="lg:hidden flex items-center gap-3">
               <ToggleThemeButton />
-              <AIAssistantSheet />
+              {/* <AIAssistantSheet /> */}
+              <NotificationBell />
               <ProfileDropdown />
               <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger asChild>
