@@ -47,6 +47,11 @@ interface changePasswordPayload {
   newPassword: string;
 }
 
+function hasLoggedInCookie() {
+  if (typeof document === 'undefined') return false;
+  return document.cookie.split(';').some((c) => c.trim().startsWith('logged_in='));
+}
+
 export function useAuth() {
   const router = useRouter();
 
@@ -54,6 +59,7 @@ export function useAuth() {
     queryKey: ["me"],
     queryFn: () =>
       axiosInstance.get<Me>("/auth/me").then((response) => response.data),
+    enabled: hasLoggedInCookie(),
     retry: false,
     staleTime: 5 * 60 * 1000,
     throwOnError: false,
