@@ -18,7 +18,7 @@ import {
   ForkKnifeIcon,
   BookOpenIcon,
   UsersIcon,
-  ShieldCheckIcon,
+  GearSixIcon,
   ListIcon,
   SidebarSimpleIcon,
   ShoppingCartSimpleIcon,
@@ -79,7 +79,7 @@ function Logo({ showText = true }: { showText?: boolean }) {
   return (
     <Link href="/admin/dashboard" className="flex items-center gap-2.5 min-w-0">
       <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary shrink-0">
-        <ShieldCheckIcon size={14} weight="fill" className="text-black" />
+        <GearSixIcon size={14} weight="fill" className="text-black" />
       </span>
       {showText && (
         <span className="text-sm font-semibold tracking-tight text-foreground truncate">

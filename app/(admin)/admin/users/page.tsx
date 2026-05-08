@@ -26,9 +26,10 @@ import {
   EyeSlashIcon,
   UserCircleIcon,
   ChefHatIcon,
-  ShieldCheckIcon,
+  CrownSimpleIcon,
   UserIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -340,7 +341,7 @@ export default function AdminUsersPage() {
                         value: "admin",
                         label: "Admin",
                         desc: "Full access",
-                        Icon: ShieldCheckIcon,
+                        Icon: CrownSimpleIcon,
                         color: "text-purple-500",
                         active: "border-purple-400 bg-purple-50 dark:bg-purple-900/20",
                       },
@@ -504,7 +505,7 @@ export default function AdminUsersPage() {
                       <td className="px-4 py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
                       <td className="px-4 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
                       <td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-12" /></td>
-                      <td className="px-4 py-3"><Skeleton className="h-7 w-20 rounded-lg" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-5 w-9 rounded-full" /></td>
                       <td className="px-4 py-3"><Skeleton className="h-7 w-7 rounded-lg" /></td>
                     </tr>
                   ))}
@@ -619,18 +620,25 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="px-4 py-3">
                         <button
+                          role="switch"
+                          aria-checked={user.isActive}
                           onClick={() =>
                             handleToggleActive(user._id, user.isActive)
                           }
                           disabled={updateUser.isPending}
-                          className={[
-                            "text-xs px-2.5 py-1 rounded-lg border transition-colors font-medium disabled:opacity-50",
+                          className={cn(
+                            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50",
                             user.isActive
-                              ? "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-red-300 hover:text-red-500 dark:hover:border-red-700 dark:hover:text-red-400"
-                              : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-emerald-300 hover:text-emerald-600 dark:hover:border-emerald-700 dark:hover:text-emerald-400",
-                          ].join(" ")}
+                              ? "bg-emerald-500"
+                              : "bg-zinc-200 dark:bg-zinc-700"
+                          )}
                         >
-                          {user.isActive ? "Deactivate" : "Activate"}
+                          <span
+                            className={cn(
+                              "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out",
+                              user.isActive ? "translate-x-4" : "translate-x-0"
+                            )}
+                          />
                         </button>
                       </td>
                       <td className="px-4 py-3">

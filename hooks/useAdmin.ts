@@ -351,6 +351,89 @@ export function useAdminCreateUser() {
   });
 }
 
+// ─── Admin Recipe Interactions ────────────────────────────────────────────────
+
+export interface AdminInteractionRecipe {
+  _id: string;
+  totalLoves: number;
+  totalSaves: number;
+  engagementScore: number;
+  recipe: { title: string; images: string[] };
+}
+
+export interface AdminRecipeInteractionsData {
+  topEngaged: AdminInteractionRecipe[];
+  topLoved: AdminInteractionRecipe[];
+  topSaved: AdminInteractionRecipe[];
+}
+
+export function useAdminRecipeInteractions() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["admin-recipe-interactions"],
+    queryFn: () =>
+      axiosInstance
+        .get<AdminRecipeInteractionsData>("/recipe-interaction/analytics/admin")
+        .then((res) => res.data),
+    staleTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+
+  return { interactions: data, isLoading, error };
+}
+
+// ─── Admin Recipe Upload Trend ────────────────────────────────────────────────
+
+export interface AdminRecipeTrendItem {
+  date: string;
+  count: number;
+}
+
+export function useAdminRecipeTrend() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["admin-recipe-trend"],
+    queryFn: () =>
+      axiosInstance
+        .get<{ success: boolean; data: AdminRecipeTrendItem[] }>(
+          "/recipes/admin/upload-trend"
+        )
+        .then((res) => res.data),
+    staleTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+
+  return { trend: data?.data ?? [], isLoading, error };
+}
+
+// ─── Admin Top Chefs ──────────────────────────────────────────────────────────
+
+export interface AdminTopChef {
+  chefId: string;
+  fullName: string;
+  username: string;
+  profileUrl: string;
+  totalRevenue: number;
+  totalSales: number;
+}
+
+export function useAdminTopChefs() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["admin-top-chefs"],
+    queryFn: () =>
+      axiosInstance
+        .get<{ success: boolean; data: AdminTopChef[] }>(
+          "/cookbook-purchase/analytics/admin/top-chefs"
+        )
+        .then((res) => res.data),
+    staleTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+
+  return { topChefs: data?.data ?? [], isLoading, error };
+}
+
 // ─── Admin Orders ─────────────────────────────────────────────────────────────
 
 export interface AdminOrder {
