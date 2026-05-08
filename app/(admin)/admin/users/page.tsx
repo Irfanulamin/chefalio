@@ -29,7 +29,6 @@ import {
   CrownSimpleIcon,
   UserIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -438,34 +437,35 @@ export default function AdminUsersPage() {
             </button>
           ))}
 
-          <button
-            onClick={() => {
-              setActiveFilter(activeFilter === true ? undefined : true);
-              setPage(1);
-            }}
-            className={[
-              "px-3 py-1.5 text-xs rounded-lg border font-medium transition-colors shrink-0",
-              activeFilter === true
-                ? "bg-emerald-500 text-white border-emerald-500"
-                : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700",
-            ].join(" ")}
-          >
-            Active only
-          </button>
-          <button
-            onClick={() => {
-              setActiveFilter(activeFilter === false ? undefined : false);
-              setPage(1);
-            }}
-            className={[
-              "px-3 py-1.5 text-xs rounded-lg border font-medium transition-colors shrink-0",
-              activeFilter === false
-                ? "bg-red-500 text-white border-red-500"
-                : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700",
-            ].join(" ")}
-          >
-            Inactive only
-          </button>
+          <div className="flex items-center rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-0.5 shrink-0">
+            {(
+              [
+                { label: "All", value: undefined },
+                { label: "Active", value: true },
+                { label: "Inactive", value: false },
+              ] as { label: string; value: boolean | undefined }[]
+            ).map(({ label, value }) => {
+              const isSelected = activeFilter === value;
+              return (
+                <button
+                  key={label}
+                  onClick={() => { setActiveFilter(value); setPage(1); }}
+                  className={[
+                    "px-3 py-1 text-xs font-medium rounded-md transition-all duration-150",
+                    isSelected
+                      ? value === true
+                        ? "bg-emerald-500 text-white shadow-sm"
+                        : value === false
+                        ? "bg-red-500 text-white shadow-sm"
+                        : "bg-zinc-100 dark:bg-zinc-800 text-foreground shadow-sm"
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-foreground",
+                  ].join(" ")}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Table */}
@@ -485,7 +485,6 @@ export default function AdminUsersPage() {
                     <th className="text-left px-4 py-3"><Skeleton className="h-3 w-8" /></th>
                     <th className="text-left px-4 py-3"><Skeleton className="h-3 w-12" /></th>
                     <th className="text-left px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-16" /></th>
-                    <th className="px-4 py-3 w-24" />
                     <th className="px-4 py-3 w-10" />
                   </tr>
                 </thead>
@@ -505,7 +504,6 @@ export default function AdminUsersPage() {
                       <td className="px-4 py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
                       <td className="px-4 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
                       <td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-12" /></td>
-                      <td className="px-4 py-3"><Skeleton className="h-5 w-9 rounded-full" /></td>
                       <td className="px-4 py-3"><Skeleton className="h-7 w-7 rounded-lg" /></td>
                     </tr>
                   ))}
@@ -537,7 +535,6 @@ export default function AdminUsersPage() {
                     <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wide hidden md:table-cell">
                       Provider
                     </th>
-                    <th className="px-4 py-3 w-24" />
                     <th className="px-4 py-3 w-10" />
                   </tr>
                 </thead>
@@ -617,29 +614,6 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="px-4 py-3 text-xs text-zinc-400 capitalize hidden md:table-cell">
                         {user.authProvider}
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          role="switch"
-                          aria-checked={user.isActive}
-                          onClick={() =>
-                            handleToggleActive(user._id, user.isActive)
-                          }
-                          disabled={updateUser.isPending}
-                          className={cn(
-                            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50",
-                            user.isActive
-                              ? "bg-emerald-500"
-                              : "bg-zinc-200 dark:bg-zinc-700"
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out",
-                              user.isActive ? "translate-x-4" : "translate-x-0"
-                            )}
-                          />
-                        </button>
                       </td>
                       <td className="px-4 py-3">
                         <AlertDialog>
