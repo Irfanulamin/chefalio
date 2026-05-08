@@ -280,3 +280,129 @@ export function useAdminDeleteCookbook() {
     },
   });
 }
+
+// ─── Admin Update Cookbook ────────────────────────────────────────────────────
+
+export function useAdminUpdateCookbook() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: {
+        price?: number;
+        stockCount?: number;
+        title?: string;
+        description?: string;
+      };
+    }) =>
+      axiosInstance
+        .patch(`/cookbooks/admin/${id}`, payload)
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-cookbooks"] });
+    },
+  });
+}
+
+// ─── Admin Delete User ────────────────────────────────────────────────────────
+
+export function useAdminDeleteUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      axiosInstance.delete(`/users/${id}`).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-user-analytics"] });
+    },
+  });
+}
+
+// ─── Admin Create User ────────────────────────────────────────────────────────
+
+export function useAdminCreateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: {
+      fullName: string;
+      username: string;
+      email: string;
+      password: string;
+      role: string;
+    }) =>
+      axiosInstance.post("/users/create", payload).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-user-analytics"] });
+    },
+  });
+}
+
+// ─── Admin Orders ─────────────────────────────────────────────────────────────
+
+export interface AdminOrder {
+  _id: string;
+  cookbookId: string;
+  buyerId: string;
+  chefId: string;
+  cookbookTitle: string;
+  cookbookImage: string;
+  price: number;
+  stripeSessionId: string;
+  paymentStatus: string;
+  billingAddress: Record<string, string>;
+  receiptEmail: string;
+  createdAt: string;
+}
+
+export interface AdminOrdersResponse {
+  success: boolean;
+  message: string;
+  data: AdminOrder[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export function useAdminOrders(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+}) {
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: ["admin-orders", params],
+    queryFn: () => {
+      const p: Record<string, string | number> = {
+        page: params.page ?? 1,
+        limit: params.limit ?? 20,
+      };
+      if (params.search) p.search = params.search;
+      if (params.status) p.status = params.status;
+      return axiosInstance
+        .get<AdminOrdersResponse>("/cookbook-purchase/admin/orders", {
+          params: p,
+        })
+        .then((res) => res.data);
+    },
+    staleTime: 1000 * 30,
+    placeholderData: keepPreviousData,
+  });
+
+  return {
+    orders: data?.data ?? [],
+    pagination: data?.pagination,
+    isLoading,
+    isFetching,
+    error,
+  };
+}

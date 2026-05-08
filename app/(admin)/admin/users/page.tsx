@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useAllUsers, useAdminUpdateUser } from "@/hooks/useAdmin";
+import {
+  useAllUsers,
+  useAdminUpdateUser,
+  useAdminDeleteUser,
+  useAdminCreateUser,
+} from "@/hooks/useAdmin";
 import Image from "next/image";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
@@ -12,6 +17,8 @@ import {
   XCircleIcon,
   CaretLeftIcon,
   CaretRightIcon,
+  TrashIcon,
+  PlusIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import {
   DropdownMenu,
@@ -19,6 +26,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ROLE_COLORS: Record<string, string> = {
@@ -30,6 +55,14 @@ const ROLE_COLORS: Record<string, string> = {
 
 type RoleFilter = "user" | "chef" | "admin" | undefined;
 
+const EMPTY_FORM = {
+  fullName: "",
+  username: "",
+  email: "",
+  password: "",
+  role: "user",
+};
+
 export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounce(search, 400);
@@ -38,6 +71,8 @@ export default function AdminUsersPage() {
     undefined,
   );
   const [page, setPage] = useState(1);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
 
   const { users, pagination, isLoading, isFetching } = useAllUsers({
     page,
@@ -48,6 +83,8 @@ export default function AdminUsersPage() {
   });
 
   const updateUser = useAdminUpdateUser();
+  const deleteUser = useAdminDeleteUser();
+  const createUser = useAdminCreateUser();
 
   async function handleToggleActive(id: string, current: boolean) {
     try {
@@ -67,6 +104,30 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function handleDeleteUser(id: string) {
+    try {
+      await deleteUser.mutateAsync(id);
+      toast.success("User deleted");
+    } catch {
+      toast.error("Failed to delete user");
+    }
+  }
+
+  async function handleCreateUser(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      await createUser.mutateAsync(form);
+      toast.success("User created");
+      setCreateOpen(false);
+      setForm(EMPTY_FORM);
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to create user";
+      toast.error(msg);
+    }
+  }
+
   const totalPages = pagination?.pages ?? 1;
 
   const roleOptions: { label: string; value: RoleFilter }[] = [
@@ -82,12 +143,83 @@ export default function AdminUsersPage() {
 
       <div className="space-y-4 max-w-7xl mx-auto">
         {/* Header */}
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">Users</h1>
-          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
-            {pagination?.total ?? 0} total users
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-lg font-semibold text-foreground">Users</h1>
+            <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
+              {pagination?.total ?? 0} total users
+            </p>
+          </div>
+          <button
+            onClick={() => setCreateOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-black hover:bg-primary/90 transition-colors shrink-0"
+          >
+            <PlusIcon size={13} weight="bold" />
+            Create User
+          </button>
         </div>
+
+        {/* Create User Dialog */}
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Create User</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreateUser} className="space-y-3 pt-1">
+              {[
+                { name: "fullName", label: "Full Name", type: "text" },
+                { name: "username", label: "Username", type: "text" },
+                { name: "email", label: "Email", type: "email" },
+                { name: "password", label: "Password", type: "password" },
+              ].map(({ name, label, type }) => (
+                <div key={name} className="space-y-1">
+                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                    {label}
+                  </label>
+                  <input
+                    type={type}
+                    required
+                    value={form[name as keyof typeof form]}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, [name]: e.target.value }))
+                    }
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                  />
+                </div>
+              ))}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  Role
+                </label>
+                <select
+                  value={form.role}
+                  onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                >
+                  <option value="user">Member</option>
+                  <option value="chef">Chef</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <DialogFooter className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCreateOpen(false)}
+                  className="px-4 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createUser.isPending}
+                  className="px-4 py-2 text-sm rounded-lg bg-primary text-black font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                >
+                  {createUser.isPending ? "Creating…" : "Create"}
+                </button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2">
@@ -174,6 +306,7 @@ export default function AdminUsersPage() {
                     <th className="text-left px-4 py-3"><Skeleton className="h-3 w-12" /></th>
                     <th className="text-left px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-16" /></th>
                     <th className="px-4 py-3 w-24" />
+                    <th className="px-4 py-3 w-10" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -193,6 +326,7 @@ export default function AdminUsersPage() {
                       <td className="px-4 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
                       <td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-12" /></td>
                       <td className="px-4 py-3"><Skeleton className="h-7 w-20 rounded-lg" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-7 w-7 rounded-lg" /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -224,6 +358,7 @@ export default function AdminUsersPage() {
                       Provider
                     </th>
                     <th className="px-4 py-3 w-24" />
+                    <th className="px-4 py-3 w-10" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -318,6 +453,34 @@ export default function AdminUsersPage() {
                         >
                           {user.isActive ? "Deactivate" : "Activate"}
                         </button>
+                      </td>
+                      <td className="px-4 py-3">
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button className="h-7 w-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                              <TrashIcon size={14} />
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete user?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete{" "}
+                                <strong>{user.fullName}</strong> and all their
+                                data. This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteUser(user._id)}
+                                className="bg-red-500 hover:bg-red-600 text-white border-0"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </td>
                     </tr>
                   ))}

@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useAdminCookbooks, useAdminDeleteCookbook } from "@/hooks/useAdmin";
+import {
+  useAdminCookbooks,
+  useAdminDeleteCookbook,
+  useAdminUpdateCookbook,
+} from "@/hooks/useAdmin";
+import type { Cookbook } from "@/hooks/useCookbook";
 import Image from "next/image";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
@@ -11,6 +16,7 @@ import {
   TrashIcon,
   CaretLeftIcon,
   CaretRightIcon,
+  PencilSimpleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import {
   AlertDialog,
@@ -23,12 +29,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminCookbooksPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounce(search, 400);
   const [page, setPage] = useState(1);
+  const [editTarget, setEditTarget] = useState<Cookbook | null>(null);
+  const [editForm, setEditForm] = useState({ price: "", stockCount: "" });
 
   const { cookbooks, pagination, isLoading, isFetching } = useAdminCookbooks({
     page,
@@ -37,6 +52,7 @@ export default function AdminCookbooksPage() {
   });
 
   const deleteCookbook = useAdminDeleteCookbook();
+  const updateCookbook = useAdminUpdateCookbook();
 
   async function handleDelete(id: string) {
     try {
@@ -44,6 +60,35 @@ export default function AdminCookbooksPage() {
       toast.success("Cookbook deleted");
     } catch {
       toast.error("Failed to delete cookbook");
+    }
+  }
+
+  function openEdit(cookbook: Cookbook) {
+    setEditTarget(cookbook);
+    setEditForm({
+      price: String(cookbook.price),
+      stockCount: String(cookbook.stockCount),
+    });
+  }
+
+  async function handleUpdate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editTarget) return;
+    const price = parseFloat(editForm.price);
+    const stockCount = parseInt(editForm.stockCount, 10);
+    if (isNaN(price) || price < 0 || isNaN(stockCount) || stockCount < 0) {
+      toast.error("Invalid price or stock count");
+      return;
+    }
+    try {
+      await updateCookbook.mutateAsync({
+        id: editTarget._id,
+        payload: { price, stockCount },
+      });
+      toast.success("Cookbook updated");
+      setEditTarget(null);
+    } catch {
+      toast.error("Failed to update cookbook");
     }
   }
 
@@ -61,6 +106,91 @@ export default function AdminCookbooksPage() {
             {pagination?.total ?? 0} total cookbooks
           </p>
         </div>
+
+        {/* Edit Modal */}
+        <Dialog
+          open={!!editTarget}
+          onOpenChange={(open) => !open && setEditTarget(null)}
+        >
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Edit Cookbook</DialogTitle>
+            </DialogHeader>
+            {editTarget && (
+              <form onSubmit={handleUpdate} className="space-y-4 pt-1">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50">
+                  <div className="relative h-10 w-10 rounded-md overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
+                    {editTarget.cookbook_image && (
+                      <Image
+                        src={editTarget.cookbook_image}
+                        alt={editTarget.title}
+                        fill
+                        className="object-cover"
+                        sizes="40px"
+                      />
+                    )}
+                  </div>
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {editTarget.title}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                      Price (USD)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      required
+                      value={editForm.price}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, price: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                      Stock Count
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      required
+                      value={editForm.stockCount}
+                      onChange={(e) =>
+                        setEditForm((f) => ({
+                          ...f,
+                          stockCount: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <button
+                    type="button"
+                    onClick={() => setEditTarget(null)}
+                    className="px-4 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updateCookbook.isPending}
+                    className="px-4 py-2 text-sm rounded-lg bg-primary text-black font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                  >
+                    {updateCookbook.isPending ? "Saving…" : "Save"}
+                  </button>
+                </DialogFooter>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Search */}
         <div className="relative max-w-sm">
@@ -97,6 +227,7 @@ export default function AdminCookbooksPage() {
                     <th className="text-left px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-10" /></th>
                     <th className="text-left px-4 py-3 hidden lg:table-cell"><Skeleton className="h-3 w-10" /></th>
                     <th className="px-4 py-3 w-10" />
+                    <th className="px-4 py-3 w-10" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -119,6 +250,7 @@ export default function AdminCookbooksPage() {
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-12" /></td>
                       <td className="px-4 py-3 hidden lg:table-cell"><Skeleton className="h-3 w-10" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-7 w-7 rounded-lg" /></td>
                       <td className="px-4 py-3"><Skeleton className="h-7 w-7 rounded-lg" /></td>
                     </tr>
                   ))}
@@ -147,6 +279,7 @@ export default function AdminCookbooksPage() {
                     <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wide hidden lg:table-cell">
                       Stock
                     </th>
+                    <th className="px-4 py-3 w-10" />
                     <th className="px-4 py-3 w-10" />
                   </tr>
                 </thead>
@@ -205,6 +338,15 @@ export default function AdminCookbooksPage() {
                         >
                           {cookbook.stockCount} left
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => openEdit(cookbook)}
+                          className="h-7 w-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-primary hover:bg-primary/10 transition-colors"
+                          title="Edit price & stock"
+                        >
+                          <PencilSimpleIcon size={14} />
+                        </button>
                       </td>
                       <td className="px-4 py-3">
                         <AlertDialog>

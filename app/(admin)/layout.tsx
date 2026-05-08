@@ -21,6 +21,7 @@ import {
   ShieldCheckIcon,
   ListIcon,
   SidebarSimpleIcon,
+  ShoppingCartSimpleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
   { label: "Users", href: "/admin/users", icon: UsersIcon },
   { label: "Recipes", href: "/admin/recipes", icon: ForkKnifeIcon },
   { label: "Cookbooks", href: "/admin/cookbooks", icon: BookOpenIcon },
+  { label: "Orders", href: "/admin/orders", icon: ShoppingCartSimpleIcon },
 ];
 
 function NavLinks({
