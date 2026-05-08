@@ -1,12 +1,17 @@
 "use client";
 import { use, useState } from "react";
-import { useSingleRecipe } from "@/hooks/useRecipe";
-import { ShareIcon } from "@phosphor-icons/react/dist/ssr";
+import { useSingleRecipe, useRecipeStats, useToggleLove, useToggleSave } from "@/hooks/useRecipe";
+import {
+  ShareIcon,
+  HeartIcon,
+  BookmarkSimpleIcon,
+} from "@phosphor-icons/react/dist/ssr";
 import { ImageCarousel } from "./_components/ImageCarousel";
 import { Instructions } from "./_components/Instructions";
 import { Recipe } from "@/types/recipes.type";
 import Image from "next/image";
 import { RecipeSingleSkeleton } from "@/components/User/Recipe/RecipeSingleSkeleton";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 const DIFF: Record<string, { label: string; dot: string; pill: string }> = {
@@ -34,6 +39,9 @@ const DIFF: Record<string, { label: string; dot: string; pill: string }> = {
 
 function RecipeDetail({ recipe }: { recipe: Recipe }) {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const { stats } = useRecipeStats(recipe._id);
+  const { mutate: toggleLove } = useToggleLove();
+  const { mutate: toggleSave } = useToggleSave();
 
   const toggleStep = (step: number) =>
     setCompletedSteps((prev) => {
@@ -162,7 +170,7 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
 
             {/* Tags */}
             <div
-              className="flex flex-wrap gap-2 mb-8
+              className="flex flex-wrap gap-2
                 animate-in slide-in-from-bottom-3 fade-in duration-500 delay-200"
             >
               {recipe.tags.map((t, i) => (
@@ -185,6 +193,41 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
                 <span className={`w-1.5 h-1.5 rounded-full ${diff.dot}`} />
                 {diff.label}
               </span>
+            </div>
+
+            {/* Action bar */}
+            <div className="flex items-center gap-3 mt-6 mb-2 animate-in slide-in-from-bottom-3 fade-in duration-500 delay-250">
+              <button
+                onClick={() => toggleLove(recipe._id)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 border",
+                  stats?.isLoved
+                    ? "bg-rose-500 text-white border-rose-500 hover:bg-rose-600"
+                    : "bg-[#eeeae4] dark:bg-[#1a1714] text-[#1a1714] dark:text-[#f0ede8] border-[#e2ddd8] dark:border-[#35312c] hover:bg-[#e2ddd8] dark:hover:bg-[#252118]",
+                )}
+              >
+                <HeartIcon
+                  weight={stats?.isLoved ? "fill" : "bold"}
+                  className="w-4.5 h-4.5"
+                />
+                <span>{recipe.lovedCount.toLocaleString()}</span>
+              </button>
+
+              <button
+                onClick={() => toggleSave(recipe._id)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 border",
+                  stats?.isSaved
+                    ? "bg-[#1a1714] dark:bg-[#f0ede8] text-[#f0ede8] dark:text-[#1a1714] border-transparent"
+                    : "bg-[#eeeae4] dark:bg-[#1a1714] text-[#1a1714] dark:text-[#f0ede8] border-[#e2ddd8] dark:border-[#35312c] hover:bg-[#e2ddd8] dark:hover:bg-[#252118]",
+                )}
+              >
+                <BookmarkSimpleIcon
+                  weight={stats?.isSaved ? "fill" : "bold"}
+                  className="w-4.5 h-4.5"
+                />
+                {stats?.isSaved ? "Saved" : "Save"}
+              </button>
             </div>
           </div>
 

@@ -5,6 +5,7 @@ import { PaginationSection } from "@/components/common/Pagination";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
+import { ChefHat, BookOpen } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -163,6 +164,22 @@ export default function ChefsPage() {
                   <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                     @{chef.username}
                   </p>
+                  {(chef.recipeCount !== undefined || chef.cookbookCount !== undefined) && (
+                    <div className="flex items-center justify-center gap-3 mt-2">
+                      {chef.recipeCount !== undefined && (
+                        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <ChefHat className="w-3 h-3" />
+                          {chef.recipeCount}
+                        </span>
+                      )}
+                      {chef.cookbookCount !== undefined && (
+                        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <BookOpen className="w-3 h-3" />
+                          {chef.cookbookCount}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </Link>
             ))}

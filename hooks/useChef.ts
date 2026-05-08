@@ -12,6 +12,8 @@ export interface Chef {
   email: string;
   profile_url: string;
   role: "chef";
+  recipeCount?: number;
+  cookbookCount?: number;
 }
 
 export interface ChefPagination {

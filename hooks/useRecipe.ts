@@ -26,6 +26,7 @@ export function useRecipes(params?: {
   tags?: string;
   difficulty?: string;
   author?: string;
+  sort?: "newest" | "trending" | "popular";
 }) {
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: [
@@ -36,6 +37,7 @@ export function useRecipes(params?: {
       params?.tags,
       params?.difficulty,
       params?.author,
+      params?.sort,
     ],
     queryFn: () =>
       axiosInstance

@@ -5,6 +5,7 @@ import { SummaryCard } from "./_components/SummaryCard";
 import { FieldGroup } from "@/components/ui/field";
 import { FormField } from "@/components/common/FormField";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import z, { email } from "zod";
@@ -69,8 +70,31 @@ export default function PurchaseCookbookPage({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-sm text-muted-foreground animate-pulse">Loading…</p>
+      <div className="min-h-screen flex flex-col-reverse lg:flex-row justify-center lg:justify-between gap-6 px-4 py-5 mx-auto max-w-7xl">
+        <div className="flex-1 w-full lg:max-w-2xl space-y-5">
+          <div className="space-y-1">
+            <Skeleton className="h-8 w-36" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="space-y-1.5">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+            </div>
+          ))}
+          <Skeleton className="h-11 w-full lg:w-32 rounded-lg ml-auto" />
+        </div>
+        <div className="w-full flex-1 lg:shrink-0">
+          <div className="rounded-2xl border border-border/40 overflow-hidden">
+            <Skeleton className="aspect-square w-full" />
+            <div className="p-5 space-y-3">
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-8 w-24 mt-2" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

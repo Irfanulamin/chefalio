@@ -2,6 +2,7 @@ import { Recipe } from "@/types/recipes.type";
 import { RecipeCard } from "./RecipeCard";
 import { useBatchRecipeStats } from "@/hooks/useRecipe";
 import { MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
 
 export const RecipeGrid = ({
@@ -31,19 +32,29 @@ export const RecipeGrid = ({
         ))}
 
         {handleRecipeLoading &&
-          Array.from({ length: 4 }).map((_, i) => (
+          Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="bg-background p-6 rounded-2xl border border-border w-full animate-pulse"
+              className="rounded-2xl border border-border/40 overflow-hidden flex flex-col"
             >
-              <div className="space-y-4 animate-pulse">
-                <div className="h-6 w-1/3 rounded-md bg-muted" />
-                <div className="h-4 w-full rounded-md bg-muted" />
-                <div className="h-4 w-5/6 rounded-md bg-muted" />
-                <div className="h-32 w-full rounded-xl bg-muted" />
-                <div className="flex gap-3">
-                  <div className="h-10 w-24 rounded-lg bg-muted" />
-                  <div className="h-10 w-24 rounded-lg bg-muted" />
+              <Skeleton className="h-52 w-full rounded-none" />
+              <div className="p-5 space-y-3 flex-1">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="w-7 h-7 rounded-full shrink-0" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="h-5 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <div className="space-y-1.5">
+                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-3 w-2/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+                <div className="flex items-center gap-3 pt-1">
+                  <Skeleton className="h-5 w-12" />
+                  <Skeleton className="h-5 w-8" />
+                  <div className="flex-1" />
+                  <Skeleton className="h-9 w-24 rounded-full" />
                 </div>
               </div>
             </div>

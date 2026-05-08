@@ -16,7 +16,7 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useRef } from "react";
 import { BookOpen, ChefHat, Loader2 } from "lucide-react";
-import { GridLoader } from "@/components/ui/GridLoading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function ChefCookbookCard({
   cookbook,
@@ -153,8 +153,34 @@ export default function ChefProfilePage() {
 
   if (isChefLoading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-        <GridLoader label="Loading chef profile..." />
+      <div className="space-y-8 my-3 md:my-8 max-w-7xl mx-auto px-3">
+        {/* Hero skeleton */}
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 rounded-2xl border border-border/40 bg-background">
+          <Skeleton className="w-28 h-28 rounded-full shrink-0" />
+          <div className="flex-1 space-y-3">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-24" />
+            <div className="flex gap-3 mt-2">
+              <Skeleton className="h-7 w-24 rounded-full" />
+              <Skeleton className="h-7 w-28 rounded-full" />
+            </div>
+          </div>
+        </div>
+        {/* Tab skeleton */}
+        <Skeleton className="h-10 w-48 rounded-xl" />
+        {/* Grid skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="rounded-xl overflow-hidden border border-border/40">
+              <Skeleton className="aspect-square w-full" />
+              <div className="p-4 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
