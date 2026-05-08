@@ -178,6 +178,44 @@ export interface UpdateCookbookPayload {
   image?: File;
 }
 
+// ─── Chef Recipe Analytics (dashboard) ───────────────────────────────────────
+
+export interface ChefRecipeAnalyticsData {
+  myDifficultyBreakdown: { difficulty: string; count: number }[];
+  myTopTags: { tag: string; count: number }[];
+  uploadTrend: { date: string; count: number }[];
+  topRecipes: {
+    _id: string;
+    title: string;
+    image: string;
+    lovedCount: number;
+    savedCount: number;
+    engagementScore: number;
+  }[];
+}
+
+export interface ChefDashboardEarningsData {
+  totalRevenue: number;
+  totalProfit: number;
+  totalOrders: number;
+  recentOrders: {
+    _id: string;
+    cookbookTitle: string;
+    cookbookImage: string;
+    price: number;
+    paymentStatus: string;
+    createdAt: string;
+    receiptEmail: string;
+  }[];
+  topCookbooks: {
+    cookbookId: string;
+    cookbookTitle: string;
+    cookbookImage: string;
+    totalSold: number;
+    totalRevenue: number;
+  }[];
+}
+
 // ─── My Recipes ───────────────────────────────────────────────────────────────
 
 export function useMyRecipes() {
@@ -470,6 +508,44 @@ export function useChefOrders() {
     orders: data?.data ?? [],
     isLoading,
     isFetching,
+    error,
+  };
+}
+
+// ─── Chef Recipe Analytics (dashboard) ───────────────────────────────────────
+
+export function useChefRecipeAnalytics() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["chef-recipe-analytics"],
+    queryFn: () =>
+      axiosInstance
+        .get<{ data: ChefRecipeAnalyticsData }>("/recipes/my/analytics")
+        .then((res) => res.data),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  return {
+    recipeAnalytics: data?.data,
+    isLoading,
+    error,
+  };
+}
+
+// ─── Chef Dashboard Earnings (dashboard) ─────────────────────────────────────
+
+export function useChefDashboardEarnings() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["chef-dashboard-earnings"],
+    queryFn: () =>
+      axiosInstance
+        .get<{ data: ChefDashboardEarningsData }>("/cookbook-purchase/dashboard/chef")
+        .then((res) => res.data),
+    staleTime: 1000 * 60,
+  });
+
+  return {
+    dashboardEarnings: data?.data,
+    isLoading,
     error,
   };
 }

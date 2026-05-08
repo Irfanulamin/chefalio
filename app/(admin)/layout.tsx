@@ -30,6 +30,7 @@ const navItems = [
   { label: "Recipes", href: "/admin/recipes", icon: ForkKnifeIcon },
   { label: "Cookbooks", href: "/admin/cookbooks", icon: BookOpenIcon },
   { label: "Orders", href: "/admin/orders", icon: ShoppingCartSimpleIcon },
+  { label: "Settings", href: "/admin/settings", icon: GearSixIcon },
 ];
 
 function NavLinks({

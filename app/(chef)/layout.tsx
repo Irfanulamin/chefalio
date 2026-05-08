@@ -77,17 +77,12 @@ function NavLinks({
   );
 }
 
-function Logo({ showText = true }: { showText?: boolean }) {
+function Logo() {
   return (
     <Link href="/chef/dashboard" className="flex items-center gap-2.5 min-w-0">
-      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary shrink-0">
-        <ChefHatIcon size={14} weight="fill" className="text-black" />
-      </span>
-      {showText && (
-        <span className="text-sm font-semibold tracking-tight text-foreground truncate">
+        <p className="text-sm font-semibold tracking-tight text-primary truncate">
           Chefalio
-        </span>
-      )}
+        </p>
     </Link>
   );
 }
@@ -122,7 +117,7 @@ export default function ChefLayout({
                 className="mx-auto flex h-7 w-7 items-center justify-center rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 title="Expand sidebar"
               >
-                <Logo showText={false} />
+                <Logo />
               </button>
             ) : (
               <>
