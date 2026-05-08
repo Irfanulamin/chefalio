@@ -123,7 +123,8 @@ export function useAllUsers(params: {
         .get<AllUsersResponse>("/users/all", { params: p })
         .then((res) => res.data);
     },
-    staleTime: 1000 * 30,
+    staleTime: 1000 * 60 * 3,
+    refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
@@ -145,7 +146,9 @@ export function useUserAnalytics() {
       axiosInstance
         .get<UserAnalyticsResponse>("/users/dashboard/analytics")
         .then((res) => res.data),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   return { analytics: data?.data, isLoading, error };
@@ -160,7 +163,9 @@ export function useAdminEarnings() {
       axiosInstance
         .get<AdminEarningsResponse>("/cookbook-purchase/analytics/admin")
         .then((res) => res.data),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   return { earnings: data?.data, isLoading, error };
@@ -208,7 +213,8 @@ export function useAdminRecipes(params: {
           },
         })
         .then((res) => res.data),
-    staleTime: 1000 * 30,
+    staleTime: 1000 * 60 * 3,
+    refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
@@ -254,7 +260,8 @@ export function useAdminCookbooks(params: {
           },
         })
         .then((res) => res.data),
-    staleTime: 1000 * 30,
+    staleTime: 1000 * 60 * 3,
+    refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
@@ -394,7 +401,8 @@ export function useAdminOrders(params: {
         })
         .then((res) => res.data);
     },
-    staleTime: 1000 * 30,
+    staleTime: 1000 * 60 * 3,
+    refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
