@@ -25,10 +25,11 @@ export default function EditRecipePage() {
         position: "bottom-right",
       });
       router.push("/chef/recipes");
-    } catch {
-      toast.error("Failed to update recipe. Please try again.", {
-        position: "bottom-right",
-      });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update recipe. Please try again.",
+        { position: "bottom-right" },
+      );
     }
   };
 

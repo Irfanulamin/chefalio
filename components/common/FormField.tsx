@@ -63,15 +63,8 @@ const ErrorToast = ({ message, onDismiss }: ToastProps) => {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB — matches backend limit
 
-const ACCEPTED_MIME = [
-  "image/png",
-  "image/jpeg",
-  "image/jpg",
-  "image/gif",
-  "image/webp",
-  "image/svg+xml",
-  "image/avif",
-];
+// Matches backend: ParseFilePipeBuilder fileType '.(jpg|jpeg|png)'
+const ACCEPTED_MIME = ["image/png", "image/jpeg"];
 
 interface ImageDropzoneFieldProps {
   files: File[];
@@ -145,7 +138,8 @@ const ImageDropzoneField = ({
     useDropzone({
       onDrop,
       accept: {
-        "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".avif"],
+        "image/jpeg": [".jpg", ".jpeg"],
+        "image/png": [".png"],
       },
       multiple,
       maxSize,
@@ -273,7 +267,7 @@ const ImageDropzoneField = ({
                 <span className="text-sky-500 underline underline-offset-2 decoration-dotted">
                   browse
                 </span>
-                {` · PNG, JPG, GIF, WEBP, SVG, AVIF · Max ${Math.round(maxSize / (1024 * 1024))} MB each`}
+                {` · JPG or PNG · Max ${Math.round(maxSize / (1024 * 1024))} MB each`}
               </p>
             </div>
           </>

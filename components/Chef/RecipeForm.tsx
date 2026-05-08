@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useForm } from "@tanstack/react-form";
+import { toast } from "sonner";
+import { useForm, useStore } from "@tanstack/react-form";
 import { FormField } from "@/components/common/FormField";
 import { Button } from "@/components/ui/button";
 import {
@@ -96,6 +97,7 @@ export default function RecipeForm({
     "beginner" | "intermediate" | "advance"
   >(initialData?.difficulty ?? "beginner");
   const [removeImages, setRemoveImages] = useState<string[]>([]);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const markForRemoval = (url: string) =>
     setRemoveImages((prev) => [...prev, url]);
@@ -156,24 +158,39 @@ export default function RecipeForm({
     validators: { onSubmit: schema },
     onSubmit: async ({ value }) => {
       const cleanIngredients = ingredients.filter((i) => i.trim());
-      const cleanInstructions = instructions.filter((i) =>
-        i.instruction.trim(),
-      );
+      const cleanInstructions = instructions.filter((i) => i.instruction.trim());
+
+      const errors: string[] = [];
+
+      if (cleanIngredients.length === 0)
+        errors.push("Add at least one ingredient");
+      if (tags.length === 0) errors.push("Add at least one tag");
+      if (cleanInstructions.length === 0)
+        errors.push("Add at least one instruction step");
 
       if (initialData) {
         const kept = initialData.images.filter(
           (url) => !removeImages.includes(url),
         );
         const finalCount = kept.length + value.images.length;
-        if (finalCount !== 3) {
-          alert(
-            `Recipe must have exactly 3 images. ` +
-              `You have ${kept.length} kept + ${value.images.length} new = ${finalCount}.`,
+        if (finalCount !== 3)
+          errors.push(
+            `Images: need exactly 3 (${kept.length} kept + ${value.images.length} new = ${finalCount})`,
           );
-          return;
-        }
+      } else {
+        if (value.images.length !== 3)
+          errors.push(
+            `Images: upload exactly 3 (${value.images.length} selected)`,
+          );
       }
 
+      if (errors.length > 0) {
+        setSubmitAttempted(true);
+        errors.forEach((e) => toast.error(e, { position: "bottom-right" }));
+        return;
+      }
+
+      setSubmitAttempted(false);
       await onSubmit({
         title: value.title,
         description: value.description,
@@ -186,6 +203,11 @@ export default function RecipeForm({
       });
     },
   });
+
+  const imageCount = useStore(
+    form.store,
+    (s) => (Array.isArray(s.values.images) ? s.values.images.length : 0),
+  );
 
   return (
     <form
@@ -248,11 +270,18 @@ export default function RecipeForm({
           <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">
             Images
           </p>
-          <p className="text-xs text-zinc-400 mb-4">
-            {initialData
-              ? "Mark current images for removal, then upload replacements to keep the total at 3."
-              : "Upload exactly 3 images."}
-          </p>
+          {initialData ? (
+            <p className="text-xs text-zinc-400 mb-4">
+              Mark current images for removal, then upload replacements to keep the total at 3.
+            </p>
+          ) : (
+            <p
+              className={`text-xs mb-4 ${submitAttempted && imageCount !== 3 ? "text-red-500" : "text-zinc-400"}`}
+            >
+              {imageCount}/3 images selected
+              {submitAttempted && imageCount !== 3 ? " — upload exactly 3." : "."}
+            </p>
+          )}
 
           {initialData && (
             <div className="mb-4 space-y-2">
@@ -320,9 +349,14 @@ export default function RecipeForm({
         {/* Ingredients */}
         <div className="px-5 py-4">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              Ingredients
-            </p>
+            <div>
+              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                Ingredients
+              </p>
+              {submitAttempted && !ingredients.some((i) => i.trim()) && (
+                <p className="text-xs text-red-500 mt-0.5">Add at least one ingredient.</p>
+              )}
+            </div>
             <button
               type="button"
               onClick={addIngredient}
@@ -361,12 +395,15 @@ export default function RecipeForm({
 
         {/* Tags */}
         <div className="px-5 py-4">
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4">
-            Tags{" "}
-            <span className="font-normal normal-case">
-              ({tags.length}/5)
-            </span>
-          </p>
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              Tags{" "}
+              <span className="font-normal normal-case">({tags.length}/5)</span>
+            </p>
+            {submitAttempted && tags.length === 0 && (
+              <p className="text-xs text-red-500 mt-0.5">Add at least one tag.</p>
+            )}
+          </div>
 
           <div className="flex flex-wrap gap-1.5 mb-3">
             {POPULAR_TAGS.map((tag) => (
@@ -433,9 +470,14 @@ export default function RecipeForm({
         {/* Instructions */}
         <div className="px-5 py-4">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              Instructions
-            </p>
+            <div>
+              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                Instructions
+              </p>
+              {submitAttempted && !instructions.some((i) => i.instruction.trim()) && (
+                <p className="text-xs text-red-500 mt-0.5">Add at least one instruction step.</p>
+              )}
+            </div>
             <button
               type="button"
               onClick={addInstruction}

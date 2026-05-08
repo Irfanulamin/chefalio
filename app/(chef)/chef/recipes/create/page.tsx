@@ -13,21 +13,16 @@ export default function CreateRecipePage() {
 
   const handleSubmit = async (values: Parameters<typeof createRecipe>[0]) => {
     try {
-      if (!values.images || values.images.length !== 3) {
-        toast.error("Please upload exactly 3 images.", {
-          position: "bottom-right",
-        });
-        return;
-      }
       await createRecipe(values);
       toast.success("Recipe published successfully!", {
         position: "bottom-right",
       });
       router.push("/chef/recipes");
-    } catch {
-      toast.error("Failed to publish recipe. Please try again.", {
-        position: "bottom-right",
-      });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to publish recipe. Please try again.",
+        { position: "bottom-right" },
+      );
     }
   };
 
