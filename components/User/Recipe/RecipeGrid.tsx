@@ -23,7 +23,7 @@ export const RecipeGrid = ({
   return (
     <div className="w-full">
       <div
-        className={`grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4  gap-6 transition-opacity duration-200 py-3 w-full ${
+        className={`grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 transition-opacity duration-200 w-full ${
           isFetching ? "opacity-50" : "opacity-100"
         }`}
       >
@@ -35,26 +35,26 @@ export const RecipeGrid = ({
           Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="rounded-2xl border border-border/40 overflow-hidden flex flex-col"
+              className="rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden flex flex-col bg-white dark:bg-zinc-900"
             >
-              <Skeleton className="h-52 w-full rounded-none" />
-              <div className="p-5 space-y-3 flex-1">
+              <Skeleton className="h-44 w-full rounded-none" />
+              <div className="p-4 space-y-2.5 flex-1">
                 <div className="flex items-center gap-2">
-                  <Skeleton className="w-7 h-7 rounded-full shrink-0" />
-                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="w-5 h-5 rounded-full shrink-0" />
+                  <Skeleton className="h-3 w-20" />
                 </div>
-                <Skeleton className="h-5 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-                <div className="space-y-1.5">
-                  <Skeleton className="h-3 w-3/4" />
-                  <Skeleton className="h-3 w-2/3" />
-                  <Skeleton className="h-3 w-1/2" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-3 w-5/6" />
+                <Skeleton className="h-3 w-4/6" />
+                <div className="flex gap-1">
+                  <Skeleton className="h-5 w-14 rounded" />
+                  <Skeleton className="h-5 w-12 rounded" />
                 </div>
-                <div className="flex items-center gap-3 pt-1">
-                  <Skeleton className="h-5 w-12" />
-                  <Skeleton className="h-5 w-8" />
+                <div className="flex items-center gap-2 pt-1">
+                  <Skeleton className="h-4 w-10" />
+                  <Skeleton className="h-4 w-6" />
                   <div className="flex-1" />
-                  <Skeleton className="h-9 w-24 rounded-full" />
+                  <Skeleton className="h-4 w-10" />
                 </div>
               </div>
             </div>

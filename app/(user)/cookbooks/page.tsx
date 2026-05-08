@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PaginationSection } from "@/components/common/Pagination";
 import { useCookbooks } from "@/hooks/useCookbook";
 import { cn } from "@/lib/utils";
@@ -46,14 +47,7 @@ export default function CookbooksPage() {
     author: debouncedAuthor || undefined,
   });
 
-  const handleSearchChange = (value: string) =>
-    updateParams({ search: value || null });
-
-  const handleAuthorChange = (value: string) =>
-    updateParams({ author: value || null });
-
   const clearAllFilters = () => updateParams({ search: null, author: null });
-
   const hasActiveFilters = search.trim() !== "" || author.trim() !== "";
   const totalPages = cookbooks?.pagination?.totalPages || 1;
   const currentPage = cookbooks?.pagination?.page || page;
@@ -62,65 +56,58 @@ export default function CookbooksPage() {
   return (
     <>
       <title>Chefalio - Cookbooks</title>
-      <div ref={scrollRef} className="space-y-6 my-3 md:my-6 max-w-7xl mx-auto px-3">
+      <div ref={scrollRef} className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
         {/* Header */}
-        <div>
-          <h2 className="text-5xl font-pinyon-script font-bold text-primary italic capitalize mb-2 tracking-widest">
-            Cookbooks
-          </h2>
-          <p className="text-muted-foreground max-w-200">
-            Discover cookbooks that inspire your culinary journey. Explore a
-            curated collection of recipes, tips, and stories from chefs around
-            the world. Happy cooking!
+        <div className="pb-5 border-b border-zinc-200 dark:border-zinc-800">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Cookbooks</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 max-w-xl">
+            Explore curated cookbooks crafted by talented chefs. Purchase a cookbook to unlock its full collection of recipes.
           </p>
         </div>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-          {/* Search */}
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
             <Input
               placeholder="Search cookbooks…"
               value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-9 pr-9 rounded-full"
+              onChange={(e) => updateParams({ search: e.target.value || null })}
+              className="pl-9 pr-9 rounded-lg border-zinc-200 dark:border-zinc-800"
             />
             {search && (
               <button
-                onClick={() => handleSearchChange("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => updateParams({ search: null })}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-foreground transition-colors"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
 
-          {/* Author filter */}
           <div className="relative flex-1 max-w-xs">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
             <Input
               placeholder="Filter by author…"
               value={author}
-              onChange={(e) => handleAuthorChange(e.target.value)}
-              className="pl-9 pr-9 rounded-full"
+              onChange={(e) => updateParams({ author: e.target.value || null })}
+              className="pl-9 pr-9 rounded-lg border-zinc-200 dark:border-zinc-800"
             />
             {author && (
               <button
-                onClick={() => handleAuthorChange("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => updateParams({ author: null })}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-foreground transition-colors"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
 
-          {/* Clear all */}
           {hasActiveFilters && (
             <Button
               variant="outline"
               size="sm"
-              className="text-muted-foreground hover:text-foreground"
+              className="border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-foreground"
               onClick={clearAllFilters}
             >
               Clear all
@@ -128,9 +115,9 @@ export default function CookbooksPage() {
           )}
         </div>
 
-        {/* Results summary */}
+        {/* Count */}
         {!isLoading && cookbooks && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             {cookbooks.pagination.total === 0
               ? "No cookbooks found"
               : `Showing ${cookbooks.data.length} of ${cookbooks.pagination.total} cookbook${cookbooks.pagination.total !== 1 ? "s" : ""}`}
@@ -139,28 +126,34 @@ export default function CookbooksPage() {
 
         {/* Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-background animate-pulse rounded-xl overflow-hidden"
+                className="rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-900"
               >
-                <div className="aspect-square bg-muted" />
-                <div className="p-4 space-y-2">
-                  <div className="h-3 w-1/2 rounded bg-muted" />
-                  <div className="h-4 w-3/4 rounded bg-muted" />
-                  <div className="h-3 w-full rounded bg-muted" />
-                  <div className="h-8 w-full rounded bg-muted mt-3" />
+                <Skeleton className="aspect-[4/3] w-full rounded-none" />
+                <div className="p-4 space-y-2.5">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="w-5 h-5 rounded-full shrink-0" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-2/3" />
+                  <div className="flex items-center justify-between pt-1">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-8 w-20 rounded-lg" />
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         ) : cookbooks?.data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center min-h-[60vh] gap-3">
-            <p className="text-lg font-medium">No cookbooks found</p>
-            <p className="text-sm text-muted-foreground max-w-xs">
-              Try adjusting your search or author filter to find what
-              you&apos;re looking for.
+          <div className="flex flex-col items-center justify-center py-20 text-center min-h-[40vh] gap-3">
+            <p className="text-base font-medium">No cookbooks found</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-xs">
+              Try adjusting your search or author filter.
             </p>
             {hasActiveFilters && (
               <Button variant="outline" size="sm" onClick={clearAllFilters}>
@@ -170,17 +163,17 @@ export default function CookbooksPage() {
           </div>
         ) : (
           <div
-            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-200 py-3 ${
+            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 transition-opacity duration-200 ${
               isFetching ? "opacity-50" : "opacity-100"
             }`}
           >
             {cookbooks?.data.map((cookbook) => (
               <div
                 key={cookbook._id}
-                className="group bg-background border border-border/40 rounded-xl overflow-hidden hover:border-border hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col"
+                className="group rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200 flex flex-col"
               >
                 {/* Image */}
-                <div className="relative aspect-square overflow-hidden bg-muted">
+                <div className="relative aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
                   <Image
                     src={cookbook.cookbook_image}
                     alt={cookbook.title}
@@ -189,10 +182,10 @@ export default function CookbooksPage() {
                   />
                   <span
                     className={cn(
-                      "absolute top-2.5 left-2.5 text-xs px-2.5 py-1 rounded-full border",
+                      "absolute top-2.5 right-2.5 text-[11px] font-medium px-2 py-0.5 rounded-md",
                       cookbook.stockCount <= 3
-                        ? "bg-orange-50 text-orange-700 border-orange-200"
-                        : "bg-background text-muted-foreground border-border/50",
+                        ? "bg-orange-50 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400"
+                        : "bg-white/90 dark:bg-zinc-800/90 text-zinc-600 dark:text-zinc-300",
                     )}
                   >
                     {cookbook.stockCount <= 3
@@ -203,6 +196,7 @@ export default function CookbooksPage() {
 
                 {/* Body */}
                 <div className="p-4 flex flex-col flex-1">
+                  {/* Author */}
                   <Link
                     href={`/chefs/${cookbook.authorId._id}`}
                     className="flex items-center gap-2 mb-2.5"
@@ -211,12 +205,12 @@ export default function CookbooksPage() {
                       <Image
                         src={cookbook.authorId.profile_url}
                         alt={cookbook.authorId.fullName}
-                        width={28}
-                        height={28}
-                        className="rounded-full w-7 h-7 object-cover ring-2 ring-primary shadow-sm"
+                        width={20}
+                        height={20}
+                        className="rounded-full w-5 h-5 object-cover"
                       />
                     ) : (
-                      <div className="w-7 h-7 rounded-full bg-purple-100 text-purple-800 text-[10px] font-medium flex items-center justify-center shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-[9px] font-bold text-zinc-600 dark:text-zinc-300 shrink-0">
                         {cookbook.authorId.fullName
                           .split(" ")
                           .map((n) => n[0])
@@ -224,42 +218,37 @@ export default function CookbooksPage() {
                           .slice(0, 2)}
                       </div>
                     )}
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-foreground transition-colors truncate">
                       {cookbook.authorId.fullName}
                     </span>
                   </Link>
 
-                  <p className="font-medium text-[15px] leading-snug mb-1.5">
+                  <p className="text-[15px] font-semibold text-foreground leading-snug mb-1 line-clamp-2">
                     {cookbook.title}
                   </p>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-3 leading-relaxed">
                     {cookbook.description}
                   </p>
 
-                  {/* Price + button — always pinned to bottom */}
-                  <div className="mt-auto">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xl font-medium">
+                  <div className="mt-auto pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                    <div>
+                      <p className="text-lg font-bold text-foreground">
                         ${cookbook.price.toFixed(2)}
-                      </span>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      </p>
+                      <p className="text-[11px] text-zinc-400 flex items-center gap-1">
                         <span
                           className={cn(
-                            "w-1.5 h-1.5 rounded-full",
-                            cookbook.stockCount <= 3
-                              ? "bg-orange-500"
-                              : "bg-green-600",
+                            "w-1.5 h-1.5 rounded-full inline-block",
+                            cookbook.stockCount <= 3 ? "bg-orange-500" : "bg-emerald-500",
                           )}
                         />
                         {cookbook.stockCount <= 3 ? "Almost gone" : "In stock"}
-                      </span>
+                      </p>
                     </div>
-
                     <Link href={`/purchase-cookbook/${cookbook._id}`}>
                       <Button
-                        variant="default"
                         size="sm"
-                        className="w-full capitalize"
+                        className="h-8 px-4 text-xs font-medium rounded-lg"
                       >
                         Buy now
                       </Button>

@@ -50,32 +50,29 @@ export default function ChefsPage() {
   return (
     <>
       <title>Chefalio - Chefs</title>
-      <div ref={scrollRef} className="space-y-6 my-3 md:my-6 max-w-7xl mx-auto px-3">
+      <div ref={scrollRef} className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
         {/* Header */}
-        <div>
-          <h2 className="text-5xl font-pinyon-script font-bold text-primary italic capitalize mb-2 tracking-widest">
-            Chefs
-          </h2>
-          <p className="text-muted-foreground max-w-200">
-            Meet the talented chefs behind your favourite recipes and cookbooks.
-            Click on a chef to explore their creations.
+        <div className="pb-5 border-b border-zinc-200 dark:border-zinc-800">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Chefs</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 max-w-xl">
+            Meet the talented chefs behind your favourite recipes and cookbooks. Click on a chef to explore their creations.
           </p>
         </div>
 
         {/* Search */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
             <Input
               placeholder="Search chefs…"
               value={search}
               onChange={(e) => updateParams({ search: e.target.value || null })}
-              className="pl-9 pr-9 rounded-full"
+              className="pl-9 pr-9 rounded-lg border-zinc-200 dark:border-zinc-800"
             />
             {search && (
               <button
                 onClick={() => updateParams({ search: null })}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-foreground transition-colors"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -85,7 +82,7 @@ export default function ChefsPage() {
             <Button
               variant="outline"
               size="sm"
-              className="text-muted-foreground hover:text-foreground"
+              className="border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-foreground"
               onClick={() => updateParams({ search: null })}
             >
               Clear
@@ -95,7 +92,7 @@ export default function ChefsPage() {
 
         {/* Count summary */}
         {!isLoading && chefs && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             {chefs.pagination.total === 0
               ? "No chefs found"
               : `Showing ${chefs.data.length} of ${chefs.pagination.total} chef${chefs.pagination.total !== 1 ? "s" : ""}`}
@@ -104,22 +101,22 @@ export default function ChefsPage() {
 
         {/* Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
             {Array.from({ length: 12 }).map((_, i) => (
               <div
                 key={i}
-                className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-muted/50 animate-pulse"
+                className="flex flex-col items-center gap-3 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 animate-pulse"
               >
-                <div className="w-20 h-20 rounded-full bg-muted" />
-                <div className="h-3 w-3/4 rounded bg-muted" />
-                <div className="h-3 w-1/2 rounded bg-muted" />
+                <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-zinc-800" />
+                <div className="h-3 w-3/4 rounded bg-zinc-100 dark:bg-zinc-800" />
+                <div className="h-3 w-1/2 rounded bg-zinc-100 dark:bg-zinc-800" />
               </div>
             ))}
           </div>
         ) : chefs?.data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center min-h-[50vh] gap-3">
-            <p className="text-lg font-medium">No chefs found</p>
-            <p className="text-sm text-muted-foreground max-w-xs">
+          <div className="flex flex-col items-center justify-center py-20 text-center min-h-[40vh] gap-3">
+            <p className="text-base font-medium">No chefs found</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-xs">
               Try a different search term.
             </p>
             {search && (
@@ -134,7 +131,7 @@ export default function ChefsPage() {
           </div>
         ) : (
           <div
-            className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 transition-opacity duration-200 ${
+            className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 transition-opacity duration-200 ${
               isFetching ? "opacity-50" : "opacity-100"
             }`}
           >
@@ -142,7 +139,7 @@ export default function ChefsPage() {
               <Link
                 key={chef._id}
                 href={`/chefs/${chef._id}`}
-                className="group flex flex-col items-center gap-3 p-4 rounded-2xl border border-border/40 bg-linear-to-t from-primary/20 via-primary/5 to-transparent hover:border-border hover:-translate-y-1 hover:shadow-md transition-all duration-200"
+                className="group flex flex-col items-center gap-3 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200"
               >
                 {/* Avatar */}
                 <div className="relative w-20 h-20 shrink-0">
@@ -152,7 +149,7 @@ export default function ChefsPage() {
                     fill
                     sizes="80px"
                     loading="lazy"
-                    className="rounded-full object-cover ring-2 ring-primary/20 group-hover:ring-primary/60 transition-all duration-300"
+                    className="rounded-full object-cover"
                   />
                 </div>
 
@@ -161,19 +158,19 @@ export default function ChefsPage() {
                   <p className="text-sm font-semibold text-foreground leading-snug line-clamp-1">
                     {chef.fullName}
                   </p>
-                  <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-0.5">
                     @{chef.username}
                   </p>
                   {(chef.recipeCount !== undefined || chef.cookbookCount !== undefined) && (
-                    <div className="flex items-center justify-center gap-3 mt-2">
+                    <div className="flex items-center justify-center gap-3 mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
                       {chef.recipeCount !== undefined && (
-                        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-1 text-[11px] text-zinc-500 dark:text-zinc-400">
                           <ChefHat className="w-3 h-3" />
                           {chef.recipeCount}
                         </span>
                       )}
                       {chef.cookbookCount !== undefined && (
-                        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-1 text-[11px] text-zinc-500 dark:text-zinc-400">
                           <BookOpen className="w-3 h-3" />
                           {chef.cookbookCount}
                         </span>

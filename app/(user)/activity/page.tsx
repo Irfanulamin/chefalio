@@ -30,20 +30,18 @@ export default function ActivityPage() {
   return (
     <>
       <title>Chefalio - Activity</title>
-      <div className="my-3 md:my-6">
-        <h2 className="text-5xl font-pinyon-script font-bold text-primary italic capitalize mb-2 tracking-widest">
-          Activity
-        </h2>
-        <p className="text-muted-foreground max-w-200">
-          View and manage your saved and loved recipes in one place. Keep track
-          of your culinary journey and revisit your favorites anytime.
-        </p>
-      </div>
+      <div className="max-w-7xl mx-auto px-3 space-y-6 my-4 md:my-8">
+        <div className="pb-5 border-b border-zinc-200 dark:border-zinc-800">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Activity</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 max-w-xl">
+            View and manage your saved and loved recipes in one place. Keep track of your culinary journey and revisit your favorites anytime.
+          </p>
+        </div>
 
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="max-w-7xl mx-auto my-3 md:my-6 lg:my-12"
+        className=""
       >
         <TabsList className="p-1 mb-8" variant="pill">
           <TabsTrigger value="saved">
@@ -67,6 +65,7 @@ export default function ActivityPage() {
           {activeTab === "orders" && <OrdersSection />}
         </TabsContent>
       </Tabs>
+      </div>
     </>
   );
 }
