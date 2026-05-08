@@ -23,7 +23,7 @@ import {
   ShieldCheckIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
-import GridLoader from "@/components/ui/GridLoading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function StatCard({
   label,
@@ -66,8 +66,39 @@ export default function AdminDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <GridLoader label="Loading..." />
+      <div className="space-y-6 max-w-7xl mx-auto">
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-44" />
+          <Skeleton className="h-3 w-64" />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-3.5 w-3.5 rounded-sm" />
+              </div>
+              <Skeleton className="h-7 w-20" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+              <Skeleton className="h-4 w-32 mb-5" />
+              <Skeleton className="h-44 w-full rounded-lg" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+              <Skeleton className="h-4 w-40 mb-5" />
+              <Skeleton className="h-36 w-full rounded-lg" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

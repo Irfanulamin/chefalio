@@ -1,3 +1,5 @@
+"use client";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +16,13 @@ import {
   ForkKnifeIcon,
   GearSixIcon,
   SignOutIcon,
+  BookOpenIcon,
+  UsersIcon,
+  ChefHatIcon,
+  ShieldCheckIcon,
+  ChartLineIcon,
+  ShoppingCartSimpleIcon,
+  SquaresFourIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { useProfile } from "@/hooks/useAuth";
@@ -39,17 +48,40 @@ const AvatarButton = ({ profile }: AvatarButtonProps) => {
   }
 
   return (
-    <div
-      className={`w-9.5 h-9.5 rounded-full flex items-center justify-center text-white text-sm font-semibold ring-2 ring-primary shadow-sm hover:ring-primary/50 transition-all duration-200 cursor-pointer select-none`}
-    >
+    <div className="w-9.5 h-9.5 rounded-full flex items-center justify-center text-white text-sm font-semibold ring-2 ring-primary shadow-sm hover:ring-primary/50 transition-all duration-200 cursor-pointer select-none">
       {profile?.fullName}
     </div>
   );
 };
 
+type NavItem = { label: string; href: string; Icon: React.ElementType };
+
+const ROLE_NAV: Record<string, NavItem[]> = {
+  user: [
+    { label: "Recipes", href: "/recipes", Icon: ForkKnifeIcon },
+    { label: "Cookbooks", href: "/cookbooks", Icon: BookOpenIcon },
+    { label: "Chefs", href: "/chefs", Icon: ChefHatIcon },
+  ],
+  chef: [
+    { label: "Dashboard", href: "/chef/dashboard", Icon: SquaresFourIcon },
+    { label: "My Recipes", href: "/chef/recipes", Icon: ForkKnifeIcon },
+    { label: "Cookbooks", href: "/chef/cookbooks", Icon: BookOpenIcon },
+    { label: "Orders", href: "/chef/orders", Icon: ShoppingCartSimpleIcon },
+    { label: "Analytics", href: "/chef/analytics", Icon: ChartLineIcon },
+  ],
+  admin: [
+    { label: "Dashboard", href: "/admin/dashboard", Icon: ShieldCheckIcon },
+    { label: "Users", href: "/admin/users", Icon: UsersIcon },
+    { label: "Recipes", href: "/admin/recipes", Icon: ForkKnifeIcon },
+    { label: "Cookbooks", href: "/admin/cookbooks", Icon: BookOpenIcon },
+  ],
+};
+
 export const ProfileDropdown = () => {
   const { profile, isProfileLoading } = useProfile();
   const { logout } = useAuth();
+
+  const navItems: NavItem[] = ROLE_NAV[profile?.role ?? ""] ?? [];
 
   return (
     <DropdownMenu>
@@ -70,9 +102,7 @@ export const ProfileDropdown = () => {
       >
         {/* Profile header */}
         <div className="flex items-center gap-3 px-2.5 py-2.5 mb-1">
-          <div
-            className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0 ring-2 ring-primary shadow-sm`}
-          >
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0 ring-2 ring-primary shadow-sm">
             {profile?.profile_url && (
               <Image
                 src={profile.profile_url}
@@ -95,24 +125,16 @@ export const ProfileDropdown = () => {
 
         <DropdownMenuSeparator className="my-1" />
 
+        {/* Username / email info */}
         <DropdownMenuGroup>
           <DropdownMenuItem className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm cursor-default">
-            <AtIcon
-              size={32}
-              className="text-muted-foreground shrink-0"
-              weight="bold"
-            />
+            <AtIcon size={32} className="text-muted-foreground shrink-0" weight="bold" />
             <span className="text-muted-foreground truncate">
               {profile?.username || "—"}
             </span>
           </DropdownMenuItem>
-
           <DropdownMenuItem className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm cursor-default">
-            <EnvelopeIcon
-              size={32}
-              className="text-muted-foreground shrink-0"
-              weight="bold"
-            />
+            <EnvelopeIcon size={32} className="text-muted-foreground shrink-0" weight="bold" />
             <span className="text-muted-foreground truncate">
               {profile?.email || "—"}
             </span>
@@ -121,6 +143,24 @@ export const ProfileDropdown = () => {
 
         <DropdownMenuSeparator className="my-1" />
 
+        {/* Role-based navigation */}
+        {navItems.length > 0 && (
+          <>
+            <DropdownMenuGroup>
+              {navItems.map(({ label, href, Icon }) => (
+                <Link key={href} href={href} className="w-full">
+                  <DropdownMenuItem className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm cursor-pointer hover:bg-accent focus:bg-accent">
+                    <Icon size={32} className="shrink-0" weight="bold" />
+                    <span>{label}</span>
+                  </DropdownMenuItem>
+                </Link>
+              ))}
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator className="my-1" />
+          </>
+        )}
+
+        {/* Settings */}
         <DropdownMenuGroup>
           <Link href="/settings" className="w-full">
             <DropdownMenuItem className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm cursor-pointer hover:bg-accent focus:bg-accent">
@@ -128,19 +168,6 @@ export const ProfileDropdown = () => {
               <span>Settings</span>
             </DropdownMenuItem>
           </Link>
-        </DropdownMenuGroup>
-
-        <DropdownMenuSeparator className="my-1" />
-
-        <DropdownMenuGroup>
-          {profile?.role === "user" && (
-            <Link href="/recipes" className="w-full">
-              <DropdownMenuItem className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm cursor-pointer hover:bg-accent focus:bg-accent">
-                <ForkKnifeIcon size={32} className="shrink-0" weight="bold" />
-                <span>Recipes</span>
-              </DropdownMenuItem>
-            </Link>
-          )}
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator className="my-1" />

@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ROLE_COLORS: Record<string, string> = {
   admin:
@@ -163,11 +164,39 @@ export default function AdminUsersPage() {
           ].join(" ")}
         >
           {isLoading ? (
-            <div className="flex items-center justify-center h-48">
-              <UsersIcon
-                size={24}
-                className="text-zinc-300 dark:text-zinc-700 animate-pulse"
-              />
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                    <th className="text-left px-4 py-3"><Skeleton className="h-3 w-10" /></th>
+                    <th className="text-left px-4 py-3 hidden sm:table-cell"><Skeleton className="h-3 w-10" /></th>
+                    <th className="text-left px-4 py-3"><Skeleton className="h-3 w-8" /></th>
+                    <th className="text-left px-4 py-3"><Skeleton className="h-3 w-12" /></th>
+                    <th className="text-left px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-16" /></th>
+                    <th className="px-4 py-3 w-24" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <tr key={i}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                          <div className="space-y-1.5">
+                            <Skeleton className="h-3 w-28" />
+                            <Skeleton className="h-2.5 w-20" />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell"><Skeleton className="h-3 w-36" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                      <td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-12" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-7 w-20 rounded-lg" /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : users.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 gap-2 text-zinc-400">

@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   beginner:
@@ -97,11 +98,39 @@ export default function AdminRecipesPage() {
           ].join(" ")}
         >
           {isLoading ? (
-            <div className="flex items-center justify-center h-48">
-              <ForkKnifeIcon
-                size={24}
-                className="text-zinc-300 dark:text-zinc-700 animate-pulse"
-              />
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                    <th className="text-left px-4 py-3"><Skeleton className="h-3 w-12" /></th>
+                    <th className="text-left px-4 py-3 hidden sm:table-cell"><Skeleton className="h-3 w-12" /></th>
+                    <th className="text-left px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-16" /></th>
+                    <th className="text-left px-4 py-3 hidden lg:table-cell"><Skeleton className="h-3 w-20" /></th>
+                    <th className="px-4 py-3 w-10" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <tr key={i}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-9 w-12 rounded-md shrink-0" />
+                          <Skeleton className="h-3.5 w-36" />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        <div className="space-y-1.5">
+                          <Skeleton className="h-3 w-28" />
+                          <Skeleton className="h-2.5 w-20" />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-5 w-20 rounded-full" /></td>
+                      <td className="px-4 py-3 hidden lg:table-cell"><Skeleton className="h-3 w-16" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-7 w-7 rounded-lg" /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : recipes.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 gap-2 text-zinc-400">

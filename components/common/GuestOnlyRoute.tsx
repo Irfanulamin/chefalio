@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { GridLoader } from "../ui/GridLoading";
+import { Spinner } from "../ui/spinner";
 
 export default function GuestOnlyRoute({
   children,
@@ -24,7 +24,7 @@ export default function GuestOnlyRoute({
   if (isAuthenticated) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <GridLoader />
+        <Spinner className="size-8" />
       </div>
     );
   }
