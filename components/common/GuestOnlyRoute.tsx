@@ -21,9 +21,9 @@ export default function GuestOnlyRoute({
     }
   }, [isLoading, isAuthenticated, user?.role, router]);
 
-  if (isLoading || isAuthenticated) {
+  if (isAuthenticated) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background animate-in fade-in duration-300 [animation-delay:2s] fill-mode-both opacity-0">
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
         <GridLoader />
       </div>
     );
