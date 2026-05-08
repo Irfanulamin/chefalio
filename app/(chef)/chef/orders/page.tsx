@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
-import { GridLoader } from "@/components/ui/GridLoading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const STATUS_CONFIG: Record<
   PaymentStatus,
@@ -223,8 +223,49 @@ export default function ChefOrdersPage() {
 
         {/* Content */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <GridLoader label="Loading orders..." />
+          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                  <th className="py-2.5 pl-4 pr-3 text-left"><Skeleton className="h-3 w-16" /></th>
+                  <th className="py-2.5 px-3 text-left hidden md:table-cell"><Skeleton className="h-3 w-16" /></th>
+                  <th className="py-2.5 px-3 text-left hidden lg:table-cell"><Skeleton className="h-3 w-24" /></th>
+                  <th className="py-2.5 px-3 text-right hidden sm:table-cell"><Skeleton className="h-3 w-12 ml-auto" /></th>
+                  <th className="py-2.5 px-3 text-left"><Skeleton className="h-3 w-12" /></th>
+                  <th className="py-2.5 pl-3 pr-4" />
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={i} className="border-b border-zinc-50 dark:border-zinc-800/60 last:border-0">
+                    <td className="py-3 pl-4 pr-3">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-10 w-14 rounded-lg shrink-0" />
+                        <div className="space-y-1.5">
+                          <Skeleton className="h-3.5 w-36" />
+                          <Skeleton className="h-2.5 w-24" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 hidden md:table-cell">
+                      <Skeleton className="h-3 w-40" />
+                    </td>
+                    <td className="py-3 px-3 hidden lg:table-cell">
+                      <Skeleton className="h-3 w-44" />
+                    </td>
+                    <td className="py-3 px-3 hidden sm:table-cell text-right">
+                      <Skeleton className="h-4 w-12 ml-auto" />
+                    </td>
+                    <td className="py-3 px-3">
+                      <Skeleton className="h-5 w-16 rounded-md" />
+                    </td>
+                    <td className="py-3 pl-3 pr-4 text-right">
+                      <Skeleton className="h-7 w-16 rounded-lg ml-auto" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 py-16 flex flex-col items-center gap-3 text-center">

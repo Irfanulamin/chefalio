@@ -27,7 +27,7 @@ import {
   TrendUpIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
-import GridLoader from "@/components/ui/GridLoading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -189,8 +189,84 @@ export default function ChefAnalyticsPage() {
 
   if (isInitialLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <GridLoader label="Loading analytics..." />
+      <div className="space-y-6 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="space-y-1.5">
+            <Skeleton className="h-5 w-28" />
+            <Skeleton className="h-3.5 w-72" />
+          </div>
+          <Skeleton className="h-9 w-52 rounded-lg" />
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 pt-2">
+            <Skeleton className="h-4 w-20" />
+            <div className="flex-1 h-px bg-zinc-100 dark:bg-zinc-800" />
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-3.5 w-3.5 rounded-sm" />
+                </div>
+                <Skeleton className="h-7 w-24" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+            ))}
+          </div>
+          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+            <Skeleton className="h-4 w-40 mb-2" />
+            <Skeleton className="h-3 w-48 mb-5" />
+            <Skeleton className="h-[200px] w-full rounded-lg" />
+          </div>
+          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+            <Skeleton className="h-4 w-36 mb-2" />
+            <Skeleton className="h-3 w-44 mb-5" />
+            <Skeleton className="h-[160px] w-full rounded-lg" />
+          </div>
+        </div>
+
+        <div className="space-y-4 mt-6">
+          <div className="flex items-center gap-3 pt-2">
+            <Skeleton className="h-4 w-36" />
+            <div className="flex-1 h-px bg-zinc-100 dark:bg-zinc-800" />
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-3.5 w-3.5 rounded-sm" />
+                </div>
+                <Skeleton className="h-7 w-24" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+              <Skeleton className="h-4 w-40 mb-5" />
+              <Skeleton className="h-[200px] w-full rounded-lg" />
+            </div>
+            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+              <Skeleton className="h-4 w-32 mb-4" />
+              <div className="space-y-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <Skeleton className="h-3 w-4" />
+                    <Skeleton className="h-9 w-12 rounded-lg" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-3 w-32" />
+                      <Skeleton className="h-1.5 w-full rounded-full" />
+                    </div>
+                    <Skeleton className="h-3 w-8" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

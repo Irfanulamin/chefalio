@@ -25,7 +25,7 @@ import {
   TrophyIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
-import GridLoader from "@/components/ui/GridLoading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   beginner: "#86efac",
@@ -88,14 +88,47 @@ function SectionHeader({
 
 export default function ChefDashboardPage() {
   const { profile } = useProfile();
-  const { analytics, isLoading } = useDashboardAnalytics();
-  const { myRecipes } = useMyRecipes();
-  const { myCookbooks } = useMyCookbooks();
+  const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics();
+  const { myRecipes, isLoading: recipesLoading } = useMyRecipes();
+  const { myCookbooks, isLoading: cookbooksLoading } = useMyCookbooks();
+
+  const isLoading = analyticsLoading || recipesLoading || cookbooksLoading;
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <GridLoader label="Loading..." />
+      <div className="space-y-6 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-3.5 w-64" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-28 rounded-lg" />
+            <Skeleton className="h-8 w-32 rounded-lg" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-3.5 w-3.5 rounded-sm" />
+              </div>
+              <Skeleton className="h-7 w-16" />
+              <Skeleton className="h-3 w-28" />
+            </div>
+          ))}
+        </div>
+        {[0, 1].map((row) => (
+          <div key={row} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {[0, 1].map((col) => (
+              <div key={col} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+                <Skeleton className="h-4 w-36 mb-5" />
+                <Skeleton className="h-44 w-full rounded-lg" />
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     );
   }

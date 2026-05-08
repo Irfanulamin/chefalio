@@ -112,7 +112,7 @@ export default function AdminCookbooksPage() {
           open={!!editTarget}
           onOpenChange={(open) => !open && setEditTarget(null)}
         >
-          <DialogContent className="max-w-sm">
+          <DialogContent className="sm:max-w-sm">
             <DialogHeader>
               <DialogTitle>Edit Cookbook</DialogTitle>
             </DialogHeader>

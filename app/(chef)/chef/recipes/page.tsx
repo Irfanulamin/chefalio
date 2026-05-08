@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { GridLoader } from "@/components/ui/GridLoading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const DIFFICULTY_BADGE: Record<string, string> = {
   beginner: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
@@ -110,7 +110,7 @@ function RecipeRow({
                 <TrashIcon size={13} />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="rounded-xl max-w-sm">
+            <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete recipe?</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -199,8 +199,51 @@ export default function ChefRecipesPage() {
 
         {/* Table */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <GridLoader label="Loading recipes..." />
+          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                  <th className="py-2.5 pl-4 pr-3 text-left"><Skeleton className="h-3 w-12" /></th>
+                  <th className="py-2.5 px-3 text-left hidden sm:table-cell"><Skeleton className="h-3 w-16" /></th>
+                  <th className="py-2.5 px-3 text-left hidden md:table-cell"><Skeleton className="h-3 w-8" /></th>
+                  <th className="py-2.5 px-3 text-left hidden lg:table-cell"><Skeleton className="h-3 w-20" /></th>
+                  <th className="py-2.5 pl-3 pr-4" />
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={i} className="border-b border-zinc-100 dark:border-zinc-800 last:border-0">
+                    <td className="py-3 pl-4 pr-3">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-10 w-14 rounded-lg shrink-0" />
+                        <div className="space-y-1.5">
+                          <Skeleton className="h-3.5 w-40" />
+                          <Skeleton className="h-2.5 w-24" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 hidden sm:table-cell">
+                      <Skeleton className="h-5 w-20 rounded-md" />
+                    </td>
+                    <td className="py-3 px-3 hidden md:table-cell">
+                      <div className="flex gap-1">
+                        <Skeleton className="h-5 w-12 rounded" />
+                        <Skeleton className="h-5 w-12 rounded" />
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 hidden lg:table-cell">
+                      <Skeleton className="h-3 w-16" />
+                    </td>
+                    <td className="py-3 pl-3 pr-4">
+                      <div className="flex gap-1.5 justify-end">
+                        <Skeleton className="h-7 w-16 rounded-lg" />
+                        <Skeleton className="h-7 w-7 rounded-lg" />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 py-16 flex flex-col items-center gap-3 text-center">

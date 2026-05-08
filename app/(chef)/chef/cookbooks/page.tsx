@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import GridLoader from "@/components/ui/GridLoading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function CookbookCard({
   cookbook,
@@ -87,7 +87,7 @@ function CookbookCard({
                 <TrashIcon size={13} />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="rounded-xl max-w-sm">
+            <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete cookbook?</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -174,8 +174,21 @@ export default function ChefCookbooksPage() {
 
         {/* Grid */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <GridLoader label="Loading cookbooks..." />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+                <Skeleton className="h-40 w-full rounded-none" />
+                <div className="p-4 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-2/3" />
+                  <div className="flex gap-2 pt-2">
+                    <Skeleton className="h-8 flex-1 rounded-lg" />
+                    <Skeleton className="h-8 w-9 rounded-lg" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 py-16 flex flex-col items-center gap-3 text-center">
