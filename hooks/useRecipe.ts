@@ -8,6 +8,7 @@ import type {
   RecipeStats,
   BatchStatsMap,
 } from "@/types/recipes.type";
+import type { GetChefRecipesResponse } from "@/types/chef.type";
 
 export type { RecipeStats, BatchStatsMap };
 
@@ -127,6 +128,24 @@ function patchRecipesCache(id: string, patch: Partial<Recipe>) {
   );
 }
 
+function patchChefRecipesCache(id: string, patch: Partial<Recipe>) {
+  queryClient.setQueriesData<GetChefRecipesResponse>(
+    { queryKey: ["chef-recipes"], exact: false },
+    (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        data: {
+          ...old.data,
+          recipes: old.data.recipes.map((recipe) =>
+            recipe._id === id ? { ...recipe, ...patch } : recipe,
+          ),
+        },
+      };
+    },
+  );
+}
+
 function patchBatchStatsCache(id: string, patch: Partial<RecipeStats>) {
   queryClient.setQueriesData<BatchStatsMap>(
     { queryKey: ["recipe-stats-batch"], exact: false },
@@ -154,6 +173,7 @@ export function useToggleLove() {
       await queryClient.cancelQueries({ queryKey: ["recipe-stats-batch"] });
       await queryClient.cancelQueries({ queryKey: ["recipe-stats", id] });
       await queryClient.cancelQueries({ queryKey: ["recipes"] });
+      await queryClient.cancelQueries({ queryKey: ["chef-recipes"] });
 
       const batchEntries = queryClient.getQueriesData<BatchStatsMap>({
         queryKey: ["recipe-stats-batch"],
@@ -171,9 +191,19 @@ export function useToggleLove() {
       const allRecipePages = queryClient.getQueriesData<RecipeApiResponse>({
         queryKey: ["recipes"],
       });
-      const currentRecipe = allRecipePages
+      const recipeFromList = allRecipePages
         .flatMap(([, page]) => page?.data?.recipes ?? [])
         .find((r) => r._id === id);
+
+      const allChefRecipePages = queryClient.getQueriesData<GetChefRecipesResponse>({
+        queryKey: ["chef-recipes"],
+      });
+      const previousChefRecipes = allChefRecipePages;
+      const recipeFromChef = allChefRecipePages
+        .flatMap(([, page]) => page?.data?.recipes ?? [])
+        .find((r) => r._id === id);
+
+      const currentRecipe = recipeFromList ?? recipeFromChef;
 
       const wasLoved = currentStats.isLoved;
 
@@ -186,14 +216,14 @@ export function useToggleLove() {
       );
 
       if (currentRecipe) {
-        patchRecipesCache(id, {
-          lovedCount: wasLoved
-            ? currentRecipe.lovedCount - 1
-            : currentRecipe.lovedCount + 1,
-        });
+        const newCount = wasLoved
+          ? currentRecipe.lovedCount - 1
+          : currentRecipe.lovedCount + 1;
+        patchRecipesCache(id, { lovedCount: newCount });
+        patchChefRecipesCache(id, { lovedCount: newCount });
       }
 
-      return { previousBatch, previousSingle, wasLoved };
+      return { previousBatch, previousSingle, previousChefRecipes, wasLoved };
     },
 
     onError: (_err, id, context) => {
@@ -204,6 +234,11 @@ export function useToggleLove() {
       }
       if (context?.previousSingle !== undefined) {
         queryClient.setQueryData(["recipe-stats", id], context.previousSingle);
+      }
+      if (context?.previousChefRecipes) {
+        context.previousChefRecipes.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
       }
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
     },
@@ -233,6 +268,7 @@ export function useToggleSave() {
       await queryClient.cancelQueries({ queryKey: ["recipe-stats-batch"] });
       await queryClient.cancelQueries({ queryKey: ["recipe-stats", id] });
       await queryClient.cancelQueries({ queryKey: ["recipes"] });
+      await queryClient.cancelQueries({ queryKey: ["chef-recipes"] });
 
       const batchEntries = queryClient.getQueriesData<BatchStatsMap>({
         queryKey: ["recipe-stats-batch"],
@@ -250,9 +286,19 @@ export function useToggleSave() {
       const allRecipePages = queryClient.getQueriesData<RecipeApiResponse>({
         queryKey: ["recipes"],
       });
-      const currentRecipe = allRecipePages
+      const recipeFromList = allRecipePages
         .flatMap(([, page]) => page?.data?.recipes ?? [])
         .find((r) => r._id === id);
+
+      const allChefRecipePages = queryClient.getQueriesData<GetChefRecipesResponse>({
+        queryKey: ["chef-recipes"],
+      });
+      const previousChefRecipes = allChefRecipePages;
+      const recipeFromChef = allChefRecipePages
+        .flatMap(([, page]) => page?.data?.recipes ?? [])
+        .find((r) => r._id === id);
+
+      const currentRecipe = recipeFromList ?? recipeFromChef;
 
       const wasSaved = currentStats.isSaved;
 
@@ -265,14 +311,14 @@ export function useToggleSave() {
       );
 
       if (currentRecipe) {
-        patchRecipesCache(id, {
-          savedCount: wasSaved
-            ? currentRecipe.savedCount - 1
-            : currentRecipe.savedCount + 1,
-        });
+        const newCount = wasSaved
+          ? currentRecipe.savedCount - 1
+          : currentRecipe.savedCount + 1;
+        patchRecipesCache(id, { savedCount: newCount });
+        patchChefRecipesCache(id, { savedCount: newCount });
       }
 
-      return { previousBatch, previousSingle, wasSaved };
+      return { previousBatch, previousSingle, previousChefRecipes, wasSaved };
     },
 
     onError: (_err, id, context) => {
@@ -283,6 +329,11 @@ export function useToggleSave() {
       }
       if (context?.previousSingle !== undefined) {
         queryClient.setQueryData(["recipe-stats", id], context.previousSingle);
+      }
+      if (context?.previousChefRecipes) {
+        context.previousChefRecipes.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
       }
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
     },
