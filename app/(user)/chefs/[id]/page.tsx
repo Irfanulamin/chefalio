@@ -36,10 +36,10 @@ function ChefCookbookCard({
         />
         <span
           className={cn(
-            "absolute top-2.5 right-2.5 text-[11px] font-medium px-2 py-0.5 rounded-md",
+            "absolute top-2.5 right-2.5 text-[11px] font-medium px-2 py-0.5 rounded-md shadow-sm",
             cookbook.stockCount <= 3
-              ? "bg-orange-50 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400"
-              : "bg-white/90 dark:bg-zinc-800/90 text-zinc-600 dark:text-zinc-300",
+              ? "bg-orange-500 text-white dark:bg-orange-500 dark:text-white"
+              : "bg-black/60 text-white dark:bg-black/70 dark:text-white",
           )}
         >
           {cookbook.stockCount <= 3
