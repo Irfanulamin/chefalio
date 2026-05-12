@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { axiosInstance } from "./axios";
 import type {
   Chef,
@@ -37,6 +37,41 @@ export function useChefs(params?: {
   });
 
   return { chefs: data, isLoading, isFetching, error };
+}
+
+/** GET /chefs — infinite paginated list of all chefs */
+export function useInfiniteChefs(params?: {
+  limit?: number;
+  search?: string;
+}) {
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["chefs-infinite", params?.search, params?.limit],
+    queryFn: ({ pageParam }) =>
+      axiosInstance
+        .get<GetChefsResponse>("/chefs", {
+          params: { ...params, page: pageParam },
+        })
+        .then((res) => res.data),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.pagination;
+      return page < totalPages ? page + 1 : undefined;
+    },
+    staleTime: 1000 * 60,
+  });
+
+  const chefs = data?.pages.flatMap((p) => p.data) ?? [];
+  const total = data?.pages[0]?.pagination.total ?? 0;
+
+  return { chefs, total, isLoading, isFetching, error, fetchNextPage, hasNextPage, isFetchingNextPage };
 }
 
 /** GET /chefs/count — total number of chefs */
@@ -93,6 +128,42 @@ export function useChefRecipes(
   };
 }
 
+/** GET /chefs/:id/recipes — infinite recipes by a specific chef */
+export function useInfiniteChefRecipes(
+  id: string,
+  params?: { limit?: number },
+) {
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["chef-recipes-infinite", id, params],
+    queryFn: ({ pageParam }) =>
+      axiosInstance
+        .get<GetChefRecipesResponse>(`/chefs/${id}/recipes`, {
+          params: { ...params, page: pageParam },
+        })
+        .then((res) => res.data),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.pagination;
+      return page < totalPages ? page + 1 : undefined;
+    },
+    staleTime: 1000 * 60,
+    enabled: !!id,
+  });
+
+  const recipes = data?.pages.flatMap((p) => p.data.recipes) ?? [];
+  const total = data?.pages[0]?.data.pagination.total ?? 0;
+
+  return { recipes, total, isLoading, isFetching, error, fetchNextPage, hasNextPage, isFetchingNextPage };
+}
+
 /** GET /chefs/:id/cookbooks — cookbooks by a specific chef */
 export function useChefCookbooks(
   id: string,
@@ -116,6 +187,42 @@ export function useChefCookbooks(
     isFetching,
     error,
   };
+}
+
+/** GET /chefs/:id/cookbooks — infinite cookbooks by a specific chef */
+export function useInfiniteChefCookbooks(
+  id: string,
+  params?: { limit?: number },
+) {
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["chef-cookbooks-infinite", id, params],
+    queryFn: ({ pageParam }) =>
+      axiosInstance
+        .get<GetChefCookbooksResponse>(`/chefs/${id}/cookbooks`, {
+          params: { ...params, page: pageParam },
+        })
+        .then((res) => res.data),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.pagination;
+      return page < totalPages ? page + 1 : undefined;
+    },
+    staleTime: 1000 * 60,
+    enabled: !!id,
+  });
+
+  const cookbooks = data?.pages.flatMap((p) => p.data.cookbooks) ?? [];
+  const total = data?.pages[0]?.data.pagination.total ?? 0;
+
+  return { cookbooks, total, isLoading, isFetching, error, fetchNextPage, hasNextPage, isFetchingNextPage };
 }
 
 /** GET /chefs/:id/related — other chefs to suggest */

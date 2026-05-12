@@ -1,4 +1,5 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
+import type { InfiniteData } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import axiosInstance from "./axios/interceptors";
 import type {
@@ -48,6 +49,64 @@ export function useRecipes(params?: {
     isLoading,
     isFetching,
     error,
+  };
+}
+
+/* =========================
+   1b. INFINITE RECIPES LIST HOOK
+========================= */
+export function useInfiniteRecipes(params?: {
+  search?: string;
+  limit?: number;
+  tags?: string;
+  difficulty?: string;
+  author?: string;
+  sort?: "newest" | "trending" | "popular";
+}) {
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: [
+      "recipes-infinite",
+      params?.search,
+      params?.limit,
+      params?.tags,
+      params?.difficulty,
+      params?.author,
+      params?.sort,
+    ],
+    queryFn: ({ pageParam }) =>
+      axiosInstance
+        .get<RecipeApiResponse>("/recipes/all", {
+          params: { ...params, page: pageParam },
+        })
+        .then((res) => res.data),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.pagination;
+      return page < totalPages ? page + 1 : undefined;
+    },
+    staleTime: 1000 * 60,
+  });
+
+  const recipes = data?.pages.flatMap((p) => p.data.recipes) ?? [];
+  const total = data?.pages[0]?.data.pagination.total ?? 0;
+
+  return {
+    recipes,
+    total,
+    isLoading,
+    isFetching,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
   };
 }
 
@@ -126,6 +185,24 @@ function patchRecipesCache(id: string, patch: Partial<Recipe>) {
       };
     },
   );
+  queryClient.setQueriesData<InfiniteData<RecipeApiResponse>>(
+    { queryKey: ["recipes-infinite"], exact: false },
+    (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        pages: old.pages.map((page) => ({
+          ...page,
+          data: {
+            ...page.data,
+            recipes: page.data.recipes.map((recipe) =>
+              recipe._id === id ? { ...recipe, ...patch } : recipe,
+            ),
+          },
+        })),
+      };
+    },
+  );
 }
 
 function patchChefRecipesCache(id: string, patch: Partial<Recipe>) {
@@ -141,6 +218,24 @@ function patchChefRecipesCache(id: string, patch: Partial<Recipe>) {
             recipe._id === id ? { ...recipe, ...patch } : recipe,
           ),
         },
+      };
+    },
+  );
+  queryClient.setQueriesData<InfiniteData<GetChefRecipesResponse>>(
+    { queryKey: ["chef-recipes-infinite"], exact: false },
+    (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        pages: old.pages.map((page) => ({
+          ...page,
+          data: {
+            ...page.data,
+            recipes: page.data.recipes.map((recipe) =>
+              recipe._id === id ? { ...recipe, ...patch } : recipe,
+            ),
+          },
+        })),
       };
     },
   );
@@ -173,7 +268,9 @@ export function useToggleLove() {
       await queryClient.cancelQueries({ queryKey: ["recipe-stats-batch"] });
       await queryClient.cancelQueries({ queryKey: ["recipe-stats", id] });
       await queryClient.cancelQueries({ queryKey: ["recipes"] });
+      await queryClient.cancelQueries({ queryKey: ["recipes-infinite"] });
       await queryClient.cancelQueries({ queryKey: ["chef-recipes"] });
+      await queryClient.cancelQueries({ queryKey: ["chef-recipes-infinite"] });
 
       const batchEntries = queryClient.getQueriesData<BatchStatsMap>({
         queryKey: ["recipe-stats-batch"],
@@ -195,6 +292,15 @@ export function useToggleLove() {
         .flatMap(([, page]) => page?.data?.recipes ?? [])
         .find((r) => r._id === id);
 
+      const allRecipeInfinitePages = queryClient.getQueriesData<InfiniteData<RecipeApiResponse>>({
+        queryKey: ["recipes-infinite"],
+      });
+      const recipeFromInfiniteList = recipeFromList
+        ? undefined
+        : allRecipeInfinitePages
+            .flatMap(([, iData]) => iData?.pages.flatMap((p) => p?.data?.recipes ?? []) ?? [])
+            .find((r) => r._id === id);
+
       const allChefRecipePages = queryClient.getQueriesData<GetChefRecipesResponse>({
         queryKey: ["chef-recipes"],
       });
@@ -203,7 +309,17 @@ export function useToggleLove() {
         .flatMap(([, page]) => page?.data?.recipes ?? [])
         .find((r) => r._id === id);
 
-      const currentRecipe = recipeFromList ?? recipeFromChef;
+      const allChefRecipeInfinitePages = queryClient.getQueriesData<InfiniteData<GetChefRecipesResponse>>({
+        queryKey: ["chef-recipes-infinite"],
+      });
+      const previousChefRecipesInfinite = allChefRecipeInfinitePages;
+      const recipeFromChefInfinite = recipeFromChef
+        ? undefined
+        : allChefRecipeInfinitePages
+            .flatMap(([, iData]) => iData?.pages.flatMap((p) => p?.data?.recipes ?? []) ?? [])
+            .find((r) => r._id === id);
+
+      const currentRecipe = recipeFromList ?? recipeFromInfiniteList ?? recipeFromChef ?? recipeFromChefInfinite;
 
       const wasLoved = currentStats.isLoved;
 
@@ -223,7 +339,7 @@ export function useToggleLove() {
         patchChefRecipesCache(id, { lovedCount: newCount });
       }
 
-      return { previousBatch, previousSingle, previousChefRecipes, wasLoved };
+      return { previousBatch, previousSingle, previousChefRecipes, previousChefRecipesInfinite, wasLoved };
     },
 
     onError: (_err, id, context) => {
@@ -240,7 +356,13 @@ export function useToggleLove() {
           queryClient.setQueryData(queryKey, data);
         });
       }
+      if (context?.previousChefRecipesInfinite) {
+        context.previousChefRecipesInfinite.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      queryClient.invalidateQueries({ queryKey: ["recipes-infinite"] });
     },
 
     onSettled: (_data, _error, id) => {
@@ -268,7 +390,9 @@ export function useToggleSave() {
       await queryClient.cancelQueries({ queryKey: ["recipe-stats-batch"] });
       await queryClient.cancelQueries({ queryKey: ["recipe-stats", id] });
       await queryClient.cancelQueries({ queryKey: ["recipes"] });
+      await queryClient.cancelQueries({ queryKey: ["recipes-infinite"] });
       await queryClient.cancelQueries({ queryKey: ["chef-recipes"] });
+      await queryClient.cancelQueries({ queryKey: ["chef-recipes-infinite"] });
 
       const batchEntries = queryClient.getQueriesData<BatchStatsMap>({
         queryKey: ["recipe-stats-batch"],
@@ -290,6 +414,15 @@ export function useToggleSave() {
         .flatMap(([, page]) => page?.data?.recipes ?? [])
         .find((r) => r._id === id);
 
+      const allRecipeInfinitePages = queryClient.getQueriesData<InfiniteData<RecipeApiResponse>>({
+        queryKey: ["recipes-infinite"],
+      });
+      const recipeFromInfiniteList = recipeFromList
+        ? undefined
+        : allRecipeInfinitePages
+            .flatMap(([, iData]) => iData?.pages.flatMap((p) => p?.data?.recipes ?? []) ?? [])
+            .find((r) => r._id === id);
+
       const allChefRecipePages = queryClient.getQueriesData<GetChefRecipesResponse>({
         queryKey: ["chef-recipes"],
       });
@@ -298,7 +431,17 @@ export function useToggleSave() {
         .flatMap(([, page]) => page?.data?.recipes ?? [])
         .find((r) => r._id === id);
 
-      const currentRecipe = recipeFromList ?? recipeFromChef;
+      const allChefRecipeInfinitePages = queryClient.getQueriesData<InfiniteData<GetChefRecipesResponse>>({
+        queryKey: ["chef-recipes-infinite"],
+      });
+      const previousChefRecipesInfinite = allChefRecipeInfinitePages;
+      const recipeFromChefInfinite = recipeFromChef
+        ? undefined
+        : allChefRecipeInfinitePages
+            .flatMap(([, iData]) => iData?.pages.flatMap((p) => p?.data?.recipes ?? []) ?? [])
+            .find((r) => r._id === id);
+
+      const currentRecipe = recipeFromList ?? recipeFromInfiniteList ?? recipeFromChef ?? recipeFromChefInfinite;
 
       const wasSaved = currentStats.isSaved;
 
@@ -318,7 +461,7 @@ export function useToggleSave() {
         patchChefRecipesCache(id, { savedCount: newCount });
       }
 
-      return { previousBatch, previousSingle, previousChefRecipes, wasSaved };
+      return { previousBatch, previousSingle, previousChefRecipes, previousChefRecipesInfinite, wasSaved };
     },
 
     onError: (_err, id, context) => {
@@ -335,7 +478,13 @@ export function useToggleSave() {
           queryClient.setQueryData(queryKey, data);
         });
       }
+      if (context?.previousChefRecipesInfinite) {
+        context.previousChefRecipesInfinite.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      queryClient.invalidateQueries({ queryKey: ["recipes-infinite"] });
     },
 
     onSettled: (_data, _error, id) => {

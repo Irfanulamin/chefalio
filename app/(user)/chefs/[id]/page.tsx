@@ -2,19 +2,18 @@
 
 import {
   useChef,
-  useChefRecipes,
-  useChefCookbooks,
+  useInfiniteChefRecipes,
+  useInfiniteChefCookbooks,
   useRelatedChefs,
 } from "@/hooks/useChef";
 import { useBatchRecipeStats } from "@/hooks/useRecipe";
 import { RecipeCard } from "@/components/User/Recipe/RecipeCard";
-import { PaginationSection } from "@/components/common/Pagination";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { BookOpen, ChefHat, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -118,7 +117,6 @@ export default function ChefProfilePage() {
   const chefId = params.id;
 
   const tab = (searchParams.get("tab") ?? "recipes") as "recipes" | "cookbooks";
-  const page = Number(searchParams.get("page") ?? "1");
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -127,36 +125,71 @@ export default function ChefProfilePage() {
         if (value === null) p.delete(key);
         else p.set(key, value);
       });
-      if (!("page" in updates)) p.set("page", "1");
+      p.delete("page");
       router.replace(`?${p.toString()}`, { scroll: false });
     },
     [searchParams, router],
   );
 
-  const setTab = (t: "recipes" | "cookbooks") =>
-    updateParams({ tab: t, page: "1" });
+  const setTab = (t: "recipes" | "cookbooks") => updateParams({ tab: t });
 
   const { chef, isLoading: isChefLoading } = useChef(chefId);
+
   const {
     recipes,
-    pagination: recipePagination,
+    total: recipesTotal,
     isLoading: isRecipesLoading,
-    isFetching: isRecipesFetching,
-  } = useChefRecipes(chefId, { page, limit: 12 });
+    isFetchingNextPage: isRecipesFetchingNextPage,
+    hasNextPage: recipesHasNextPage,
+    fetchNextPage: fetchNextRecipesPage,
+  } = useInfiniteChefRecipes(chefId, { limit: 12 });
 
   const {
     cookbooks,
-    pagination: cookbookPagination,
+    total: cookbooksTotal,
     isLoading: isCookbooksLoading,
-    isFetching: isCookbooksFetching,
-  } = useChefCookbooks(chefId, { page, limit: 12 });
+    isFetchingNextPage: isCookbooksFetchingNextPage,
+    hasNextPage: cookbooksHasNextPage,
+    fetchNextPage: fetchNextCookbooksPage,
+  } = useInfiniteChefCookbooks(chefId, { limit: 12 });
 
   const { relatedChefs } = useRelatedChefs(chefId);
 
   const recipeIds = useMemo(() => recipes?.map((r) => r._id) ?? [], [recipes]);
   const { statsFor } = useBatchRecipeStats(recipeIds);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const recipesSentinelRef = useRef<HTMLDivElement>(null);
+  const cookbooksSentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = recipesSentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && recipesHasNextPage && !isRecipesFetchingNextPage) {
+          fetchNextRecipesPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [recipesHasNextPage, isRecipesFetchingNextPage, fetchNextRecipesPage]);
+
+  useEffect(() => {
+    const el = cookbooksSentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && cookbooksHasNextPage && !isCookbooksFetchingNextPage) {
+          fetchNextCookbooksPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [cookbooksHasNextPage, isCookbooksFetchingNextPage, fetchNextCookbooksPage]);
 
   if (isChefLoading) {
     return (
@@ -189,13 +222,8 @@ export default function ChefProfilePage() {
     );
   }
 
-  const totalPages =
-    tab === "recipes"
-      ? (recipePagination?.totalPages ?? 1)
-      : (cookbookPagination?.totalPages ?? 1);
-
   return (
-    <div ref={scrollRef} className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
+    <div className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
       {/* ── Chef Hero ── */}
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
         <div className="relative w-24 h-24 shrink-0">
@@ -219,18 +247,22 @@ export default function ChefProfilePage() {
           <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
             <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400">
               <ChefHat className="w-3.5 h-3.5" />
-              {recipePagination?.total !== undefined ? (
-                `${recipePagination.total} Recipes`
-              ) : (
+              {recipesTotal > 0 ? (
+                `${recipesTotal} Recipes`
+              ) : isRecipesLoading ? (
                 <Loader2 className="animate-spin w-3.5 h-3.5" />
+              ) : (
+                "0 Recipes"
               )}
             </span>
             <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400">
               <BookOpen className="w-3.5 h-3.5" />
-              {cookbookPagination?.total !== undefined ? (
-                `${cookbookPagination.total} Cookbooks`
-              ) : (
+              {cookbooksTotal > 0 ? (
+                `${cookbooksTotal} Cookbooks`
+              ) : isCookbooksLoading ? (
                 <Loader2 className="animate-spin w-3.5 h-3.5" />
+              ) : (
+                "0 Cookbooks"
               )}
             </span>
           </div>
@@ -260,19 +292,14 @@ export default function ChefProfilePage() {
         <>
           {isRecipesLoading ? (
             <GridSkeleton type="recipe" />
-          ) : recipes?.length === 0 ? (
+          ) : recipes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center gap-3 min-h-[30vh]">
               <ChefHat className="w-10 h-10 text-zinc-300 dark:text-zinc-700" />
               <p className="text-sm text-zinc-500 dark:text-zinc-400">No recipes yet</p>
             </div>
           ) : (
-            <div
-              className={cn(
-                "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 transition-opacity duration-200",
-                isRecipesFetching ? "opacity-50" : "opacity-100",
-              )}
-            >
-              {recipes?.map((recipe) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {recipes.map((recipe) => (
                 <RecipeCard
                   key={recipe._id}
                   recipe={recipe}
@@ -281,37 +308,37 @@ export default function ChefProfilePage() {
               ))}
             </div>
           )}
+          <div ref={recipesSentinelRef} className="h-4" />
+          {isRecipesFetchingNextPage && (
+            <div className="flex justify-center py-4">
+              <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+            </div>
+          )}
         </>
       ) : (
         <>
           {isCookbooksLoading ? (
             <GridSkeleton type="cookbook" />
-          ) : cookbooks?.length === 0 ? (
+          ) : cookbooks.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center gap-3 min-h-[30vh]">
               <BookOpen className="w-10 h-10 text-zinc-300 dark:text-zinc-700" />
               <p className="text-sm text-zinc-500 dark:text-zinc-400">No cookbooks yet</p>
             </div>
           ) : (
-            <div
-              className={cn(
-                "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 transition-opacity duration-200",
-                isCookbooksFetching ? "opacity-50" : "opacity-100",
-              )}
-            >
-              {cookbooks?.map((cookbook) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {cookbooks.map((cookbook) => (
                 <ChefCookbookCard key={cookbook._id} cookbook={cookbook} />
               ))}
             </div>
           )}
+          <div ref={cookbooksSentinelRef} className="h-4" />
+          {isCookbooksFetchingNextPage && (
+            <div className="flex justify-center py-4">
+              <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+            </div>
+          )}
         </>
       )}
-
-      <PaginationSection
-        totalPages={totalPages}
-        currentPage={page}
-        setPage={(p) => updateParams({ page: String(p) })}
-        scrollTargetRef={scrollRef}
-      />
 
       {/* ── Other Chefs ── */}
       {relatedChefs.length > 0 && (

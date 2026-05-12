@@ -1,15 +1,14 @@
 "use client";
 
-import { useChefs } from "@/hooks/useChef";
-import { PaginationSection } from "@/components/common/Pagination";
+import { useInfiniteChefs } from "@/hooks/useChef";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
+import { Search, X, Loader2 } from "lucide-react";
 import { ChefHat, BookOpen } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useDebounce } from "use-debounce";
 
 export default function ChefsPage() {
@@ -17,7 +16,6 @@ export default function ChefsPage() {
   const searchParams = useSearchParams();
 
   const search = searchParams.get("search") ?? "";
-  const page = Number(searchParams.get("page") ?? "1");
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -29,7 +27,7 @@ export default function ChefsPage() {
           params.set(key, value);
         }
       });
-      if (!("page" in updates)) params.set("page", "1");
+      params.delete("page");
       router.replace(`?${params.toString()}`, { scroll: false });
     },
     [searchParams, router],
@@ -37,20 +35,33 @@ export default function ChefsPage() {
 
   const [debouncedSearch] = useDebounce(search, 500);
 
-  const { chefs, isLoading, isFetching } = useChefs({
-    search: debouncedSearch,
-    page,
-    limit: 12,
-  });
+  const { chefs, total, isLoading, isFetching, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useInfiniteChefs({
+      search: debouncedSearch,
+      limit: 12,
+    });
 
-  const totalPages = chefs?.pagination?.totalPages || 1;
-  const currentPage = chefs?.pagination?.page || page;
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <>
       <title>Chefalio - Chefs</title>
-      <div ref={scrollRef} className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
+      <div className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
         {/* Header */}
         <div className="pb-5 border-b border-zinc-200 dark:border-zinc-800">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Chefs</h1>
@@ -91,11 +102,11 @@ export default function ChefsPage() {
         </div>
 
         {/* Count summary */}
-        {!isLoading && chefs && (
+        {!isLoading && chefs.length > 0 && (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {chefs.pagination.total === 0
+            {total === 0
               ? "No chefs found"
-              : `Showing ${chefs.data.length} of ${chefs.pagination.total} chef${chefs.pagination.total !== 1 ? "s" : ""}`}
+              : `Showing ${chefs.length} of ${total} chef${total !== 1 ? "s" : ""}`}
           </p>
         )}
 
@@ -113,7 +124,7 @@ export default function ChefsPage() {
               </div>
             ))}
           </div>
-        ) : chefs?.data.length === 0 ? (
+        ) : chefs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center min-h-[40vh] gap-3">
             <p className="text-base font-medium">No chefs found</p>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-xs">
@@ -130,12 +141,8 @@ export default function ChefsPage() {
             )}
           </div>
         ) : (
-          <div
-            className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 transition-opacity duration-200 ${
-              isFetching ? "opacity-50" : "opacity-100"
-            }`}
-          >
-            {chefs?.data.map((chef) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+            {chefs.map((chef) => (
               <Link
                 key={chef._id}
                 href={`/chefs/${chef._id}`}
@@ -183,12 +190,12 @@ export default function ChefsPage() {
           </div>
         )}
 
-        <PaginationSection
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setPage={(p) => updateParams({ page: String(p) })}
-          scrollTargetRef={scrollRef}
-        />
+        <div ref={sentinelRef} className="h-4" />
+        {isFetchingNextPage && (
+          <div className="flex justify-center py-4">
+            <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+          </div>
+        )}
       </div>
     </>
   );

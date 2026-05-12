@@ -3,13 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PaginationSection } from "@/components/common/Pagination";
-import { useCookbooks } from "@/hooks/useCookbook";
+import { useInfiniteCookbooks } from "@/hooks/useCookbook";
 import { cn } from "@/lib/utils";
-import { Search, User, X } from "lucide-react";
+import { Search, User, X, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useDebounce } from "use-debounce";
 import Link from "next/link";
 
@@ -19,7 +18,6 @@ export default function CookbooksPage() {
 
   const search = searchParams.get("search") ?? "";
   const author = searchParams.get("author") ?? "";
-  const page = Number(searchParams.get("page") ?? "1");
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -31,7 +29,7 @@ export default function CookbooksPage() {
           params.set(key, value);
         }
       });
-      if (!("page" in updates)) params.set("page", "1");
+      params.delete("page");
       router.replace(`?${params.toString()}`, { scroll: false });
     },
     [searchParams, router],
@@ -40,23 +38,37 @@ export default function CookbooksPage() {
   const [debouncedSearch] = useDebounce(search, 500);
   const [debouncedAuthor] = useDebounce(author, 500);
 
-  const { cookbooks, isLoading, isFetching } = useCookbooks({
-    search: debouncedSearch,
-    page,
-    limit: 12,
-    author: debouncedAuthor || undefined,
-  });
+  const { cookbooks, total, isLoading, isFetching, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useInfiniteCookbooks({
+      search: debouncedSearch,
+      limit: 12,
+      author: debouncedAuthor || undefined,
+    });
 
   const clearAllFilters = () => updateParams({ search: null, author: null });
   const hasActiveFilters = search.trim() !== "" || author.trim() !== "";
-  const totalPages = cookbooks?.pagination?.totalPages || 1;
-  const currentPage = cookbooks?.pagination?.page || page;
-  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <>
       <title>Chefalio - Cookbooks</title>
-      <div ref={scrollRef} className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
+      <div className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
         {/* Header */}
         <div className="pb-5 border-b border-zinc-200 dark:border-zinc-800">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Cookbooks</h1>
@@ -116,11 +128,11 @@ export default function CookbooksPage() {
         </div>
 
         {/* Count */}
-        {!isLoading && cookbooks && (
+        {!isLoading && cookbooks.length > 0 && (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {cookbooks.pagination.total === 0
+            {total === 0
               ? "No cookbooks found"
-              : `Showing ${cookbooks.data.length} of ${cookbooks.pagination.total} cookbook${cookbooks.pagination.total !== 1 ? "s" : ""}`}
+              : `Showing ${cookbooks.length} of ${total} cookbook${total !== 1 ? "s" : ""}`}
           </p>
         )}
 
@@ -149,7 +161,7 @@ export default function CookbooksPage() {
               </div>
             ))}
           </div>
-        ) : cookbooks?.data.length === 0 ? (
+        ) : cookbooks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center min-h-[40vh] gap-3">
             <p className="text-base font-medium">No cookbooks found</p>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-xs">
@@ -162,12 +174,8 @@ export default function CookbooksPage() {
             )}
           </div>
         ) : (
-          <div
-            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 transition-opacity duration-200 ${
-              isFetching ? "opacity-50" : "opacity-100"
-            }`}
-          >
-            {cookbooks?.data.map((cookbook) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {cookbooks.map((cookbook) => (
               <div
                 key={cookbook._id}
                 className="group rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200 flex flex-col"
@@ -283,12 +291,12 @@ export default function CookbooksPage() {
           </div>
         )}
 
-        <PaginationSection
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setPage={(p) => updateParams({ page: String(p) })}
-          scrollTargetRef={scrollRef}
-        />
+        <div ref={sentinelRef} className="h-4" />
+        {isFetchingNextPage && (
+          <div className="flex justify-center py-4">
+            <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+          </div>
+        )}
       </div>
     </>
   );

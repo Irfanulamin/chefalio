@@ -1,13 +1,13 @@
 "use client";
 
-import { useRecipes } from "@/hooks/useRecipe";
+import { useInfiniteRecipes } from "@/hooks/useRecipe";
 import { Recipe } from "@/types/recipes.type";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useDebounce } from "use-debounce";
 import { RecipeGrid } from "@/components/User/Recipe/RecipeGrid";
 import { RecipeFilters } from "@/components/User/Recipe/RecipeFilters";
-import { PaginationSection } from "@/components/common/Pagination";
+import { Loader2 } from "lucide-react";
 
 const DIFFICULTIES = ["beginner", "intermediate", "advance"] as const;
 type Difficulty = (typeof DIFFICULTIES)[number];
@@ -37,7 +37,6 @@ export default function RecipesPage() {
   const searchParams = useSearchParams();
 
   const search = searchParams.get("search") ?? "";
-  const page = Number(searchParams.get("page") ?? "1");
   const difficulty = (searchParams.get("difficulty") ?? "") as Difficulty | "";
   const author = searchParams.get("author") ?? "";
   const selectedTags = searchParams.get("tags")
@@ -54,7 +53,7 @@ export default function RecipesPage() {
           params.set(key, value);
         }
       });
-      if (!("page" in updates)) params.set("page", "1");
+      params.delete("page");
       router.replace(`?${params.toString()}`, { scroll: false });
     },
     [searchParams, router],
@@ -63,18 +62,23 @@ export default function RecipesPage() {
   const [debouncedSearch] = useDebounce(search, 500);
   const [debouncedAuthor] = useDebounce(author, 500);
 
-  const { recipes, isLoading, isFetching } = useRecipes({
+  const {
+    recipes,
+    total,
+    isLoading,
+    isFetching,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteRecipes({
     search: debouncedSearch,
-    page,
     limit: 12,
     tags: selectedTags.join(",") || undefined,
     difficulty: difficulty || undefined,
     author: debouncedAuthor || undefined,
   });
 
-  const data: Recipe[] | undefined = recipes?.data?.recipes;
-  const totalPages = recipes?.data?.pagination.totalPages || 1;
-  const currentPage = recipes?.data?.pagination.page || page;
+  const data: Recipe[] = recipes;
 
   const handleSearchChange = (value: string) =>
     updateParams({ search: value || null });
@@ -96,13 +100,29 @@ export default function RecipesPage() {
     search || selectedTags.length || difficulty || debouncedAuthor,
   );
 
-  const handleRecipeLoading = isLoading && !recipes;
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const handleRecipeLoading = isLoading && data.length === 0;
+
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <>
       <title>Chefalio - Recipes</title>
-      <div ref={scrollRef} className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
+      <div className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
         {/* Header */}
         <div className="pb-5 border-b border-zinc-200 dark:border-zinc-800">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Recipes</h1>
@@ -130,26 +150,26 @@ export default function RecipesPage() {
           search={search}
         />
 
-        {!isLoading && recipes && (
+        {!isLoading && data.length > 0 && (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {recipes.data?.pagination.total === 0
+            {total === 0
               ? "No recipes found"
-              : `Showing ${data?.length} of ${recipes.data?.pagination.total} recipe${recipes.data?.pagination.total !== 1 ? "s" : ""}`}
+              : `Showing ${data.length} of ${total} recipe${total !== 1 ? "s" : ""}`}
           </p>
         )}
 
         <RecipeGrid
           handleRecipeLoading={handleRecipeLoading}
-          isFetching={isFetching}
+          isFetching={isFetching && !isFetchingNextPage}
           data={data}
         />
 
-        <PaginationSection
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setPage={(p) => updateParams({ page: String(p) })}
-          scrollTargetRef={scrollRef}
-        />
+        <div ref={sentinelRef} className="h-4" />
+        {isFetchingNextPage && (
+          <div className="flex justify-center py-4">
+            <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+          </div>
+        )}
       </div>
     </>
   );

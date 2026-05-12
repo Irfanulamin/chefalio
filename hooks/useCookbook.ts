@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { axiosInstance } from "./axios";
 import { useRouter } from "next/navigation";
 import type {
@@ -37,6 +37,41 @@ export function useCookbooks(params?: {
     isFetching,
     error,
   };
+}
+
+export function useInfiniteCookbooks(params?: {
+  limit?: number;
+  search?: string;
+  author?: string;
+}) {
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["cookbooks-infinite", params?.search, params?.limit, params?.author],
+    queryFn: ({ pageParam }) =>
+      axiosInstance
+        .get<GetCookbooksResponse>("/cookbooks", {
+          params: { ...params, page: pageParam },
+        })
+        .then((res) => res.data),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.pagination;
+      return page < totalPages ? page + 1 : undefined;
+    },
+    staleTime: 1000 * 60,
+  });
+
+  const cookbooks = data?.pages.flatMap((p) => p.data) ?? [];
+  const total = data?.pages[0]?.pagination.total ?? 0;
+
+  return { cookbooks, total, isLoading, isFetching, error, fetchNextPage, hasNextPage, isFetchingNextPage };
 }
 
 export function useCookbook(id: string) {
