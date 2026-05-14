@@ -151,7 +151,7 @@ export const ProfileDropdown = () => {
         <DropdownMenuSeparator className="my-1" />
 
         {roleChef &&  <Link href="/chef/dashboard" className="flex items-center gap-2 min-w-0 bg-primary/10 px-2.5 py-2 rounded-lg">
-          <ChefHatIcon size={15} weight="duotone" className="text-primary shrink-0" />
+          <ChefHatIcon size={15} weight="duotone" className="text-black shrink-0 dark:text-white" />
           <span className="text-sm font-semibold tracking-tight text-foreground truncate">
         Chef <span className="text-primary">Studio</span>
           </span>

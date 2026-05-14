@@ -32,7 +32,6 @@ const studioItems = [
   { label: "My Recipes", href: "/chef/recipes", icon: ForkKnifeIcon },
   { label: "My Cookbooks", href: "/chef/cookbooks", icon: BookOpenIcon },
   { label: "Orders", href: "/chef/orders", icon: PackageIcon },
-  { label: "Settings", href: "/chef/settings", icon: GearSixIcon },
 ];
 
 function NavLinks({
