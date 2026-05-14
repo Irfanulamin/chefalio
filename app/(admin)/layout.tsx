@@ -22,11 +22,13 @@ import {
   ListIcon,
   SidebarSimpleIcon,
   ShoppingCartSimpleIcon,
+  ChefHatIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: HouseLineIcon },
   { label: "Users", href: "/admin/users", icon: UsersIcon },
+  { label: "Chef Applications", href: "/admin/chef-applications", icon: ChefHatIcon },
   { label: "Recipes", href: "/admin/recipes", icon: ForkKnifeIcon },
   { label: "Cookbooks", href: "/admin/cookbooks", icon: BookOpenIcon },
   { label: "Orders", href: "/admin/orders", icon: ShoppingCartSimpleIcon },

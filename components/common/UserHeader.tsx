@@ -21,6 +21,7 @@ const navLinks = [
   { label: "Cookbooks", href: "/cookbooks" },
   { label: "Chefs", href: "/chefs" },
   { label: "Activity", href: "/activity" },
+  { label: "Become a Chef", href: "/apply-chef" },
 ];
 
 export const UserHeader = () => {

@@ -247,7 +247,7 @@ export default function SingleRecipePage({
 }) {
   const { id } = use(params);
   const { singleRecipe, isSingleRecipeLoading } = useSingleRecipe(id);
-  const recipe = singleRecipe?.data as Recipe | undefined;
+  const recipe = singleRecipe?.data;
 
   if (isSingleRecipeLoading) return <RecipeSingleSkeleton />;
   if (!recipe) return <p>Recipe not found</p>;

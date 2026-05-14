@@ -8,6 +8,13 @@ export interface RecipeApiResponse {
   };
 }
 
+export interface SingleRecipeApiResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: Recipe;
+}
+
 export interface Recipe {
   _id: string;
   title: string;

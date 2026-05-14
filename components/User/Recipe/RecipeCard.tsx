@@ -30,9 +30,13 @@ export const RecipeCard = memo(
   ({
     recipe,
     statsFor,
+    recipePath = "/recipes",
+    chefPath = "/chefs",
   }: {
     recipe: Recipe;
     statsFor: (id: string) => RecipeStats;
+    recipePath?: string;
+    chefPath?: string;
   }) => {
     const stats = statsFor(recipe._id);
     const { mutate: toggleSave } = useToggleSave();
@@ -61,7 +65,7 @@ export const RecipeCard = memo(
     return (
       <div className="group w-full overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200 flex flex-col">
         {/* Image */}
-        <Link href={`/recipes/${recipe._id}`} className="relative h-44 w-full overflow-hidden block bg-zinc-100 dark:bg-zinc-800">
+        <Link href={`${recipePath}/${recipe._id}`} className="relative h-44 w-full overflow-hidden block bg-zinc-100 dark:bg-zinc-800">
           <Image
             src={recipe.images[0]}
             alt={recipe.title}
@@ -85,7 +89,7 @@ export const RecipeCard = memo(
         <div className="flex flex-col gap-2.5 p-4 flex-1">
           {/* Author */}
           <Link
-            href={`/chefs/${recipe.authorId._id}`}
+            href={`${chefPath}/${recipe.authorId._id}`}
             className="flex items-center gap-2 w-fit"
           >
             {recipe.authorId.profile_url ? (
@@ -113,7 +117,7 @@ export const RecipeCard = memo(
           </Link>
 
           {/* Title */}
-          <Link href={`/recipes/${recipe._id}`}>
+          <Link href={`${recipePath}/${recipe._id}`}>
             <h2 className="text-[15px] font-semibold text-foreground leading-snug line-clamp-2 hover:text-primary transition-colors">
               {recipe.title}
             </h2>
@@ -176,7 +180,7 @@ export const RecipeCard = memo(
             <div className="flex-1" />
 
             <Link
-              href={`/recipes/${recipe._id}`}
+              href={`${recipePath}/${recipe._id}`}
               className="flex items-center gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-foreground transition-colors"
             >
               View <ArrowRightIcon weight="bold" className="w-3 h-3" />

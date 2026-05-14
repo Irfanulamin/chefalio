@@ -9,10 +9,14 @@ export const RecipeGrid = ({
   handleRecipeLoading,
   isFetching,
   data,
+  recipePath = "/recipes",
+  chefPath = "/chefs",
 }: {
   handleRecipeLoading: boolean;
   isFetching: boolean;
   data: Recipe[] | undefined;
+  recipePath?: string;
+  chefPath?: string;
 }) => {
   const recipeIds = useMemo(() => data?.map((r) => r._id) ?? [], [data]);
   const { statsFor } = useBatchRecipeStats(recipeIds);
@@ -28,7 +32,7 @@ export const RecipeGrid = ({
         }`}
       >
         {data?.map((recipe: Recipe) => (
-          <RecipeCard key={recipe._id} recipe={recipe} statsFor={statsFor} />
+          <RecipeCard key={recipe._id} recipe={recipe} statsFor={statsFor} recipePath={recipePath} chefPath={chefPath} />
         ))}
 
         {handleRecipeLoading &&

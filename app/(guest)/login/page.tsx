@@ -112,7 +112,7 @@ function LoginForm() {
         )}
 
         {unverifiedLogin && (
-          <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 space-y-2">
+          <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 space-y-2 mt-2">
             <p className="text-sm text-amber-800 dark:text-amber-300">
               Your email is not verified. Please check your inbox or request a new link.
             </p>

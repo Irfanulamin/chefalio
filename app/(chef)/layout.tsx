@@ -22,36 +22,57 @@ import {
   ChartLineUpIcon,
   ListIcon,
   SidebarSimpleIcon,
+  UsersIcon,
+  BookmarkSimpleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { PackageIcon } from "lucide-react";
 
-const navItems = [
+const exploreItems = [
+  { label: "Recipes", href: "/chef/explore/recipes", icon: ForkKnifeIcon },
+  { label: "Cookbooks", href: "/chef/explore/cookbooks", icon: BookOpenIcon },
+  { label: "Chefs", href: "/chef/explore/chefs", icon: UsersIcon },
+  { label: "Activity", href: "/chef/explore/activity", icon: BookmarkSimpleIcon },
+];
+
+const studioItems = [
   { label: "Dashboard", href: "/chef/dashboard", icon: HouseLineIcon },
   { label: "Analytics", href: "/chef/analytics", icon: ChartLineUpIcon },
-  { label: "Recipes", href: "/chef/recipes", icon: ForkKnifeIcon },
-  { label: "Cookbooks", href: "/chef/cookbooks", icon: BookOpenIcon },
+  { label: "My Recipes", href: "/chef/recipes", icon: ForkKnifeIcon },
+  { label: "My Cookbooks", href: "/chef/cookbooks", icon: BookOpenIcon },
   { label: "Orders", href: "/chef/orders", icon: PackageIcon },
   { label: "Settings", href: "/chef/settings", icon: GearSixIcon },
 ];
 
-function NavLinks({
+const allNavItems = [...exploreItems, ...studioItems];
+
+function NavSection({
+  label,
+  items,
   pathname,
-  collapsed = false,
+  collapsed,
   onNavigate,
 }: {
+  label: string;
+  items: { label: string; href: string; icon: React.ElementType }[];
   pathname: string;
-  collapsed?: boolean;
+  collapsed: boolean;
   onNavigate?: () => void;
 }) {
   return (
-    <nav className="flex-1 px-2 pt-2 pb-4 space-y-0.5">
-      {navItems.map(({ label, href, icon: Icon }) => {
+    <div className="space-y-0.5">
+      {!collapsed && (
+        <p className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+          {label}
+        </p>
+      )}
+      {collapsed && <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 mx-2" />}
+      {items.map(({ label: itemLabel, href, icon: Icon }) => {
         const isActive = pathname === href || pathname.startsWith(href + "/");
         return (
           <Link
             key={href}
             href={href}
-            title={collapsed ? label : undefined}
+            title={collapsed ? itemLabel : undefined}
             onClick={onNavigate}
             className={[
               "relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors",
@@ -69,20 +90,38 @@ function NavLinks({
               weight={isActive ? "fill" : "regular"}
               className="shrink-0"
             />
-            {!collapsed && <span>{label}</span>}
+            {!collapsed && <span>{itemLabel}</span>}
           </Link>
         );
       })}
+    </div>
+  );
+}
+
+function NavLinks({
+  pathname,
+  collapsed = false,
+  onNavigate,
+}: {
+  pathname: string;
+  collapsed?: boolean;
+  onNavigate?: () => void;
+}) {
+  return (
+    <nav className="flex-1 px-2 pt-1 pb-4 space-y-0.5 overflow-y-auto">
+      <NavSection label="Explore" items={exploreItems} pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} />
+      <NavSection label="Studio" items={studioItems} pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} />
     </nav>
   );
 }
 
 function Logo() {
   return (
-    <Link href="/chef/dashboard" className="flex items-center gap-2.5 min-w-0">
-        <p className="text-sm font-semibold tracking-tight text-primary truncate">
-          Chefalio
-        </p>
+    <Link href="/chef/dashboard" className="flex items-center gap-2 min-w-0">
+      <ChefHatIcon size={16} weight="duotone" className="text-primary shrink-0" />
+      <p className="text-sm font-semibold tracking-tight text-primary truncate">
+        Chefalio
+      </p>
     </Link>
   );
 }
@@ -95,6 +134,9 @@ export default function ChefLayout({
   const [collapsed, setCollapsed] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const pathname = usePathname();
+
+  const activeLabel =
+    allNavItems.find((n) => pathname === n.href || pathname.startsWith(n.href + "/"))?.label ?? "Chef";
 
   return (
     <ProtectedRoute allowedRoles={["chef"]}>
@@ -109,7 +151,6 @@ export default function ChefLayout({
             collapsed ? "w-14" : "w-56",
           ].join(" ")}
         >
-          {/* Header */}
           <div className="flex h-14 items-center justify-between px-3 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
             {collapsed ? (
               <button
@@ -117,7 +158,7 @@ export default function ChefLayout({
                 className="mx-auto flex h-7 w-7 items-center justify-center rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 title="Expand sidebar"
               >
-                <Logo />
+                <ChefHatIcon size={16} weight="duotone" className="text-primary" />
               </button>
             ) : (
               <>
@@ -147,7 +188,6 @@ export default function ChefLayout({
           {/* Top bar */}
           <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 md:px-5 shrink-0">
             <div className="flex items-center gap-3">
-              {/* Mobile hamburger */}
               <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger asChild>
                   <button className="flex md:hidden h-8 w-8 items-center justify-center rounded-lg text-zinc-500 hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
@@ -168,10 +208,7 @@ export default function ChefLayout({
               </Sheet>
 
               <span className="hidden md:inline text-sm font-medium text-foreground capitalize">
-                {navItems.find(
-                  (n) =>
-                    pathname === n.href || pathname.startsWith(n.href + "/"),
-                )?.label ?? "Chef"}
+                {activeLabel}
               </span>
               <span className="flex md:hidden text-sm font-semibold text-foreground">
                 Chefalio

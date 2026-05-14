@@ -5,6 +5,7 @@ import axiosInstance from "./axios/interceptors";
 import type {
   Recipe,
   RecipeApiResponse,
+  SingleRecipeApiResponse,
   SavedRecipeApiResponse,
   RecipeStats,
   BatchStatsMap,
@@ -115,7 +116,7 @@ export function useSingleRecipe(id?: string) {
     queryKey: ["recipe", id],
     queryFn: () =>
       axiosInstance
-        .get<RecipeApiResponse>(`/recipes/${id}`)
+        .get<SingleRecipeApiResponse>(`/recipes/${id}`)
         .then((res) => res.data),
     staleTime: 1000 * 60 * 5,
     enabled: !!id,
@@ -267,6 +268,7 @@ export function useToggleLove() {
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["recipe-stats-batch"] });
       await queryClient.cancelQueries({ queryKey: ["recipe-stats", id] });
+      await queryClient.cancelQueries({ queryKey: ["recipe", id] });
       await queryClient.cancelQueries({ queryKey: ["recipes"] });
       await queryClient.cancelQueries({ queryKey: ["recipes-infinite"] });
       await queryClient.cancelQueries({ queryKey: ["chef-recipes"] });
@@ -275,15 +277,15 @@ export function useToggleLove() {
       const batchEntries = queryClient.getQueriesData<BatchStatsMap>({
         queryKey: ["recipe-stats-batch"],
       });
-      const currentStats = batchEntries
-        .map(([, map]) => map?.[id])
-        .find(Boolean) ?? { isLoved: false, isSaved: false };
+      const statsFromBatch = batchEntries.map(([, map]) => map?.[id]).find(Boolean);
 
       const previousBatch = batchEntries;
-      const previousSingle = queryClient.getQueryData<RecipeStats>([
-        "recipe-stats",
-        id,
-      ]);
+      const previousSingle = queryClient.getQueryData<RecipeStats>(["recipe-stats", id]);
+      const previousSingleRecipe = queryClient.getQueryData<SingleRecipeApiResponse>(["recipe", id]);
+
+      // Use batch cache if available, fall back to single-recipe stats cache (detail page case)
+      const currentStats = statsFromBatch ?? previousSingle ?? { isLoved: false, isSaved: false };
+      const wasLoved = currentStats.isLoved;
 
       const allRecipePages = queryClient.getQueriesData<RecipeApiResponse>({
         queryKey: ["recipes"],
@@ -321,8 +323,6 @@ export function useToggleLove() {
 
       const currentRecipe = recipeFromList ?? recipeFromInfiniteList ?? recipeFromChef ?? recipeFromChefInfinite;
 
-      const wasLoved = currentStats.isLoved;
-
       patchBatchStatsCache(id, { isLoved: !wasLoved });
 
       queryClient.setQueryData(
@@ -339,7 +339,16 @@ export function useToggleLove() {
         patchChefRecipesCache(id, { lovedCount: newCount });
       }
 
-      return { previousBatch, previousSingle, previousChefRecipes, previousChefRecipesInfinite, wasLoved };
+      // Patch single-recipe cache (used on the detail page)
+      if (previousSingleRecipe) {
+        const currentCount = previousSingleRecipe.data.lovedCount;
+        const newCount = wasLoved ? currentCount - 1 : currentCount + 1;
+        queryClient.setQueryData<SingleRecipeApiResponse>(["recipe", id], (old) =>
+          old ? { ...old, data: { ...old.data, lovedCount: newCount } } : old,
+        );
+      }
+
+      return { previousBatch, previousSingle, previousSingleRecipe, previousChefRecipes, previousChefRecipesInfinite, wasLoved };
     },
 
     onError: (_err, id, context) => {
@@ -350,6 +359,9 @@ export function useToggleLove() {
       }
       if (context?.previousSingle !== undefined) {
         queryClient.setQueryData(["recipe-stats", id], context.previousSingle);
+      }
+      if (context?.previousSingleRecipe !== undefined) {
+        queryClient.setQueryData<SingleRecipeApiResponse>(["recipe", id], context.previousSingleRecipe);
       }
       if (context?.previousChefRecipes) {
         context.previousChefRecipes.forEach(([queryKey, data]) => {
@@ -368,6 +380,7 @@ export function useToggleLove() {
     onSettled: (_data, _error, id) => {
       queryClient.invalidateQueries({ queryKey: ["recipe-stats-batch"] });
       queryClient.invalidateQueries({ queryKey: ["recipe-stats", id] });
+      queryClient.invalidateQueries({ queryKey: ["recipe", id] });
       queryClient.invalidateQueries({ queryKey: ["loved-recipes"] });
     },
   });
