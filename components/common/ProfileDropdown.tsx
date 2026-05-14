@@ -69,12 +69,6 @@ const ROLE_NAV: Record<string, NavItem[]> = {
     { label: "Become a Chef", href: "/apply-chef", Icon: UsersFourIcon },
   ],
   chef: [
-    { label: "Dashboard", href: "/chef/dashboard", Icon: HouseLineIcon },
-    { label: "Analytics", href: "/chef/analytics", Icon: ChartLineUpIcon },
-    { label: "My Recipes", href: "/chef/recipes", Icon: ForkKnifeIcon },
-    { label: "My Cookbooks", href: "/chef/cookbooks", Icon: BookOpenIcon },
-    { label: "Orders", href: "/chef/orders", Icon: PackageIcon },
-    { label: "Settings", href: "/chef/settings", Icon: GearSixIcon },
     { label: "Recipes", href: "/recipes", Icon: ForkKnifeIcon },
     { label: "Cookbooks", href: "/cookbooks", Icon: BookOpenIcon },
     { label: "Chefs", href: "/chefs", Icon: ChefHatIcon },
@@ -93,6 +87,8 @@ export const ProfileDropdown = () => {
   const { logout } = useAuth();
 
   const navItems: NavItem[] = ROLE_NAV[profile?.role ?? ""] ?? [];
+
+  const roleChef = profile?.role === "chef";
 
   return (
     <DropdownMenu>
@@ -151,6 +147,15 @@ export const ProfileDropdown = () => {
             </span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
+
+        <DropdownMenuSeparator className="my-1" />
+
+        {roleChef &&  <Link href="/chef/dashboard" className="flex items-center gap-2 min-w-0 bg-primary/10 px-2.5 py-2 rounded-lg">
+          <ChefHatIcon size={15} weight="duotone" className="text-primary shrink-0" />
+          <span className="text-sm font-semibold tracking-tight text-foreground truncate">
+        Chef <span className="text-primary">Studio</span>
+          </span>
+        </Link>}
 
         <DropdownMenuSeparator className="my-1" />
 
