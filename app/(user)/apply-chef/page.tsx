@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -33,6 +33,8 @@ import {
   ArrowLeftIcon,
   PaperPlaneTiltIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import { useProfile } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -438,6 +440,15 @@ function RejectedView({
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ApplyChefPage() {
+  const { profile } = useProfile();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (profile?.role === "chef") {
+      router.replace("/recipes");
+    }
+  }, [profile, router]);
+
   const { application, isLoading } = useMyChefApplication();
   const submitMutation = useSubmitChefApplication();
   const resubmitMutation = useResubmitChefApplication();
