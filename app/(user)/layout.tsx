@@ -8,7 +8,7 @@ export default function UserLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ProtectedRoute allowedRoles={["user"]}>
+    <ProtectedRoute allowedRoles={["user", "chef"]}>
       <UserHeader />
       <div className="min-h-screen container max-w-7xl mx-auto px-1.5 md:px-3 xl:px-0 ">
         {children}

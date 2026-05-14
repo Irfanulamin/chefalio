@@ -15,18 +15,24 @@ import { usePathname } from "next/navigation";
 import { ProfileDropdown } from "./ProfileDropdown";
 // import { AIAssistantSheet } from "./AIAssistantSheet";
 import { NotificationBell } from "./NotificationBell";
+import { useProfile } from "@/hooks/useAuth";
 
-const navLinks = [
+const BASE_NAV_LINKS = [
   { label: "Recipes", href: "/recipes" },
   { label: "Cookbooks", href: "/cookbooks" },
   { label: "Chefs", href: "/chefs" },
   { label: "Activity", href: "/activity" },
-  { label: "Become a Chef", href: "/apply-chef" },
 ];
+
+const BECOME_CHEF_LINK = { label: "Become a Chef", href: "/apply-chef" };
 
 export const UserHeader = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const pathname = usePathname();
+  const { profile } = useProfile();
+  const isChef = profile?.role === "chef";
+
+  const navLinks = isChef ? BASE_NAV_LINKS : [...BASE_NAV_LINKS, BECOME_CHEF_LINK];
 
   return (
     <div className="sticky top-0 z-50 backdrop-blur-sm">

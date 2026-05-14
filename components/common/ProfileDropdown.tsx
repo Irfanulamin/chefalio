@@ -20,9 +20,7 @@ import {
   UsersIcon,
   ChefHatIcon,
   ShieldCheckIcon,
-  ChartLineIcon,
-  ShoppingCartSimpleIcon,
-  SquaresFourIcon,
+  ArrowSquareOutIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { useProfile } from "@/hooks/useAuth";
@@ -62,13 +60,6 @@ const ROLE_NAV: Record<string, NavItem[]> = {
     { label: "Cookbooks", href: "/cookbooks", Icon: BookOpenIcon },
     { label: "Chefs", href: "/chefs", Icon: ChefHatIcon },
   ],
-  chef: [
-    { label: "Dashboard", href: "/chef/dashboard", Icon: SquaresFourIcon },
-    { label: "My Recipes", href: "/chef/recipes", Icon: ForkKnifeIcon },
-    { label: "Cookbooks", href: "/chef/cookbooks", Icon: BookOpenIcon },
-    { label: "Orders", href: "/chef/orders", Icon: ShoppingCartSimpleIcon },
-    { label: "Analytics", href: "/chef/analytics", Icon: ChartLineIcon },
-  ],
   admin: [
     { label: "Dashboard", href: "/admin/dashboard", Icon: ShieldCheckIcon },
     { label: "Users", href: "/admin/users", Icon: UsersIcon },
@@ -82,6 +73,7 @@ export const ProfileDropdown = () => {
   const { logout } = useAuth();
 
   const navItems: NavItem[] = ROLE_NAV[profile?.role ?? ""] ?? [];
+  const isChef = profile?.role === "chef";
 
   return (
     <DropdownMenu>
@@ -143,7 +135,26 @@ export const ProfileDropdown = () => {
 
         <DropdownMenuSeparator className="my-1" />
 
-        {/* Role-based navigation */}
+        {/* My Studio — chef only */}
+        {isChef && (
+          <>
+            <Link href="/chef/dashboard" className="block w-full px-1.5 py-1">
+              <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary/8 dark:bg-primary/10 border border-primary/20 hover:bg-primary/12 dark:hover:bg-primary/15 transition-colors cursor-pointer group">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 dark:bg-primary/20 shrink-0">
+                  <ChefHatIcon size={16} weight="duotone" className="text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground leading-tight">My Studio</p>
+                  <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">Manage recipes &amp; cookbooks</p>
+                </div>
+                <ArrowSquareOutIcon size={14} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+              </div>
+            </Link>
+            <DropdownMenuSeparator className="my-1" />
+          </>
+        )}
+
+        {/* Role-based navigation (user / admin) */}
         {navItems.length > 0 && (
           <>
             <DropdownMenuGroup>
