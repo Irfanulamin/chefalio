@@ -6,6 +6,8 @@ import type {
   Me,
   LoginPayload,
   RegisterPayload,
+  RegisterResponse,
+  VerifyEmailResponse,
   ForgotPasswordPayload,
   ResetPasswordPayload,
   Profile,
@@ -50,19 +52,25 @@ export function useAuth() {
   const registerMutation = useMutation({
     mutationFn: (payload: RegisterPayload) =>
       axiosInstance
-        .post<Me>("/auth/register", payload)
+        .post<RegisterResponse>("/auth/register", payload)
+        .then((response) => response.data),
+  });
+
+  const verifyEmailMutation = useMutation({
+    mutationFn: (payload: { token: string }) =>
+      axiosInstance
+        .post<VerifyEmailResponse>("/auth/verify-email", payload)
         .then((response) => response.data),
     onSuccess: (data) => {
-      queryClient.setQueryData(["me"], data);
-      if (data.role === "user") {
-        router.push("/recipes");
-      } else if (data.role === "chef") {
-        router.push("/chef/dashboard");
-      } else if (data.role === "admin") {
-        router.push("/admin/dashboard");
-      }
+      queryClient.setQueryData(["me"], { role: data.role });
     },
-    onError: () => {},
+  });
+
+  const resendVerificationMutation = useMutation({
+    mutationFn: (payload: { usernameOrEmail: string }) =>
+      axiosInstance
+        .post("/auth/resend-verification", payload)
+        .then((response) => response.data),
   });
 
   const logoutMutation = useMutation({
@@ -104,6 +112,10 @@ export function useAuth() {
     forgotPassword: forgotPasswordMutation.mutateAsync,
     resetPassword: resetPasswordMutation.mutateAsync,
     changePassword: changePasswordMutation.mutateAsync,
+    verifyEmail: verifyEmailMutation.mutateAsync,
+    isVerifyingEmail: verifyEmailMutation.isPending,
+    resendVerification: resendVerificationMutation.mutateAsync,
+    isResendingVerification: resendVerificationMutation.isPending,
   };
 }
 

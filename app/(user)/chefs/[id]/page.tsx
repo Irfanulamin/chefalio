@@ -6,6 +6,7 @@ import {
   useInfiniteChefCookbooks,
   useRelatedChefs,
 } from "@/hooks/useChef";
+import { useChefProfile } from "@/hooks/useChefProfile";
 import { useBatchRecipeStats } from "@/hooks/useRecipe";
 import { RecipeCard } from "@/components/User/Recipe/RecipeCard";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { BookOpen, ChefHat, Loader2 } from "lucide-react";
+import { BookOpen, ChefHat, Loader2, Trophy } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function ChefCookbookCard({
@@ -134,6 +135,7 @@ export default function ChefProfilePage() {
   const setTab = (t: "recipes" | "cookbooks") => updateParams({ tab: t });
 
   const { chef, isLoading: isChefLoading } = useChef(chefId);
+  const { profile: chefProfile } = useChefProfile(chefId);
 
   const {
     recipes,
@@ -266,6 +268,47 @@ export default function ChefProfilePage() {
               )}
             </span>
           </div>
+
+          {chefProfile?.bio && (
+            <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-3 leading-relaxed max-w-2xl text-center sm:text-left">
+              {chefProfile.bio}
+            </p>
+          )}
+
+          {chefProfile?.genres && chefProfile.genres.length > 0 && (
+            <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mt-3">
+              {chefProfile.genres.map((g) => (
+                <span
+                  key={g}
+                  className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700"
+                >
+                  {g}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {chefProfile?.achievements && chefProfile.achievements.length > 0 && (
+            <div className="mt-3 space-y-1.5">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 text-center sm:text-left">
+                Achievements
+              </p>
+              <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                {chefProfile.achievements.map((a, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300"
+                  >
+                    <Trophy className="w-3 h-3 shrink-0" />
+                    <span className="font-semibold">{a.title}</span>
+                    {a.year && (
+                      <span className="text-amber-500 dark:text-amber-400">· {a.year}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

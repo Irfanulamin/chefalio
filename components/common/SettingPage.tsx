@@ -5,17 +5,25 @@ import { useAuth } from "@/hooks/axios";
 import { useForm } from "@tanstack/react-form";
 import Image from "next/image";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ShieldCheckIcon,
   UserCircleIcon,
   LockKeyIcon,
   EnvelopeIcon,
   AtIcon,
+  ChefHatIcon,
+  XIcon,
+  PlusIcon,
+  TrophyIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import z from "zod";
 import { useProfile } from "@/hooks/useAuth";
+import { useMyChefProfile, useUpsertChefProfile } from "@/hooks/useChefProfile";
+import type { Achievement } from "@/types/chef-profile.type";
 
 const InfoRow = ({
   icon: Icon,
@@ -43,11 +51,257 @@ const InfoRow = ({
   </div>
 );
 
+function ChefProfileTab() {
+  const { profile: chefProfile, isLoading } = useMyChefProfile();
+  const { upsertProfile, isPending } = useUpsertChefProfile();
+
+  const [bio, setBio] = useState("");
+  const [genres, setGenres] = useState<string[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [genreInput, setGenreInput] = useState("");
+  const [newTitle, setNewTitle] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [newYear, setNewYear] = useState("");
+  const genreInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (chefProfile) {
+      setBio(chefProfile.bio ?? "");
+      setGenres(chefProfile.genres ?? []);
+      setAchievements(chefProfile.achievements ?? []);
+    }
+  }, [chefProfile]);
+
+  const addGenre = () => {
+    const trimmed = genreInput.trim();
+    if (trimmed && !genres.includes(trimmed)) {
+      setGenres((prev) => [...prev, trimmed]);
+    }
+    setGenreInput("");
+  };
+
+  const addAchievement = () => {
+    if (!newTitle.trim()) return;
+    const yearNum = newYear ? parseInt(newYear) : undefined;
+    setAchievements((prev) => [
+      ...prev,
+      {
+        title: newTitle.trim(),
+        description: newDesc.trim() || undefined,
+        year: yearNum,
+      },
+    ]);
+    setNewTitle("");
+    setNewDesc("");
+    setNewYear("");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await upsertProfile({ bio, genres, achievements });
+      toast.success("Chef profile updated!", { position: "bottom-right" });
+    } catch {
+      toast.error("Failed to update chef profile.", { position: "bottom-right" });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-3">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-24 w-full rounded-lg" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Bio */}
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Bio</h3>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+            Tell visitors about your culinary background and style
+          </p>
+        </div>
+        <div className="relative">
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            maxLength={1000}
+            rows={4}
+            placeholder="Share your culinary story..."
+            className="w-full resize-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-600 transition-shadow"
+          />
+          <span className="absolute bottom-2 right-3 text-[11px] text-zinc-400 dark:text-zinc-500 tabular-nums">
+            {bio.length}/1000
+          </span>
+        </div>
+      </div>
+
+      {/* Genres */}
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Cuisine Genres</h3>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+            Tag your culinary specialties (e.g. Italian, Vegan, Pastry)
+          </p>
+        </div>
+
+        {genres.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {genres.map((g) => (
+              <span
+                key={g}
+                className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700"
+              >
+                {g}
+                <button
+                  type="button"
+                  onClick={() => setGenres((prev) => prev.filter((x) => x !== g))}
+                  className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                >
+                  <XIcon size={11} weight="bold" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          <Input
+            ref={genreInputRef}
+            value={genreInput}
+            onChange={(e) => setGenreInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === ",") {
+                e.preventDefault();
+                addGenre();
+              }
+            }}
+            placeholder="Type a genre and press Enter..."
+            className="flex-1 h-9 text-sm"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addGenre}
+            className="h-9 px-3"
+          >
+            <PlusIcon size={14} />
+          </Button>
+        </div>
+      </div>
+
+      {/* Achievements */}
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Achievements</h3>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+            Awards, certifications, and career highlights
+          </p>
+        </div>
+
+        {achievements.length > 0 && (
+          <div className="space-y-2">
+            {achievements.map((a, i) => (
+              <div
+                key={i}
+                className="flex items-start justify-between gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40"
+              >
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <TrophyIcon
+                    size={14}
+                    weight="fill"
+                    className="mt-0.5 shrink-0 text-amber-500"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 leading-tight">
+                      {a.title}
+                      {a.year && (
+                        <span className="ml-1.5 text-xs font-normal text-amber-500 dark:text-amber-400">
+                          {a.year}
+                        </span>
+                      )}
+                    </p>
+                    {a.description && (
+                      <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5 leading-relaxed">
+                        {a.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAchievements((prev) => prev.filter((_, idx) => idx !== i))}
+                  className="shrink-0 text-amber-400 hover:text-amber-600 dark:hover:text-amber-200 transition-colors"
+                >
+                  <XIcon size={14} weight="bold" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 p-4 space-y-3 bg-zinc-50 dark:bg-zinc-800/30">
+          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Add achievement</p>
+          <Input
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            placeholder="Title *"
+            className="h-9 text-sm"
+          />
+          <Input
+            value={newDesc}
+            onChange={(e) => setNewDesc(e.target.value)}
+            placeholder="Description (optional)"
+            className="h-9 text-sm"
+          />
+          <div className="flex gap-2">
+            <Input
+              value={newYear}
+              onChange={(e) => setNewYear(e.target.value)}
+              placeholder="Year (optional)"
+              type="number"
+              min={1900}
+              max={new Date().getFullYear()}
+              className="h-9 text-sm w-36"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addAchievement}
+              disabled={!newTitle.trim()}
+              className="h-9 gap-1.5"
+            >
+              <PlusIcon size={14} />
+              Add
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <Button type="submit" disabled={isPending} className="h-10 rounded-lg capitalize">
+          {isPending ? "Saving..." : "Save Chef Profile"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
 export default function SettingsPage() {
   const { profile, updateProfile } = useProfile();
   const { changePassword } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<"security" | "profile">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "chef-profile" | "security">("profile");
 
   const profileFieldDefinitions = [
     {
@@ -139,11 +393,14 @@ export default function SettingsPage() {
   });
 
   const tabs: {
-    id: "security" | "profile";
+    id: "profile" | "chef-profile" | "security";
     label: string;
     icon: React.ElementType;
   }[] = [
     { id: "profile", label: "Profile", icon: UserCircleIcon },
+    ...(profile?.role === "chef"
+      ? [{ id: "chef-profile" as const, label: "Chef Profile", icon: ChefHatIcon }]
+      : []),
     { id: "security", label: "Security", icon: ShieldCheckIcon },
   ];
 
@@ -269,6 +526,8 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
+
+        {activeTab === "chef-profile" && <ChefProfileTab />}
 
         {activeTab === "security" && (
           <div className="space-y-6">

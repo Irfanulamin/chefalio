@@ -12,11 +12,14 @@ import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { ArrowClockwiseIcon } from "@phosphor-icons/react/dist/ssr";
 
 function LoginForm() {
-  const { login } = useAuth();
+  const { login, resendVerification, isResendingVerification } = useAuth();
   const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [unverifiedLogin, setUnverifiedLogin] = useState<string | null>(null);
+  const [resendSent, setResendSent] = useState(false);
 
   const loginSchema = z.object({
     usernameOrEmail: z
@@ -30,15 +33,19 @@ function LoginForm() {
     validators: { onSubmit: loginSchema },
     onSubmit: async ({ value }) => {
       setIsSubmitting(true);
+      setUnverifiedLogin(null);
+      setResendSent(false);
       try {
         await login(value);
         toast.success("Signed in successfully!", { position: "bottom-right" });
       } catch (err: Error | unknown) {
         const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Login failed. Please try again.";
-        toast.error(errorMessage, { position: "bottom-right" });
+          err instanceof Error ? err.message : "Login failed. Please try again.";
+        if (errorMessage.toLowerCase().includes("not verified")) {
+          setUnverifiedLogin(value.usernameOrEmail);
+        } else {
+          toast.error(errorMessage, { position: "bottom-right" });
+        }
       } finally {
         setIsSubmitting(false);
       }
@@ -59,6 +66,16 @@ function LoginForm() {
       type: "password",
     },
   ];
+
+  const handleResendFromLogin = async () => {
+    if (!unverifiedLogin) return;
+    try {
+      await resendVerification({ usernameOrEmail: unverifiedLogin });
+      setResendSent(true);
+    } catch {
+      setResendSent(true);
+    }
+  };
 
   const justReset = searchParams.get("reset") === "success";
   const oauthError = searchParams.get("error");
@@ -92,6 +109,32 @@ function LoginForm() {
           <p className="text-sm text-gray-500">
             Welcome back! Please enter your details to sign in.
           </p>
+        )}
+
+        {unverifiedLogin && (
+          <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 space-y-2">
+            <p className="text-sm text-amber-800 dark:text-amber-300">
+              Your email is not verified. Please check your inbox or request a new link.
+            </p>
+            {resendSent ? (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                A new verification link has been sent if the account exists.
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={handleResendFromLogin}
+                disabled={isResendingVerification}
+                className="flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 transition-colors"
+              >
+                <ArrowClockwiseIcon
+                  size={13}
+                  className={isResendingVerification ? "animate-spin" : ""}
+                />
+                {isResendingVerification ? "Sending…" : "Resend verification email"}
+              </button>
+            )}
+          </div>
         )}
       </div>
       <div className="h-px bg-zinc-100 dark:bg-zinc-800 mb-6" />

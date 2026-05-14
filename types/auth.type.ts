@@ -3,6 +3,20 @@ export interface Me {
   role: string;
 }
 
+export interface RegisterResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  email: string;
+}
+
+export interface VerifyEmailResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  role: string;
+}
+
 export interface LoginPayload {
   usernameOrEmail: string;
   password: string;

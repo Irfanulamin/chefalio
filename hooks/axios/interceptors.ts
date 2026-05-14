@@ -6,6 +6,7 @@ const GUEST_ROUTES = [
   "/register",
   "/forgot-password",
   "/reset-password",
+  "/verify-email",
 ];
 
 const isGuestRoute = () =>
