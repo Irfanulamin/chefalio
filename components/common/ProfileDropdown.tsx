@@ -21,6 +21,9 @@ import {
   ChefHatIcon,
   ShieldCheckIcon,
   ArrowSquareOutIcon,
+  PulseIcon,
+  UsersFourIcon,
+  HandTapIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { useProfile } from "@/hooks/useAuth";
@@ -59,6 +62,15 @@ const ROLE_NAV: Record<string, NavItem[]> = {
     { label: "Recipes", href: "/recipes", Icon: ForkKnifeIcon },
     { label: "Cookbooks", href: "/cookbooks", Icon: BookOpenIcon },
     { label: "Chefs", href: "/chefs", Icon: ChefHatIcon },
+    { label: "Activity", href: "/activity", Icon: PulseIcon },
+    { label: "Become a Chef", href: "/apply-chef", Icon: UsersFourIcon },
+  ],
+  chef: [
+    { label: "Chef Studio", href: "/chef/dashboard", Icon: HandTapIcon },
+    { label: "Recipes", href: "/recipes", Icon: ForkKnifeIcon },
+    { label: "Cookbooks", href: "/cookbooks", Icon: BookOpenIcon },
+    { label: "Chefs", href: "/chefs", Icon: ChefHatIcon },
+    { label: "Activity", href: "/activity", Icon: PulseIcon },
   ],
   admin: [
     { label: "Dashboard", href: "/admin/dashboard", Icon: ShieldCheckIcon },
@@ -135,26 +147,7 @@ export const ProfileDropdown = () => {
 
         <DropdownMenuSeparator className="my-1" />
 
-        {/* My Studio — chef only */}
-        {isChef && (
-          <>
-            <Link href="/chef/dashboard" className="block w-full px-1.5 py-1">
-              <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary/8 dark:bg-primary/10 border border-primary/20 hover:bg-primary/12 dark:hover:bg-primary/15 transition-colors cursor-pointer group">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 dark:bg-primary/20 shrink-0">
-                  <ChefHatIcon size={16} weight="duotone" className="text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground leading-tight">My Studio</p>
-                  <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">Manage recipes &amp; cookbooks</p>
-                </div>
-                <ArrowSquareOutIcon size={14} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-              </div>
-            </Link>
-            <DropdownMenuSeparator className="my-1" />
-          </>
-        )}
-
-        {/* Role-based navigation (user / admin) */}
+        {/* Role-based navigation (user / chef / admin) */}
         {navItems.length > 0 && (
           <>
             <DropdownMenuGroup>
