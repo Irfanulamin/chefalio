@@ -24,6 +24,9 @@ import {
   PulseIcon,
   UsersFourIcon,
   HandTapIcon,
+  HouseLineIcon,
+  ChartLineUpIcon,
+  PackageIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { useProfile } from "@/hooks/useAuth";
@@ -66,7 +69,12 @@ const ROLE_NAV: Record<string, NavItem[]> = {
     { label: "Become a Chef", href: "/apply-chef", Icon: UsersFourIcon },
   ],
   chef: [
-    { label: "Chef Studio", href: "/chef/dashboard", Icon: HandTapIcon },
+    { label: "Dashboard", href: "/chef/dashboard", Icon: HouseLineIcon },
+    { label: "Analytics", href: "/chef/analytics", Icon: ChartLineUpIcon },
+    { label: "My Recipes", href: "/chef/recipes", Icon: ForkKnifeIcon },
+    { label: "My Cookbooks", href: "/chef/cookbooks", Icon: BookOpenIcon },
+    { label: "Orders", href: "/chef/orders", Icon: PackageIcon },
+    { label: "Settings", href: "/chef/settings", Icon: GearSixIcon },
     { label: "Recipes", href: "/recipes", Icon: ForkKnifeIcon },
     { label: "Cookbooks", href: "/cookbooks", Icon: BookOpenIcon },
     { label: "Chefs", href: "/chefs", Icon: ChefHatIcon },
@@ -85,7 +93,6 @@ export const ProfileDropdown = () => {
   const { logout } = useAuth();
 
   const navItems: NavItem[] = ROLE_NAV[profile?.role ?? ""] ?? [];
-  const isChef = profile?.role === "chef";
 
   return (
     <DropdownMenu>
