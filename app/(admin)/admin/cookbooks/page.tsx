@@ -1,25 +1,17 @@
-"use client";
+"use client"
 
-import { useState, useMemo } from "react";
+import { useState, useMemo } from "react"
+import { useAdminCookbooksTable } from "@/hooks/swr/use-admin-cookbooks-table"
 import {
-  useAdminCookbooks,
   useAdminDeleteCookbook,
   useAdminUpdateCookbook,
   useAdminApplyGlobalDiscount,
-} from "@/hooks/useAdmin";
-import type { Cookbook } from "@/types/cookbook.type";
-import Image from "next/image";
-import { toast } from "sonner";
-import { useDebounce } from "use-debounce";
-import {
-  MagnifyingGlassIcon,
-  BookOpenIcon,
-  TrashIcon,
-  CaretLeftIcon,
-  CaretRightIcon,
-  PencilSimpleIcon,
-  TagIcon,
-} from "@phosphor-icons/react/dist/ssr";
+} from "@/hooks/useAdmin"
+import type { Cookbook } from "@/types/cookbook.type"
+import Image from "next/image"
+import { DataTable } from "@/components/ui/data-table"
+import { createCookbookColumns } from "./columns"
+import { toast } from "sonner"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,122 +22,131 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@/components/ui/alert-dialog"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@/components/ui/dialog"
+import { BookOpenIcon, TagIcon } from "@phosphor-icons/react/dist/ssr"
 
 const DISCOUNT_PRESETS = [
   { label: "Off", value: 0 },
   { label: "5%", value: 5 },
   { label: "10%", value: 10 },
   { label: "15%", value: 15 },
-];
+]
 
 export default function AdminCookbooksPage() {
-  const [search, setSearch] = useState("");
-  const [debouncedSearch] = useDebounce(search, 400);
-  const [page, setPage] = useState(1);
-  const [editTarget, setEditTarget] = useState<Cookbook | null>(null);
-  const [editForm, setEditForm] = useState({ price: "", stockCount: "", discount: "" });
-  const [sortBy, setSortBy] = useState<"none" | "price-asc" | "price-desc" | "stock-asc" | "stock-desc">("none");
-  const [pendingGlobalDiscount, setPendingGlobalDiscount] = useState<number | null>(null);
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [editTarget, setEditTarget] = useState<Cookbook | null>(null)
+  const [editForm, setEditForm] = useState({
+    price: "",
+    stockCount: "",
+    discount: "",
+  })
+  const [pendingGlobalDiscount, setPendingGlobalDiscount] = useState<
+    number | null
+  >(null)
 
-  const { cookbooks, pagination, isLoading, isFetching } = useAdminCookbooks({
-    page,
-    limit: 20,
-    search: debouncedSearch,
-  });
+  const { cookbooks, pagination, isLoading, isFetching, refresh } =
+    useAdminCookbooksTable({
+      page,
+      limit: 20,
+      search: search || undefined,
+    })
 
-  const deleteCookbook = useAdminDeleteCookbook();
-  const updateCookbook = useAdminUpdateCookbook();
-  const applyGlobalDiscount = useAdminApplyGlobalDiscount();
-
-  const sortedCookbooks = useMemo(() => {
-    const list = [...cookbooks];
-    if (sortBy === "price-asc") list.sort((a, b) => a.price - b.price);
-    else if (sortBy === "price-desc") list.sort((a, b) => b.price - a.price);
-    else if (sortBy === "stock-asc") list.sort((a, b) => a.stockCount - b.stockCount);
-    else if (sortBy === "stock-desc") list.sort((a, b) => b.stockCount - a.stockCount);
-    return list;
-  }, [cookbooks, sortBy]);
+  const deleteCookbook = useAdminDeleteCookbook()
+  const updateCookbook = useAdminUpdateCookbook()
+  const applyGlobalDiscount = useAdminApplyGlobalDiscount()
 
   async function handleDelete(id: string) {
     try {
-      await deleteCookbook.mutateAsync(id);
-      toast.success("Cookbook deleted");
+      await deleteCookbook.mutateAsync(id)
+      toast.success("Cookbook deleted")
+      refresh()
     } catch {
-      toast.error("Failed to delete cookbook");
+      toast.error("Failed to delete cookbook")
     }
   }
 
   function openEdit(cookbook: Cookbook) {
-    setEditTarget(cookbook);
+    setEditTarget(cookbook)
     setEditForm({
       price: String(cookbook.price),
       stockCount: String(cookbook.stockCount),
       discount: String(cookbook.discount ?? 0),
-    });
+    })
   }
 
   async function handleUpdate(e: React.FormEvent) {
-    e.preventDefault();
-    if (!editTarget) return;
-    const price = parseFloat(editForm.price);
-    const stockCount = parseInt(editForm.stockCount, 10);
-    const discount = parseInt(editForm.discount, 10);
+    e.preventDefault()
+    if (!editTarget) return
+    const price = parseFloat(editForm.price)
+    const stockCount = parseInt(editForm.stockCount, 10)
+    const discount = parseInt(editForm.discount, 10)
     if (isNaN(price) || price < 0 || isNaN(stockCount) || stockCount < 0) {
-      toast.error("Invalid price or stock count");
-      return;
+      toast.error("Invalid price or stock count")
+      return
     }
     if (isNaN(discount) || discount < 0 || discount > 15) {
-      toast.error("Discount must be between 0% and 15%");
-      return;
+      toast.error("Discount must be between 0% and 15%")
+      return
     }
     try {
       await updateCookbook.mutateAsync({
         id: editTarget._id,
         payload: { price, stockCount, discount },
-      });
-      toast.success("Cookbook updated");
-      setEditTarget(null);
+      })
+      toast.success("Cookbook updated")
+      setEditTarget(null)
+      refresh()
     } catch {
-      toast.error("Failed to update cookbook");
+      toast.error("Failed to update cookbook")
     }
   }
 
   async function handleGlobalDiscount() {
-    if (pendingGlobalDiscount === null) return;
+    if (pendingGlobalDiscount === null) return
     try {
-      await applyGlobalDiscount.mutateAsync(pendingGlobalDiscount);
+      await applyGlobalDiscount.mutateAsync(pendingGlobalDiscount)
       toast.success(
         pendingGlobalDiscount === 0
           ? "Global discount removed"
           : `${pendingGlobalDiscount}% discount applied to all cookbooks`,
-      );
-      setPendingGlobalDiscount(null);
+      )
+      setPendingGlobalDiscount(null)
+      refresh()
     } catch {
-      toast.error("Failed to apply global discount");
+      toast.error("Failed to apply global discount")
     }
   }
 
-  const totalPages = pagination?.totalPages ?? 1;
+  const columns = useMemo(
+    () =>
+      createCookbookColumns({
+        onEdit: openEdit,
+        onDelete: handleDelete,
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+
+  const totalPages = pagination?.totalPages ?? 1
 
   return (
     <>
       <title>Cookbooks – Chefalio Admin</title>
 
       <div className="space-y-4 max-w-7xl mx-auto">
-        {/* Header */}
         <div>
           <h1 className="text-lg font-semibold text-foreground">Cookbooks</h1>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
-            Manage cookbook listings — edit pricing, stock, discount, and remove any cookbook · {pagination?.total ?? 0} total
+            Manage pricing, stock, discounts, and remove cookbooks ·{" "}
+            {pagination?.total ?? 0} total
           </p>
         </div>
 
@@ -222,7 +223,12 @@ export default function AdminCookbooksPage() {
                       <button
                         key={p.value}
                         type="button"
-                        onClick={() => setEditForm((f) => ({ ...f, discount: String(p.value) }))}
+                        onClick={() =>
+                          setEditForm((f) => ({
+                            ...f,
+                            discount: String(p.value),
+                          }))
+                        }
                         className={[
                           "flex-1 py-1.5 text-xs rounded-lg border transition-colors",
                           parseInt(editForm.discount, 10) === p.value
@@ -240,7 +246,9 @@ export default function AdminCookbooksPage() {
                     max="15"
                     step="1"
                     value={editForm.discount}
-                    onChange={(e) => setEditForm((f) => ({ ...f, discount: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((f) => ({ ...f, discount: e.target.value }))
+                    }
                     className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     placeholder="Custom (0-15)"
                   />
@@ -266,11 +274,13 @@ export default function AdminCookbooksPage() {
           </DialogContent>
         </Dialog>
 
-        {/* Global Discount Section */}
+        {/* Global Discount */}
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 shrink-0">
             <TagIcon size={16} className="text-zinc-400" />
-            <span className="text-sm font-medium text-foreground">Global Discount</span>
+            <span className="text-sm font-medium text-foreground">
+              Global Discount
+            </span>
           </div>
           <p className="text-xs text-zinc-400 flex-1 min-w-0">
             Apply a site-wide discount to all cookbooks at once (max 15%).
@@ -294,7 +304,10 @@ export default function AdminCookbooksPage() {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <button
-                disabled={pendingGlobalDiscount === null || applyGlobalDiscount.isPending}
+                disabled={
+                  pendingGlobalDiscount === null ||
+                  applyGlobalDiscount.isPending
+                }
                 className="px-3 py-1.5 text-xs rounded-lg bg-primary text-black font-medium hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
               >
                 {applyGlobalDiscount.isPending ? "Applying…" : "Apply"}
@@ -306,11 +319,13 @@ export default function AdminCookbooksPage() {
                 <AlertDialogDescription>
                   {pendingGlobalDiscount === 0
                     ? "This will remove the discount from all cookbooks."
-                    : `This will apply a ${pendingGlobalDiscount}% discount to all cookbooks on the platform.`}
+                    : `This will apply a ${pendingGlobalDiscount}% discount to all cookbooks.`}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setPendingGlobalDiscount(null)}>
+                <AlertDialogCancel
+                  onClick={() => setPendingGlobalDiscount(null)}
+                >
                   Cancel
                 </AlertDialogCancel>
                 <AlertDialogAction
@@ -324,268 +339,31 @@ export default function AdminCookbooksPage() {
           </AlertDialog>
         </div>
 
-        {/* Search + Sort */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative max-w-sm flex-1">
-            <MagnifyingGlassIcon
-              size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none"
-            />
-            <input
-              type="text"
-              placeholder="Search cookbooks..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-            />
-          </div>
-
-          {/* Sort buttons */}
-          <div className="flex items-center gap-1 shrink-0">
-            <span className="text-xs text-zinc-400 mr-1">Sort:</span>
-            {(
-              [
-                { label: "None", value: "none" },
-                { label: "Price ↑", value: "price-asc" },
-                { label: "Price ↓", value: "price-desc" },
-                { label: "Stock ↑", value: "stock-asc" },
-                { label: "Stock ↓", value: "stock-desc" },
-              ] as const
-            ).map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setSortBy(opt.value)}
-                className={[
-                  "px-2.5 py-1 text-xs rounded-lg border transition-colors",
-                  sortBy === opt.value
-                    ? "border-primary bg-primary/10 text-primary font-medium"
-                    : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground",
-                ].join(" ")}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Table */}
-        <div
-          className={[
-            "rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden transition-opacity duration-150",
-            isFetching ? "opacity-60" : "",
-          ].join(" ")}
-        >
-          {isLoading ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                    <th className="text-left px-4 py-3"><Skeleton className="h-3 w-16" /></th>
-                    <th className="text-left px-4 py-3 hidden sm:table-cell"><Skeleton className="h-3 w-12" /></th>
-                    <th className="text-left px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-10" /></th>
-                    <th className="text-left px-4 py-3 hidden lg:table-cell"><Skeleton className="h-3 w-10" /></th>
-                    <th className="text-left px-4 py-3 hidden xl:table-cell"><Skeleton className="h-3 w-14" /></th>
-                    <th className="px-4 py-3 w-10" />
-                    <th className="px-4 py-3 w-10" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <tr key={i}>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <Skeleton className="h-10 w-10 rounded-md shrink-0" />
-                          <div className="space-y-1.5">
-                            <Skeleton className="h-3.5 w-36" />
-                            <Skeleton className="h-2.5 w-48" />
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 hidden sm:table-cell">
-                        <div className="space-y-1.5">
-                          <Skeleton className="h-3 w-28" />
-                          <Skeleton className="h-2.5 w-20" />
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-12" /></td>
-                      <td className="px-4 py-3 hidden lg:table-cell"><Skeleton className="h-3 w-10" /></td>
-                      <td className="px-4 py-3 hidden xl:table-cell"><Skeleton className="h-5 w-14 rounded-full" /></td>
-                      <td className="px-4 py-3"><Skeleton className="h-7 w-7 rounded-lg" /></td>
-                      <td className="px-4 py-3"><Skeleton className="h-7 w-7 rounded-lg" /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : sortedCookbooks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-48 gap-2 text-zinc-400">
-              <BookOpenIcon size={24} />
-              <p className="text-sm">No cookbooks found</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                    <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wide">
-                      Cookbook
-                    </th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wide hidden sm:table-cell">
-                      Author
-                    </th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wide hidden md:table-cell">
-                      Price
-                    </th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wide hidden lg:table-cell">
-                      Stock
-                    </th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wide hidden xl:table-cell">
-                      Discount
-                    </th>
-                    <th className="px-4 py-3 w-10" />
-                    <th className="px-4 py-3 w-10" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                  {sortedCookbooks.map((cookbook) => (
-                    <tr
-                      key={cookbook._id}
-                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="relative h-10 w-10 rounded-md overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
-                            {cookbook.cookbook_image && (
-                              <Image
-                                src={cookbook.cookbook_image}
-                                alt={cookbook.title}
-                                fill
-                                className="object-cover"
-                                sizes="40px"
-                              />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-medium text-foreground truncate max-w-48 text-sm">
-                              {cookbook.title}
-                            </p>
-                            <p className="text-xs text-zinc-400 truncate max-w-48">
-                              {cookbook.description}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 hidden sm:table-cell">
-                        <p className="text-sm text-foreground">
-                          {cookbook.authorId.fullName}
-                        </p>
-                        <p className="text-xs text-zinc-400">
-                          @{cookbook.authorId.username}
-                        </p>
-                      </td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <span className="text-sm font-medium text-foreground">
-                          ${cookbook.price.toFixed(2)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 hidden lg:table-cell">
-                        <span
-                          className={[
-                            "text-xs font-medium tabular-nums",
-                            cookbook.stockCount === 0
-                              ? "text-red-500"
-                              : cookbook.stockCount < 5
-                                ? "text-amber-500"
-                                : "text-zinc-500",
-                          ].join(" ")}
-                        >
-                          {cookbook.stockCount} left
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 hidden xl:table-cell">
-                        {(cookbook.discount ?? 0) > 0 ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                            -{cookbook.discount}%
-                          </span>
-                        ) : (
-                          <span className="text-xs text-zinc-400">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => openEdit(cookbook)}
-                          className="h-7 w-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-primary hover:bg-primary/10 transition-colors"
-                          title="Edit price & stock"
-                        >
-                          <PencilSimpleIcon size={14} />
-                        </button>
-                      </td>
-                      <td className="px-4 py-3">
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <button className="h-7 w-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                              <TrashIcon size={14} />
-                            </button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Delete cookbook?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will permanently delete &ldquo;
-                                {cookbook.title}&rdquo;. This action cannot be
-                                undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(cookbook._id)}
-                                className="bg-red-500 hover:bg-red-600 text-white border-0"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-1">
-            <p className="text-xs text-zinc-400">
-              Page {page} of {totalPages} · {pagination?.total ?? 0} cookbooks
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="h-7 w-7 flex items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                <CaretLeftIcon size={12} />
-              </button>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="h-7 w-7 flex items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                <CaretRightIcon size={12} />
-              </button>
-            </div>
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          data={cookbooks}
+          isLoading={isLoading}
+          isFetching={isFetching}
+          emptyIcon={BookOpenIcon}
+          emptyMessage="No cookbooks found"
+          onSearchChange={(v) => {
+            setSearch(v)
+            setPage(1)
+          }}
+          searchPlaceholder="Search cookbooks..."
+          pagination={
+            totalPages > 1
+              ? {
+                  page,
+                  totalPages,
+                  total: pagination?.total ?? 0,
+                  itemLabel: "cookbooks",
+                  onPageChange: setPage,
+                }
+              : undefined
+          }
+        />
       </div>
     </>
-  );
+  )
 }
