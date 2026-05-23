@@ -89,7 +89,7 @@ export default function SavedRecipesSection() {
       }}
     >
       {recipes.map((recipe) => (
-        <CompactRecipeCard key={recipe.recipeId?._id} recipe={recipe} button="save" />
+        <CompactRecipeCard key={recipe.recipeId?._id} recipe={recipe} />
       ))}
     </div>
   );

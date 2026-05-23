@@ -83,7 +83,7 @@ export default function LovedRecipesSection() {
       style={{ border: "1px solid var(--cs-border-subtle)" }}
     >
       {recipes.map((recipe) => (
-        <CompactRecipeCard key={recipe._id} recipe={recipe} button="love" />
+        <CompactRecipeCard key={recipe._id} recipe={recipe} />
       ))}
     </div>
   );
