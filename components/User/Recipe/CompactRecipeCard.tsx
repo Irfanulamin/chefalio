@@ -1,3 +1,5 @@
+"use client";
+
 import { SavedRecipe } from "@/types/recipes.type";
 import Image from "next/image";
 import Link from "next/link";

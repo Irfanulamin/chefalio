@@ -1,3 +1,5 @@
+"use client";
+
 import type { RecipeStats } from "@/types/recipes.type";
 import { useToggleLove, useToggleSave } from "@/hooks/useRecipe";
 import { cn } from "@/lib/utils";
