@@ -2,8 +2,7 @@
 
 import { useInfiniteCookbooks } from "@/hooks/useCookbook";
 import { EmptyState } from "@/components/common/EmptyState";
-import { MagnifyingGlassIcon, BookOpenIcon, XIcon, Loader2Icon } from "lucide-react";
-import { UserIcon } from "@phosphor-icons/react/dist/ssr";
+import { MagnifyingGlassIcon, BookOpenIcon, XIcon, CircleNotchIcon, UserIcon } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -290,7 +289,7 @@ export default function CookbooksPage() {
           <div ref={sentinelRef} className="h-4" />
           {isFetchingNextPage && (
             <div className="flex justify-center py-6">
-              <Loader2Icon className="animate-spin" size={20} style={{ color: "var(--cs-text-tertiary)" }} />
+              <CircleNotchIcon className="animate-spin" size={20} style={{ color: "var(--cs-text-tertiary)" }} />
             </div>
           )}
         </div>
