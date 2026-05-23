@@ -94,7 +94,7 @@ export const Header = () => {
             ) : (
               <>
                 <Button
-                  variant="ghost"
+                  variant="transparent"
                   size="sm"
                   onClick={() => router.push("/login")}
                 >
