@@ -5,25 +5,18 @@ import { Recipe } from "@/types/recipes.type";
 import {
   BookmarkSimpleIcon,
   HeartIcon,
-  ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
 import { memo, useCallback } from "react";
 
-const difficultyConfig: Record<string, { label: string; className: string }> = {
-  beginner: {
-    label: "Beginner",
-    className: "bg-emerald-600 text-white",
-  },
-  intermediate: {
-    label: "Intermediate",
-    className: "bg-amber-500 text-white",
-  },
-  advance: {
-    label: "Advanced",
-    className: "bg-red-600 text-white",
-  },
+const DIFFICULTY_CONFIG: Record<
+  string,
+  { label: string; bg: string; color: string }
+> = {
+  beginner: { label: "Easy", bg: "#dcfce7", color: "#15803d" },
+  intermediate: { label: "Medium", bg: "#fef9c3", color: "#a16207" },
+  advance: { label: "Hard", bg: "#fee2e2", color: "#b91c1c" },
 };
 
 export const RecipeCard = memo(
@@ -60,37 +53,70 @@ export const RecipeCard = memo(
       [recipe._id, toggleSave],
     );
 
-    const diff = difficultyConfig[recipe.difficulty] ?? difficultyConfig.advance;
+    const diff =
+      DIFFICULTY_CONFIG[recipe.difficulty] ?? DIFFICULTY_CONFIG.advance;
+    const initials = (recipe.authorId.fullName || "")
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
 
     return (
-      <div className="group w-full overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200 flex flex-col">
-        {/* Image */}
-        <Link href={`${recipePath}/${recipe._id}`} className="relative h-44 w-full overflow-hidden block bg-zinc-100 dark:bg-zinc-800">
-          <Image
-            src={recipe.images[0]}
-            alt={recipe.title}
-            fill
-            loading="lazy"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-          {/* Difficulty badge */}
+      <div
+        className="group w-full overflow-hidden rounded-xl flex flex-col transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+        style={{
+          backgroundColor: "var(--cs-surface-2)",
+          border: "1px solid var(--cs-border-subtle)",
+        }}
+      >
+        {/* 4:3 Image */}
+        <Link
+          href={`${recipePath}/${recipe._id}`}
+          className="relative block w-full overflow-hidden"
+          style={{ aspectRatio: "4/3", backgroundColor: "var(--cs-surface-3)" }}
+        >
+          {recipe.images?.[0] ? (
+            <Image
+              src={recipe.images[0]}
+              alt={recipe.title}
+              fill
+              loading="lazy"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover"
+            />
+          ) : (
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--cs-accent-muted), var(--cs-surface-3))",
+              }}
+            >
+              <span
+                className="text-3xl font-bold opacity-20"
+                style={{ color: "var(--cs-accent)" }}
+              >
+                {recipe.title.charAt(0)}
+              </span>
+            </div>
+          )}
+
+          {/* Difficulty badge — top right */}
           <span
-            className={cn(
-              "absolute left-2.5 top-2.5 inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium",
-              diff.className,
-            )}
+            className="absolute right-2.5 top-2.5 inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold"
+            style={{ backgroundColor: diff.bg, color: diff.color }}
           >
             {diff.label}
           </span>
         </Link>
 
         {/* Body */}
-        <div className="flex flex-col gap-2.5 p-4 flex-1">
+        <div className="flex flex-col gap-2 p-4 flex-1">
           {/* Author */}
           <Link
             href={`${chefPath}/${recipe.authorId._id}`}
-            className="flex items-center gap-2 w-fit"
+            className="flex items-center gap-2 w-fit group/author"
           >
             {recipe.authorId.profile_url ? (
               <Image
@@ -102,89 +128,73 @@ export const RecipeCard = memo(
                 className="rounded-full w-5 h-5 object-cover"
               />
             ) : (
-              <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-[9px] font-bold text-zinc-600 dark:text-zinc-300">
-                {(recipe.authorId.fullName || "")
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .slice(0, 2)
-                  .toUpperCase()}
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0"
+                style={{ backgroundColor: "var(--cs-accent)" }}
+              >
+                {initials}
               </div>
             )}
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-foreground transition-colors capitalize truncate max-w-[120px]">
+            <span
+              className="text-xs font-medium capitalize truncate max-w-[120px] transition-colors duration-150"
+              style={{ color: "var(--cs-text-secondary)" }}
+            >
               {recipe.authorId.fullName}
             </span>
           </Link>
 
           {/* Title */}
           <Link href={`${recipePath}/${recipe._id}`}>
-            <h2 className="text-[15px] font-semibold text-foreground leading-snug line-clamp-2 hover:text-primary transition-colors">
+            <h2
+              className="text-[15px] font-semibold leading-snug line-clamp-2 transition-colors duration-150 group-hover:text-[color:var(--cs-accent)]"
+              style={{ color: "var(--cs-text-primary)" }}
+            >
               {recipe.title}
             </h2>
           </Link>
 
-          {/* Description */}
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-2">
-            {recipe.description}
-          </p>
-
-          {/* Tags */}
+          {/* Tags as cuisine labels */}
           {recipe.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              {recipe.tags.slice(0, 3).map((tag) => (
+              {recipe.tags.slice(0, 2).map((tag) => (
                 <span
                   key={tag}
-                  className="px-1.5 py-0.5 text-[11px] rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 capitalize"
+                  className="px-2 py-0.5 text-[11px] rounded-full capitalize"
+                  style={{
+                    backgroundColor: "var(--cs-accent-muted)",
+                    color: "var(--cs-accent)",
+                  }}
                 >
-                  #{tag}
+                  {tag}
                 </span>
               ))}
             </div>
           )}
 
-          {/* Divider + actions */}
-          <div className="mt-auto pt-2.5 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
-            {/* Love */}
+          {/* Footer actions */}
+          <div
+            className="mt-auto pt-3 flex items-center gap-3"
+            style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
+          >
             <button
               onClick={handleLoveToggle}
-              className={cn(
-                "flex items-center gap-1 text-xs transition-colors",
-                stats?.isLoved
-                  ? "text-rose-500"
-                  : "text-zinc-400 hover:text-rose-500",
-              )}
+              className="flex items-center gap-1 text-xs transition-colors duration-150"
+              style={{ color: stats?.isLoved ? "#f43f5e" : "var(--cs-text-tertiary)" }}
             >
-              <HeartIcon
-                weight={stats?.isLoved ? "fill" : "bold"}
-                className="h-4 w-4"
-              />
+              <HeartIcon weight={stats?.isLoved ? "fill" : "bold"} className="h-4 w-4" />
               <span className="font-medium">{recipe.lovedCount.toLocaleString()}</span>
             </button>
 
-            {/* Save */}
             <button
               onClick={handleSaveToggle}
-              className={cn(
-                "p-1 transition-colors",
-                stats?.isSaved
-                  ? "text-foreground"
-                  : "text-zinc-400 hover:text-foreground",
-              )}
+              className="flex items-center gap-1 text-xs transition-colors duration-150"
+              style={{
+                color: stats?.isSaved ? "var(--cs-text-primary)" : "var(--cs-text-tertiary)",
+              }}
             >
-              <BookmarkSimpleIcon
-                weight={stats?.isSaved ? "fill" : "bold"}
-                className="h-4 w-4"
-              />
+              <BookmarkSimpleIcon weight={stats?.isSaved ? "fill" : "bold"} className="h-4 w-4" />
+              <span className="font-medium">{recipe.savedCount.toLocaleString()}</span>
             </button>
-
-            <div className="flex-1" />
-
-            <Link
-              href={`${recipePath}/${recipe._id}`}
-              className="flex items-center gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-foreground transition-colors"
-            >
-              View <ArrowRightIcon weight="bold" className="w-3 h-3" />
-            </Link>
           </div>
         </div>
       </div>

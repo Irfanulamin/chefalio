@@ -50,12 +50,12 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 };
 
 const STATUS_DOT: Record<string, string> = {
-  paid: "bg-emerald-400",
-  shipped: "bg-blue-400",
-  delivered: "bg-primary",
-  pending: "bg-amber-400",
-  failed: "bg-red-400",
-  refunded: "bg-zinc-400",
+  paid: "#34d399",
+  shipped: "#60a5fa",
+  delivered: "#a7d129",
+  pending: "#fbbf24",
+  failed: "#f87171",
+  refunded: "#a0a09d",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -107,18 +107,24 @@ function StatCard({
   icon: React.ElementType;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+    <div
+      className="rounded-xl p-5"
+      style={{
+        border: "1px solid var(--cs-border-subtle)",
+        backgroundColor: "var(--cs-surface-2)",
+      }}
+    >
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+        <span className="text-xs font-medium" style={{ color: "var(--cs-text-secondary)" }}>
           {label}
         </span>
-        <Icon size={14} className="text-zinc-400 dark:text-zinc-500" />
+        <Icon size={14} style={{ color: "var(--cs-text-tertiary)" }} />
       </div>
-      <p className="text-2xl font-semibold text-foreground tabular-nums leading-none">
+      <p className="text-2xl font-semibold tabular-nums leading-none" style={{ color: "var(--cs-text-primary)" }}>
         {value}
       </p>
       {sub && (
-        <p className="mt-1.5 text-xs text-zinc-400 dark:text-zinc-500">{sub}</p>
+        <p className="mt-1.5 text-xs" style={{ color: "var(--cs-text-tertiary)" }}>{sub}</p>
       )}
     </div>
   );
@@ -133,7 +139,7 @@ function CardHeader({
 }) {
   return (
     <div className="flex items-center justify-between mb-5">
-      <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+      <h2 className="text-sm font-semibold" style={{ color: "var(--cs-text-primary)" }}>{title}</h2>
       {action}
     </div>
   );
@@ -142,8 +148,8 @@ function CardHeader({
 function EmptyState({ height = 160, message = "No data yet" }: { height?: number; message?: string }) {
   return (
     <div
-      className="flex items-center justify-center text-sm text-zinc-400"
-      style={{ height }}
+      className="flex items-center justify-center text-sm"
+      style={{ height, color: "var(--cs-text-tertiary)" }}
     >
       {message}
     </div>
@@ -176,7 +182,11 @@ export default function ChefDashboardPage() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3">
+            <div
+              key={i}
+              className="rounded-xl p-5 space-y-3"
+              style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+            >
               <div className="flex items-center justify-between">
                 <Skeleton className="h-3 w-16" />
                 <Skeleton className="h-3.5 w-3.5 rounded-sm" />
@@ -189,7 +199,11 @@ export default function ChefDashboardPage() {
         {[0, 1, 2].map((row) => (
           <div key={row} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {[0, 1].map((col) => (
-              <div key={col} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+              <div
+                key={col}
+                className="rounded-xl p-5"
+                style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+              >
                 <Skeleton className="h-4 w-36 mb-5" />
                 <Skeleton className="h-44 w-full rounded-lg" />
               </div>
@@ -224,24 +238,30 @@ export default function ChefDashboardPage() {
         {/* ── Page header ────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-lg font-semibold text-foreground">
+            <h1 className="text-lg font-semibold" style={{ color: "var(--cs-text-primary)" }}>
               {greeting}, {firstName}
             </h1>
-            <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
+            <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
               Here&apos;s what&apos;s happening with your content.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Link
               href="/chef/recipes/create"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors duration-150 hover:bg-[var(--cs-surface-3)]"
+              style={{
+                border: "1px solid var(--cs-border-default)",
+                backgroundColor: "var(--cs-surface-2)",
+                color: "var(--cs-text-primary)",
+              }}
             >
               <PlusIcon size={12} weight="bold" />
               New Recipe
             </Link>
             <Link
               href="/chef/cookbooks/create"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-black hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors duration-150"
+              style={{ backgroundColor: "var(--cs-accent)", color: "#111110" }}
             >
               <PlusIcon size={12} weight="bold" />
               New Cookbook
@@ -273,7 +293,10 @@ export default function ChefDashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* My recipe difficulty */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+          <div
+            className="rounded-xl p-5"
+            style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+          >
             <CardHeader title="My Recipes by Difficulty" />
             {difficultyData.length === 0 ? (
               <EmptyState message="Publish recipes to see difficulty breakdown" />
@@ -290,6 +313,7 @@ export default function ChefDashboardPage() {
                       innerRadius={44}
                       outerRadius={70}
                       paddingAngle={3}
+                      isAnimationActive={false}
                     >
                       {difficultyData.map((entry, i) => (
                         <Cell
@@ -301,9 +325,11 @@ export default function ChefDashboardPage() {
                     <Tooltip
                       contentStyle={{
                         borderRadius: "8px",
-                        border: "1px solid #e4e4e7",
+                        border: "1px solid var(--cs-border-subtle)",
                         fontSize: "12px",
                         boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        backgroundColor: "var(--cs-surface-2)",
+                        color: "var(--cs-text-primary)",
                       }}
                     />
                   </PieChart>
@@ -319,16 +345,19 @@ export default function ChefDashboardPage() {
                             className="h-2 w-2 rounded-full shrink-0"
                             style={{ background: DIFFICULTY_COLORS[d.difficulty] ?? "#94a3b8" }}
                           />
-                          <span className="text-xs text-zinc-500 dark:text-zinc-400 capitalize flex-1">
+                          <span className="text-xs capitalize flex-1" style={{ color: "var(--cs-text-secondary)" }}>
                             {d.difficulty}
                           </span>
-                          <span className="text-xs font-semibold tabular-nums text-foreground">
+                          <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--cs-text-primary)" }}>
                             {d.count}
                           </span>
                         </div>
-                        <div className="h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                        <div
+                          className="h-1 rounded-full overflow-hidden"
+                          style={{ backgroundColor: "var(--cs-surface-3)" }}
+                        >
                           <div
-                            className="h-full rounded-full transition-all duration-500"
+                            className="h-full rounded-full"
                             style={{
                               width: `${pct}%`,
                               background: DIFFICULTY_COLORS[d.difficulty] ?? "#94a3b8",
@@ -344,7 +373,10 @@ export default function ChefDashboardPage() {
           </div>
 
           {/* Upload trend */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+          <div
+            className="rounded-xl p-5"
+            style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+          >
             <CardHeader title="Recipe Uploads (Last 14 Days)" />
             <ResponsiveContainer width="100%" height={160}>
               <AreaChart data={uploadTrendData} margin={{ left: -20, right: 8 }}>
@@ -354,22 +386,28 @@ export default function ChefDashboardPage() {
                     <stop offset="95%" stopColor="#a7d129" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--cs-border-subtle)" vertical={false} />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 10, fill: "#a1a1aa" }}
+                  tick={{ fontSize: 10, fill: "var(--cs-text-tertiary)" }}
                   tickLine={false}
                   axisLine={false}
                   interval="preserveStartEnd"
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: "#a1a1aa" }}
+                  tick={{ fontSize: 10, fill: "var(--cs-text-tertiary)" }}
                   tickLine={false}
                   axisLine={false}
                   allowDecimals={false}
                 />
                 <Tooltip
-                  contentStyle={{ borderRadius: "8px", border: "1px solid #e4e4e7", fontSize: "12px" }}
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "1px solid var(--cs-border-subtle)",
+                    fontSize: "12px",
+                    backgroundColor: "var(--cs-surface-2)",
+                    color: "var(--cs-text-primary)",
+                  }}
                   formatter={(val) => [val, "Recipes"]}
                 />
                 <Area
@@ -391,13 +429,17 @@ export default function ChefDashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* Top recipes by engagement */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+          <div
+            className="rounded-xl p-5"
+            style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+          >
             <CardHeader
               title="Top Recipes by Engagement"
               action={
                 <Link
                   href="/chef/analytics"
-                  className="flex items-center gap-1 text-xs text-zinc-400 hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 text-xs transition-colors duration-150 hover:opacity-80"
+                  style={{ color: "var(--cs-text-tertiary)" }}
                 >
                   Full analytics
                   <ArrowRightIcon size={11} />
@@ -417,10 +459,10 @@ export default function ChefDashboardPage() {
                   layout="vertical"
                   margin={{ left: 4, right: 16 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" horizontal={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--cs-border-subtle)" horizontal={false} />
                   <XAxis
                     type="number"
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
+                    tick={{ fontSize: 10, fill: "var(--cs-text-tertiary)" }}
                     tickLine={false}
                     axisLine={false}
                     allowDecimals={false}
@@ -428,47 +470,62 @@ export default function ChefDashboardPage() {
                   <YAxis
                     type="category"
                     dataKey="name"
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
+                    tick={{ fontSize: 10, fill: "var(--cs-text-tertiary)" }}
                     tickLine={false}
                     axisLine={false}
                     width={96}
                   />
                   <Tooltip
-                    contentStyle={{ borderRadius: "8px", border: "1px solid #e4e4e7", fontSize: "12px" }}
+                    contentStyle={{
+                      borderRadius: "8px",
+                      border: "1px solid var(--cs-border-subtle)",
+                      fontSize: "12px",
+                      backgroundColor: "var(--cs-surface-2)",
+                      color: "var(--cs-text-primary)",
+                    }}
                   />
-                  <Bar dataKey="Loves" fill="#ef4444" radius={[0, 3, 3, 0]} stackId="a" />
-                  <Bar dataKey="Saves" fill="#a7d129" radius={[0, 3, 3, 0]} stackId="a" />
+                  <Bar dataKey="Loves" fill="#ef4444" radius={[0, 3, 3, 0]} stackId="a" isAnimationActive={false} />
+                  <Bar dataKey="Saves" fill="#a7d129" radius={[0, 3, 3, 0]} stackId="a" isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
 
           {/* My top tags */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+          <div
+            className="rounded-xl p-5"
+            style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+          >
             <CardHeader title="My Top Tags" />
             {topTagsData.length === 0 ? (
               <EmptyState message="Add tags to your recipes to see them here" />
             ) : (
               <ResponsiveContainer width="100%" height={160}>
                 <BarChart data={topTagsData} margin={{ left: -20, right: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--cs-border-subtle)" vertical={false} />
                   <XAxis
                     dataKey="tag"
-                    tick={{ fontSize: 11, fill: "#a1a1aa" }}
+                    tick={{ fontSize: 11, fill: "var(--cs-text-tertiary)" }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: "#a1a1aa" }}
+                    tick={{ fontSize: 11, fill: "var(--cs-text-tertiary)" }}
                     tickLine={false}
                     axisLine={false}
                     allowDecimals={false}
                   />
                   <Tooltip
-                    cursor={{ fill: "#f4f4f580" }}
-                    contentStyle={{ borderRadius: "8px", border: "1px solid #e4e4e7", fontSize: "12px" }}
+                    cursor={{ fill: "var(--cs-surface-3)" }}
+                    contentStyle={{
+                      borderRadius: "8px",
+                      border: "1px solid var(--cs-border-subtle)",
+                      fontSize: "12px",
+                      backgroundColor: "var(--cs-surface-2)",
+                      color: "var(--cs-text-primary)",
+                    }}
                   />
-                  <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -479,13 +536,17 @@ export default function ChefDashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* Top cookbooks */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+          <div
+            className="rounded-xl p-5"
+            style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+          >
             <CardHeader
               title="Top Cookbooks by Revenue"
               action={
                 <Link
                   href="/chef/cookbooks"
-                  className="flex items-center gap-1 text-xs text-zinc-400 hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 text-xs transition-colors duration-150 hover:opacity-80"
+                  style={{ color: "var(--cs-text-tertiary)" }}
                 >
                   View all
                   <ArrowRightIcon size={11} />
@@ -499,12 +560,15 @@ export default function ChefDashboardPage() {
                 {topCookbooks.map((cb, i) => (
                   <div
                     key={String(cb.cookbookId)}
-                    className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                    className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[var(--cs-surface-3)] transition-colors duration-150"
                   >
-                    <span className="text-xs font-bold text-zinc-400 w-4 shrink-0 text-center">
+                    <span className="text-xs font-bold w-4 shrink-0 text-center" style={{ color: "var(--cs-text-tertiary)" }}>
                       {i + 1}
                     </span>
-                    <div className="relative h-9 w-12 rounded-md overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
+                    <div
+                      className="relative h-9 w-12 rounded-md overflow-hidden shrink-0"
+                      style={{ backgroundColor: "var(--cs-surface-3)" }}
+                    >
                       <Image
                         src={cb.cookbookImage}
                         alt={cb.cookbookTitle}
@@ -514,12 +578,12 @@ export default function ChefDashboardPage() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
+                      <p className="text-sm font-medium truncate" style={{ color: "var(--cs-text-primary)" }}>
                         {cb.cookbookTitle}
                       </p>
-                      <p className="text-xs text-zinc-400">{cb.totalSold} sold</p>
+                      <p className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>{cb.totalSold} sold</p>
                     </div>
-                    <span className="text-xs font-semibold text-primary tabular-nums shrink-0">
+                    <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: "var(--cs-accent)" }}>
                       ${cb.totalRevenue.toFixed(2)}
                     </span>
                   </div>
@@ -529,13 +593,17 @@ export default function ChefDashboardPage() {
           </div>
 
           {/* Recent orders */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+          <div
+            className="rounded-xl p-5"
+            style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+          >
             <CardHeader
               title="Recent Orders"
               action={
                 <Link
                   href="/chef/orders"
-                  className="flex items-center gap-1 text-xs text-zinc-400 hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 text-xs transition-colors duration-150 hover:opacity-80"
+                  style={{ color: "var(--cs-text-tertiary)" }}
                 >
                   View all
                   <ArrowRightIcon size={11} />
@@ -548,12 +616,16 @@ export default function ChefDashboardPage() {
               <div className="space-y-1">
                 {recentOrders.map((order) => {
                   const StatusIcon = STATUS_ICON[order.paymentStatus] ?? ClockIcon;
+                  void StatusIcon;
                   return (
                     <div
                       key={String(order._id)}
-                      className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                      className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[var(--cs-surface-3)] transition-colors duration-150"
                     >
-                      <div className="relative h-9 w-12 rounded-md overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
+                      <div
+                        className="relative h-9 w-12 rounded-md overflow-hidden shrink-0"
+                        style={{ backgroundColor: "var(--cs-surface-3)" }}
+                      >
                         <Image
                           src={order.cookbookImage}
                           alt={order.cookbookTitle}
@@ -563,20 +635,21 @@ export default function ChefDashboardPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
+                        <p className="text-sm font-medium truncate" style={{ color: "var(--cs-text-primary)" }}>
                           {order.cookbookTitle}
                         </p>
-                        <p className="text-xs text-zinc-400 truncate">
+                        <p className="text-xs truncate" style={{ color: "var(--cs-text-tertiary)" }}>
                           {order.receiptEmail}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
-                        <span className="text-xs font-semibold text-foreground tabular-nums">
+                        <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--cs-text-primary)" }}>
                           ${order.price.toFixed(2)}
                         </span>
-                        <span className="flex items-center gap-1 text-[10px] text-zinc-400">
+                        <span className="flex items-center gap-1 text-[10px]" style={{ color: "var(--cs-text-tertiary)" }}>
                           <span
-                            className={`h-1.5 w-1.5 rounded-full shrink-0 ${STATUS_DOT[order.paymentStatus] ?? "bg-zinc-300"}`}
+                            className="h-1.5 w-1.5 rounded-full shrink-0"
+                            style={{ backgroundColor: STATUS_DOT[order.paymentStatus] ?? "var(--cs-border-default)" }}
                           />
                           {STATUS_LABEL[order.paymentStatus] ?? order.paymentStatus}
                         </span>
@@ -590,13 +663,17 @@ export default function ChefDashboardPage() {
         </div>
 
         {/* ── Row 4: Recent recipes ───────────────────────────────────────── */}
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+        <div
+          className="rounded-xl p-5"
+          style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+        >
           <CardHeader
             title="Recent Recipes"
             action={
               <Link
                 href="/chef/recipes"
-                className="flex items-center gap-1 text-xs text-zinc-400 hover:text-foreground transition-colors"
+                className="flex items-center gap-1 text-xs transition-colors duration-150 hover:opacity-80"
+                style={{ color: "var(--cs-text-tertiary)" }}
               >
                 View all
                 <ArrowRightIcon size={11} />
@@ -604,11 +681,12 @@ export default function ChefDashboardPage() {
             }
           />
           {myRecipes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-24 gap-2 text-zinc-400">
-              <p className="text-sm">No recipes yet</p>
+            <div className="flex flex-col items-center justify-center h-24 gap-2">
+              <p className="text-sm" style={{ color: "var(--cs-text-tertiary)" }}>No recipes yet</p>
               <Link
                 href="/chef/recipes/create"
-                className="text-xs text-primary hover:underline font-medium"
+                className="text-xs font-medium hover:underline"
+                style={{ color: "var(--cs-accent)" }}
               >
                 Create your first recipe
               </Link>
@@ -618,9 +696,12 @@ export default function ChefDashboardPage() {
               {myRecipes.slice(0, 4).map((recipe) => (
                 <div
                   key={recipe._id}
-                  className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                  className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-[var(--cs-surface-3)] transition-colors duration-150"
                 >
-                  <div className="relative h-10 w-14 rounded-lg overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
+                  <div
+                    className="relative h-10 w-14 rounded-lg overflow-hidden shrink-0"
+                    style={{ backgroundColor: "var(--cs-surface-3)" }}
+                  >
                     <Image
                       src={recipe.images[0]}
                       alt={recipe.title}
@@ -630,14 +711,14 @@ export default function ChefDashboardPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
+                    <p className="text-sm font-medium truncate" style={{ color: "var(--cs-text-primary)" }}>
                       {recipe.title}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[11px] text-zinc-400 capitalize">
+                      <span className="text-[11px] capitalize" style={{ color: "var(--cs-text-tertiary)" }}>
                         {recipe.difficulty}
                       </span>
-                      <span className="text-[11px] text-zinc-400 tabular-nums">
+                      <span className="text-[11px] tabular-nums" style={{ color: "var(--cs-text-tertiary)" }}>
                         {recipe.lovedCount} ♥
                       </span>
                     </div>

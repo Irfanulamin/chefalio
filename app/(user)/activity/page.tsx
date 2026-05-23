@@ -1,70 +1,89 @@
-// app/(user)/activity/page.tsx
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedRecipesSection from "./_components/SavedRecipe";
 import LovedRecipesSection from "./_components/LovedRecipe";
+import OrdersSection from "./_components/Orders";
 import {
   BookmarkSimpleIcon,
   HeartIcon,
   PackageIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import OrdersSection from "./_components/Orders";
 
 type Tab = "saved" | "loved" | "orders";
 const VALID_TABS: Tab[] = ["saved", "loved", "orders"];
+
+const TABS: { id: Tab; label: string; Icon: React.ElementType }[] = [
+  { id: "saved", label: "Saved", Icon: BookmarkSimpleIcon },
+  { id: "loved", label: "Favourites", Icon: HeartIcon },
+  { id: "orders", label: "Orders", Icon: PackageIcon },
+];
 
 export default function ActivityPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const rawTab = searchParams.get("tab") as Tab | null;
-  const activeTab: Tab =
-    rawTab && VALID_TABS.includes(rawTab) ? rawTab : "saved";
+  const activeTab: Tab = rawTab && VALID_TABS.includes(rawTab) ? rawTab : "saved";
 
-  const handleTabChange = (value: string) => {
+  const handleTabChange = (value: Tab) => {
     router.replace(`?tab=${value}`, { scroll: false });
   };
 
   return (
     <>
-      <title>Chefalio - Activity</title>
-      <div className="max-w-7xl mx-auto px-3 space-y-6 my-4 md:my-8">
-        <div className="pb-5 border-b border-zinc-200 dark:border-zinc-800">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Activity</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 max-w-xl">
-            View and manage your saved and loved recipes in one place. Keep track of your culinary journey and revisit your favorites anytime.
-          </p>
-        </div>
+      <title>Chefalio — Activity</title>
+      <div className="page-root">
+        <div className="page-content">
+          {/* Header */}
+          <div className="pb-6 mb-6" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
+            <h1
+              className="text-2xl font-bold tracking-tight mb-1"
+              style={{ color: "var(--cs-text-primary)" }}
+            >
+              Activity
+            </h1>
+            <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
+              View and manage your saved and loved recipes in one place.
+            </p>
+          </div>
 
-      <Tabs
-        value={activeTab}
-        onValueChange={handleTabChange}
-        className=""
-      >
-        <TabsList className="p-1 mb-8" variant="pill">
-          <TabsTrigger value="saved">
-            <BookmarkSimpleIcon weight="fill" /> Saved
-          </TabsTrigger>
-          <TabsTrigger value="loved">
-            <HeartIcon weight="fill" /> Favourites
-          </TabsTrigger>
-          <TabsTrigger value="orders">
-            <PackageIcon weight="fill" /> Orders
-          </TabsTrigger>
-        </TabsList>
+          {/* Tab bar */}
+          <div
+            className="flex gap-1 p-1 rounded-xl w-fit mb-6"
+            style={{ backgroundColor: "var(--cs-surface-3)" }}
+          >
+            {TABS.map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                onClick={() => handleTabChange(id)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-150"
+                style={
+                  activeTab === id
+                    ? {
+                        backgroundColor: "var(--cs-surface-1)",
+                        color: "var(--cs-text-primary)",
+                        boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                        border: "1px solid var(--cs-border-subtle)",
+                      }
+                    : { color: "var(--cs-text-secondary)" }
+                }
+              >
+                <Icon
+                  size={16}
+                  weight={activeTab === id ? "fill" : "regular"}
+                  style={activeTab === id ? { color: "var(--cs-accent)" } : undefined}
+                />
+                {label}
+              </button>
+            ))}
+          </div>
 
-        <TabsContent value="saved">
+          {/* Tab content */}
           {activeTab === "saved" && <SavedRecipesSection />}
-        </TabsContent>
-        <TabsContent value="loved">
           {activeTab === "loved" && <LovedRecipesSection />}
-        </TabsContent>
-        <TabsContent value="orders">
           {activeTab === "orders" && <OrdersSection />}
-        </TabsContent>
-      </Tabs>
+        </div>
       </div>
     </>
   );

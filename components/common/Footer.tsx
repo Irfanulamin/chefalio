@@ -1,51 +1,110 @@
-"use client";
-
-import { motion } from "framer-motion";
 import Link from "next/link";
 
-const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "Features", href: "/#features" },
-  { label: "About", href: "/#about" },
-  { label: "FAQ", href: "/#faq" },
-];
+const FOOTER_LINKS = {
+  explore: [
+    { label: "Recipes", href: "/recipes" },
+    { label: "Cookbooks", href: "/cookbooks" },
+    { label: "Chefs", href: "/chefs" },
+  ],
+  legal: [
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms of Service", href: "/terms" },
+  ],
+};
 
 export const Footer = () => {
   return (
-    <footer className="w-full px-6 py-10 flex justify-center backdrop-blur-sm bg-background/80 supports-backdrop-filter:bg-background/60">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.6 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-3xl rounded-2xl border border-black/8 dark:border-white/8 bg-white/60 dark:bg-black/40 backdrop-blur-sm px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-6"
-      >
-        <Link
-          href="/"
-          className="text-primary text-2xl font-extrabold tracking-tight cursor-pointer select-none"
-        >
-          Chefalio
-        </Link>
-        <nav className="flex items-center gap-x-6">
-          {navLinks.map((link, i) => (
-            <motion.a
-              key={link.label}
-              href={link.href}
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + i * 0.07, duration: 0.35 }}
-              whileHover={{ y: -1 }}
-              className="text-sm font-medium relative group transition-colors hover:text-foreground"
+    <footer
+      className="w-full"
+      style={{
+        backgroundColor: "var(--cs-surface-2)",
+        borderTop: "1px solid var(--cs-border-subtle)",
+      }}
+    >
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {/* Brand column */}
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/"
+              className="text-2xl font-extrabold tracking-tight select-none w-fit"
+              style={{ color: "var(--cs-accent)" }}
             >
-              {link.label}
-              <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full" />
-            </motion.a>
-          ))}
-        </nav>
-        <p className="text-xs text-black/35 dark:text-white/35 whitespace-nowrap">
+              Chefalio
+            </Link>
+            <p className="text-sm leading-relaxed" style={{ color: "var(--cs-text-secondary)" }}>
+              Discover recipes, cookbooks, and talented chefs from around the world.
+            </p>
+          </div>
+
+          {/* Explore links */}
+          <div className="flex flex-col gap-3">
+            <h3
+              className="text-xs font-semibold uppercase tracking-wider"
+              style={{ color: "var(--cs-text-tertiary)" }}
+            >
+              Explore
+            </h3>
+            <nav className="flex flex-col gap-2">
+              {FOOTER_LINKS.explore.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="text-sm transition-colors duration-150 w-fit"
+                  style={{ color: "var(--cs-text-secondary)" }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "var(--cs-text-primary)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "var(--cs-text-secondary)")
+                  }
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          {/* Legal links */}
+          <div className="flex flex-col gap-3">
+            <h3
+              className="text-xs font-semibold uppercase tracking-wider"
+              style={{ color: "var(--cs-text-tertiary)" }}
+            >
+              Legal
+            </h3>
+            <nav className="flex flex-col gap-2">
+              {FOOTER_LINKS.legal.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="text-sm transition-colors duration-150 w-fit"
+                  style={{ color: "var(--cs-text-secondary)" }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "var(--cs-text-primary)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "var(--cs-text-secondary)")
+                  }
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
+
+        {/* Copyright row */}
+        <div
+          className="mt-10 pt-6 text-xs text-center"
+          style={{
+            borderTop: "1px solid var(--cs-border-subtle)",
+            color: "var(--cs-text-tertiary)",
+          }}
+        >
           © {new Date().getFullYear()} Chefalio. All rights reserved.
-        </p>
-      </motion.div>
+        </div>
+      </div>
     </footer>
   );
 };

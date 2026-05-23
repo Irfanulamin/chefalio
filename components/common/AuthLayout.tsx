@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useLayoutEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useState } from "react";
 
 interface AuthLayoutProps {
   imageSrc: string;
@@ -14,100 +15,82 @@ export default function AuthLayout({
   imageAlt,
   children,
 }: AuthLayoutProps) {
-  const [loaded, setLoaded] = useState(false);
-  const imgRef = useRef<HTMLImageElement | null>(null);
-
-  // check if already cached on mount
-  useLayoutEffect(() => {
-    if (imgRef.current?.complete) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLoaded(true);
-    }
-  }, []);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
-    <div
-      className="relative min-h-[90vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-zinc-950 [--grid-color:rgba(0,0,0,0.12)] dark:[--grid-color:rgba(255,255,255,0.08)]"
-      style={{
-        backgroundImage: `
-          linear-gradient(var(--grid-color) 1px, transparent 1px),
-          linear-gradient(90deg, var(--grid-color) 1px, transparent 1px)
-        `,
-        backgroundSize: "50px 50px",
-      }}
-    >
-      <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-white dark:from-zinc-950 to-transparent pointer-events-none z-10" />
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-white dark:from-zinc-950 to-transparent pointer-events-none z-10" />
-
-      <div className="relative">
+    <div className="min-h-screen flex">
+      {/* Left — Form (60%) */}
+      <div className="flex-1 flex flex-col">
+        {/* Top bar with logo */}
         <div
-          className="absolute -inset-1.5 rounded-[20px] blur-xl opacity-70"
-          style={{
-            background:
-              "conic-gradient(from var(--angle2), transparent 35%, rgba(167,209,41,0.55) 48%, rgba(167,209,41,0.85) 50%, rgba(167,209,41,0.55) 52%, transparent 65%)",
-            animation: "spin 3s linear infinite",
-          }}
-        />
-        <div
-          className="relative p-0.5 rounded-2xl"
-          style={{
-            background:
-              "conic-gradient(from var(--angle), transparent 30%, #A7D129 45%, #EEFABD 50%, #616F39 55%, transparent 70%)",
-            animation: "spin 3s linear infinite",
-          }}
+          className="px-8 h-16 flex items-center shrink-0"
+          style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
         >
-          <div className="relative flex w-full lg:w-225 max-w-4xl bg-white dark:bg-zinc-950 rounded-[14px] overflow-hidden">
-            {/* Image panel */}
-            <div className="hidden md:flex md:w-1/2 min-w-70 bg-gray-100 dark:bg-zinc-800 items-center justify-center min-h-100 relative overflow-hidden">
-              {!loaded && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse" />
-                </div>
-              )}
-              <Image
-                ref={imgRef}
-                src={imageSrc}
-                alt={imageAlt}
-                fill
-                priority
-                className={`object-cover object-center transition-opacity duration-500 ${
-                  loaded ? "opacity-100" : "opacity-0"
-                }`}
-                onLoad={() => setLoaded(true)}
-                onError={() => setLoaded(true)}
-              />
-            </div>
+          <Link
+            href="/"
+            className="text-xl font-extrabold tracking-tight"
+            style={{ color: "var(--cs-accent)" }}
+          >
+            Chefalio
+          </Link>
+        </div>
 
-            {/* Form panel */}
-            <div className="flex w-full md:w-1/2 items-center justify-center px-4 sm:px-6 md:px-8 py-8 sm:py-10 md:py-12 relative">
-              <div
-                className="absolute inset-x-0 top-0 h-24 rounded-t-[14px] pointer-events-none"
-                style={{
-                  background:
-                    "radial-gradient(ellipse 70% 60% at 50% 0%, rgba(167,209,41,0.12) 0%, transparent 100%)",
-                }}
-              />
-              <div className="w-full max-w-md space-y-6">{children}</div>
-            </div>
-          </div>
+        {/* Form area */}
+        <div className="flex-1 flex items-center justify-center px-6 py-12">
+          <div className="w-full max-w-md space-y-6">{children}</div>
         </div>
       </div>
 
-      <style>{`
-        @property --angle {
-          syntax: '<angle>';
-          initial-value: 0deg;
-          inherits: false;
-        }
-        @property --angle2 {
-          syntax: '<angle>';
-          initial-value: 0deg;
-          inherits: false;
-        }
-        @keyframes spin {
-          to { --angle: 360deg; --angle2: 360deg; }
-        }
-      `}</style>
+      {/* Right — Brand Panel (40%), hidden on mobile */}
+      <div
+        className="hidden md:flex w-[40%] max-w-lg flex-col items-center justify-center relative overflow-hidden"
+        style={{
+          backgroundColor: "var(--cs-surface-3)",
+          borderLeft: "1px solid var(--cs-border-subtle)",
+        }}
+      >
+        {/* Background image */}
+        {!imgLoaded && (
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(135deg, var(--cs-accent-muted), var(--cs-surface-3))",
+            }}
+          />
+        )}
+        <Image
+          src={imageSrc}
+          alt={imageAlt}
+          fill
+          priority
+          className={`object-cover transition-opacity duration-500 ${
+            imgLoaded ? "opacity-100" : "opacity-0"
+          }`}
+          onLoad={() => setImgLoaded(true)}
+          onError={() => setImgLoaded(true)}
+        />
+
+        {/* Overlay with brand text */}
+        <div
+          className="relative z-10 flex flex-col items-center text-center px-8 py-12"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)",
+            position: "absolute",
+            inset: 0,
+          }}
+        >
+          <div className="mt-auto">
+            <h2 className="text-2xl font-bold text-white mb-2">
+              Welcome to Chefalio
+            </h2>
+            <p className="text-sm text-white/70 max-w-xs">
+              Discover thousands of recipes, cookbooks, and talented chefs.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

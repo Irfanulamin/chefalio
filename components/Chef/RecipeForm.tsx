@@ -17,22 +17,13 @@ import { Recipe } from "@/types/recipes.type";
 import Image from "next/image";
 
 const DIFFICULTIES = ["beginner", "intermediate", "advance"] as const;
-const DIFFICULTY_STYLES: Record<
-  string,
-  { active: string; base: string }
-> = {
-  beginner: {
-    active: "bg-emerald-500 text-white border-emerald-500",
-    base: "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-emerald-400 hover:text-emerald-600 dark:text-zinc-400",
-  },
-  intermediate: {
-    active: "bg-amber-500 text-white border-amber-500",
-    base: "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-amber-400 hover:text-amber-600 dark:text-zinc-400",
-  },
-  advance: {
-    active: "bg-red-500 text-white border-red-500",
-    base: "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-red-400 hover:text-red-600 dark:text-zinc-400",
-  },
+
+type DifficultyKey = "beginner" | "intermediate" | "advance";
+
+const DIFFICULTY_ACTIVE_STYLE: Record<DifficultyKey, { backgroundColor: string; color: string; borderColor: string }> = {
+  beginner: { backgroundColor: "#22c55e", color: "#fff", borderColor: "#22c55e" },
+  intermediate: { backgroundColor: "#f59e0b", color: "#fff", borderColor: "#f59e0b" },
+  advance: { backgroundColor: "#ef4444", color: "#fff", borderColor: "#ef4444" },
 };
 
 const POPULAR_TAGS = [
@@ -54,7 +45,7 @@ interface Instruction {
 interface RecipeFormValues {
   title: string;
   description: string;
-  difficulty: "beginner" | "intermediate" | "advance";
+  difficulty: DifficultyKey;
   images: File[];
   ingredients: string[];
   tags: string[];
@@ -93,9 +84,9 @@ export default function RecipeForm({
       instruction: i.instruction,
     })) ?? [{ step: 1, instruction: "" }],
   );
-  const [selectedDifficulty, setSelectedDifficulty] = useState<
-    "beginner" | "intermediate" | "advance"
-  >(initialData?.difficulty ?? "beginner");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyKey>(
+    initialData?.difficulty ?? "beginner",
+  );
   const [removeImages, setRemoveImages] = useState<string[]>([]);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -209,6 +200,20 @@ export default function RecipeForm({
     (s) => (Array.isArray(s.values.images) ? s.values.images.length : 0),
   );
 
+  const sectionHeaderStyle = {
+    fontSize: "11px",
+    fontWeight: 600,
+    letterSpacing: "0.06em",
+    textTransform: "uppercase" as const,
+    color: "var(--cs-text-tertiary)",
+  };
+
+  const inputStyle = {
+    border: "1px solid var(--cs-border-default)",
+    backgroundColor: "var(--cs-surface-1)",
+    color: "var(--cs-text-primary)",
+  };
+
   return (
     <form
       onSubmit={(e) => {
@@ -218,11 +223,12 @@ export default function RecipeForm({
       className="space-y-4"
     >
       {/* Basic info */}
-      <fieldset className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
-        <div className="px-5 py-4">
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4">
-            Basic Info
-          </p>
+      <fieldset
+        className="rounded-xl overflow-hidden"
+        style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+      >
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
+          <p style={sectionHeaderStyle} className="mb-4">Basic Info</p>
           <div className="space-y-4">
             <FormField
               form={form}
@@ -240,21 +246,27 @@ export default function RecipeForm({
               maxLength={2000}
             />
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
+              <label className="text-sm font-medium" style={{ color: "var(--cs-text-primary)" }}>
                 Difficulty
               </label>
               <div className="flex gap-2">
                 {DIFFICULTIES.map((d) => {
-                  const styles = DIFFICULTY_STYLES[d];
                   const isActive = selectedDifficulty === d;
                   return (
                     <button
                       key={d}
                       type="button"
                       onClick={() => setSelectedDifficulty(d)}
-                      className={`px-3.5 py-1.5 text-xs font-medium rounded-lg border capitalize transition-colors ${
-                        isActive ? styles.active : styles.base
-                      }`}
+                      className="px-3.5 py-1.5 text-xs font-medium rounded-lg border capitalize transition-colors duration-150"
+                      style={
+                        isActive
+                          ? DIFFICULTY_ACTIVE_STYLE[d]
+                          : {
+                              border: "1px solid var(--cs-border-default)",
+                              color: "var(--cs-text-secondary)",
+                              backgroundColor: "var(--cs-surface-1)",
+                            }
+                      }
                     >
                       {d}
                     </button>
@@ -266,17 +278,16 @@ export default function RecipeForm({
         </div>
 
         {/* Images */}
-        <div className="px-5 py-4">
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">
-            Images
-          </p>
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
+          <p style={sectionHeaderStyle} className="mb-1">Images</p>
           {initialData ? (
-            <p className="text-xs text-zinc-400 mb-4">
+            <p className="text-xs mb-4" style={{ color: "var(--cs-text-tertiary)" }}>
               Mark current images for removal, then upload replacements to keep the total at 3.
             </p>
           ) : (
             <p
-              className={`text-xs mb-4 ${submitAttempted && imageCount !== 3 ? "text-red-500" : "text-zinc-400"}`}
+              className="text-xs mb-4"
+              style={{ color: submitAttempted && imageCount !== 3 ? "#ef4444" : "var(--cs-text-tertiary)" }}
             >
               {imageCount}/3 images selected
               {submitAttempted && imageCount !== 3 ? " — upload exactly 3." : "."}
@@ -285,7 +296,7 @@ export default function RecipeForm({
 
           {initialData && (
             <div className="mb-4 space-y-2">
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>
                 Current images — click to mark for removal
               </p>
               <div className="flex gap-2 flex-wrap">
@@ -295,9 +306,7 @@ export default function RecipeForm({
                     <div key={i} className="relative h-20 w-28">
                       <div
                         className={`relative h-full w-full rounded-lg overflow-hidden border-2 transition-all ${
-                          marked
-                            ? "opacity-40 border-red-400"
-                            : "border-transparent"
+                          marked ? "opacity-40 border-red-400" : "border-transparent"
                         }`}
                       >
                         <Image
@@ -326,7 +335,7 @@ export default function RecipeForm({
                 })}
               </div>
               {removeImages.length > 0 && (
-                <p className="text-xs text-red-500">
+                <p className="text-xs" style={{ color: "#ef4444" }}>
                   {removeImages.length} image{removeImages.length !== 1 ? "s" : ""}{" "}
                   marked for removal — upload {removeImages.length} new image
                   {removeImages.length !== 1 ? "s" : ""} to replace them.
@@ -338,29 +347,28 @@ export default function RecipeForm({
           <FormField
             form={form}
             name="images"
-            label={
-              initialData ? "Upload replacement images" : "Upload 3 images"
-            }
+            label={initialData ? "Upload replacement images" : "Upload 3 images"}
             type="dropzone"
             multiple
           />
         </div>
 
         {/* Ingredients */}
-        <div className="px-5 py-4">
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              <p style={sectionHeaderStyle}>
                 Ingredients
               </p>
               {submitAttempted && !ingredients.some((i) => i.trim()) && (
-                <p className="text-xs text-red-500 mt-0.5">Add at least one ingredient.</p>
+                <p className="text-xs mt-0.5" style={{ color: "#ef4444" }}>Add at least one ingredient.</p>
               )}
             </div>
             <button
               type="button"
               onClick={addIngredient}
-              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors font-medium"
+              className="flex items-center gap-1 text-xs font-medium transition-colors duration-150 hover:opacity-70"
+              style={{ color: "var(--cs-accent)" }}
             >
               <PlusIcon size={12} weight="bold" />
               Add
@@ -369,7 +377,7 @@ export default function RecipeForm({
           <div className="space-y-2">
             {ingredients.map((ing, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="w-5 text-xs text-zinc-400 text-right shrink-0 tabular-nums">
+                <span className="w-5 text-xs text-right shrink-0 tabular-nums" style={{ color: "var(--cs-text-tertiary)" }}>
                   {i + 1}.
                 </span>
                 <input
@@ -377,13 +385,15 @@ export default function RecipeForm({
                   value={ing}
                   onChange={(e) => updateIngredient(i, e.target.value)}
                   placeholder={`Ingredient ${i + 1}`}
-                  className="flex-1 px-3 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow placeholder:text-zinc-400"
+                  className="flex-1 px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 transition-shadow placeholder:text-[var(--cs-text-tertiary)]"
+                  style={{ ...inputStyle, focusRingColor: "var(--cs-accent)" } as React.CSSProperties}
                 />
                 {ingredients.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeIngredient(i)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 dark:text-zinc-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg hover:text-red-500 hover:bg-red-50 transition-colors duration-150"
+                    style={{ color: "var(--cs-text-tertiary)" }}
                   >
                     <XIcon size={12} weight="bold" />
                   </button>
@@ -394,14 +404,14 @@ export default function RecipeForm({
         </div>
 
         {/* Tags */}
-        <div className="px-5 py-4">
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
           <div className="mb-4">
-            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+            <p style={sectionHeaderStyle}>
               Tags{" "}
-              <span className="font-normal normal-case">({tags.length}/5)</span>
+              <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: "normal" }}>({tags.length}/5)</span>
             </p>
             {submitAttempted && tags.length === 0 && (
-              <p className="text-xs text-red-500 mt-0.5">Add at least one tag.</p>
+              <p className="text-xs mt-0.5" style={{ color: "#ef4444" }}>Add at least one tag.</p>
             )}
           </div>
 
@@ -412,7 +422,11 @@ export default function RecipeForm({
                 type="button"
                 onClick={() => addTag(tag)}
                 disabled={tags.includes(tag.toLowerCase()) || tags.length >= 5}
-                className="px-2.5 py-1 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="px-2.5 py-1 text-xs rounded-lg border transition-colors duration-150 disabled:opacity-30 disabled:cursor-not-allowed hover:border-[var(--cs-accent)] hover:text-[var(--cs-accent)]"
+                style={{
+                  border: "1px solid var(--cs-border-default)",
+                  color: "var(--cs-text-secondary)",
+                }}
               >
                 #{tag}
               </button>
@@ -431,7 +445,8 @@ export default function RecipeForm({
                 }
               }}
               placeholder="Custom tag, press Enter"
-              className="flex-1 px-3 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow placeholder:text-zinc-400"
+              className="flex-1 px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 transition-shadow placeholder:text-[var(--cs-text-tertiary)]"
+              style={inputStyle}
               disabled={tags.length >= 5}
             />
             <Button
@@ -451,13 +466,14 @@ export default function RecipeForm({
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md bg-primary/10 text-primary"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md"
+                  style={{ backgroundColor: "var(--cs-accent-muted)", color: "var(--cs-accent)" }}
                 >
                   #{tag}
                   <button
                     type="button"
                     onClick={() => removeTag(tag)}
-                    className="hover:text-primary/60 transition-colors"
+                    className="transition-opacity hover:opacity-60"
                   >
                     <XIcon size={10} weight="bold" />
                   </button>
@@ -471,17 +487,16 @@ export default function RecipeForm({
         <div className="px-5 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                Instructions
-              </p>
+              <p style={sectionHeaderStyle}>Instructions</p>
               {submitAttempted && !instructions.some((i) => i.instruction.trim()) && (
-                <p className="text-xs text-red-500 mt-0.5">Add at least one instruction step.</p>
+                <p className="text-xs mt-0.5" style={{ color: "#ef4444" }}>Add at least one instruction step.</p>
               )}
             </div>
             <button
               type="button"
               onClick={addInstruction}
-              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors font-medium"
+              className="flex items-center gap-1 text-xs font-medium transition-colors duration-150 hover:opacity-70"
+              style={{ color: "var(--cs-accent)" }}
             >
               <PlusIcon size={12} weight="bold" />
               Add step
@@ -496,18 +511,23 @@ export default function RecipeForm({
                     type="button"
                     onClick={() => moveInstruction(i, "up")}
                     disabled={i === 0}
-                    className="flex h-5 w-5 items-center justify-center rounded text-zinc-300 dark:text-zinc-600 hover:text-foreground disabled:opacity-20 transition-colors"
+                    className="flex h-5 w-5 items-center justify-center rounded transition-colors duration-150 disabled:opacity-20 hover:opacity-70"
+                    style={{ color: "var(--cs-text-tertiary)" }}
                   >
                     <ArrowUpIcon size={10} weight="bold" />
                   </button>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-bold">
+                  <span
+                    className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold"
+                    style={{ backgroundColor: "var(--cs-surface-3)", color: "var(--cs-text-secondary)" }}
+                  >
                     {ins.step}
                   </span>
                   <button
                     type="button"
                     onClick={() => moveInstruction(i, "down")}
                     disabled={i === instructions.length - 1}
-                    className="flex h-5 w-5 items-center justify-center rounded text-zinc-300 dark:text-zinc-600 hover:text-foreground disabled:opacity-20 transition-colors"
+                    className="flex h-5 w-5 items-center justify-center rounded transition-colors duration-150 disabled:opacity-20 hover:opacity-70"
+                    style={{ color: "var(--cs-text-tertiary)" }}
                   >
                     <ArrowDownIcon size={10} weight="bold" />
                   </button>
@@ -518,14 +538,16 @@ export default function RecipeForm({
                   onChange={(e) => updateInstruction(i, e.target.value)}
                   placeholder={`Step ${ins.step}…`}
                   rows={2}
-                  className="flex-1 px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow placeholder:text-zinc-400"
+                  className="flex-1 px-3 py-2 text-sm rounded-lg resize-none focus:outline-none focus:ring-2 transition-shadow placeholder:text-[var(--cs-text-tertiary)]"
+                  style={inputStyle}
                 />
 
                 {instructions.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeInstruction(i)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 dark:text-zinc-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors mt-1 shrink-0"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg hover:text-red-500 hover:bg-red-50 transition-colors duration-150 mt-1 shrink-0"
+                    style={{ color: "var(--cs-text-tertiary)" }}
                   >
                     <TrashIcon size={12} weight="bold" />
                   </button>

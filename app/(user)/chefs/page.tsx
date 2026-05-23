@@ -1,15 +1,15 @@
 "use client";
 
 import { useInfiniteChefs } from "@/hooks/useChef";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, X, Loader2 } from "lucide-react";
-import { ChefHat, BookOpen } from "lucide-react";
+import { EmptyState } from "@/components/common/EmptyState";
+import { MagnifyingGlassIcon, XIcon, Loader2Icon } from "lucide-react";
+import { UsersIcon } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 import { useDebounce } from "use-debounce";
+import { ForkKnifeIcon, BookOpenIcon } from "@phosphor-icons/react/dist/ssr";
 
 export default function ChefsPage() {
   const router = useRouter();
@@ -21,11 +21,8 @@ export default function ChefsPage() {
     (updates: Record<string, string | null>) => {
       const params = new URLSearchParams(searchParams.toString());
       Object.entries(updates).forEach(([key, value]) => {
-        if (value === null || value === "") {
-          params.delete(key);
-        } else {
-          params.set(key, value);
-        }
+        if (value === null || value === "") params.delete(key);
+        else params.set(key, value);
       });
       params.delete("page");
       router.replace(`?${params.toString()}`, { scroll: false });
@@ -35,11 +32,8 @@ export default function ChefsPage() {
 
   const [debouncedSearch] = useDebounce(search, 500);
 
-  const { chefs, total, isLoading, isFetching, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useInfiniteChefs({
-      search: debouncedSearch,
-      limit: 12,
-    });
+  const { chefs, total, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useInfiniteChefs({ search: debouncedSearch, limit: 16 });
 
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -48,9 +42,7 @@ export default function ChefsPage() {
     if (!el) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage();
       },
       { threshold: 0.1 },
     );
@@ -60,142 +52,175 @@ export default function ChefsPage() {
 
   return (
     <>
-      <title>Chefalio - Chefs</title>
-      <div className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
-        {/* Header */}
-        <div className="pb-5 border-b border-zinc-200 dark:border-zinc-800">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Chefs</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 max-w-xl">
-            Meet the talented chefs behind your favourite recipes and cookbooks. Click on a chef to explore their creations.
-          </p>
-        </div>
-
-        {/* Search */}
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
-            <Input
-              placeholder="Search chefs…"
-              value={search}
-              onChange={(e) => updateParams({ search: e.target.value || null })}
-              className="pl-9 pr-9 rounded-lg border-zinc-200 dark:border-zinc-800"
-            />
-            {search && (
-              <button
-                onClick={() => updateParams({ search: null })}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-foreground transition-colors"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </div>
-          {search && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-foreground"
-              onClick={() => updateParams({ search: null })}
+      <title>Chefalio — Chefs</title>
+      <div className="page-root">
+        <div className="page-content">
+          {/* Header */}
+          <div className="pb-6 mb-6" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
+            <h1
+              className="text-2xl font-bold tracking-tight mb-1"
+              style={{ color: "var(--cs-text-primary)" }}
             >
-              Clear
-            </Button>
-          )}
-        </div>
-
-        {/* Count summary */}
-        {!isLoading && chefs.length > 0 && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {total === 0
-              ? "No chefs found"
-              : `Showing ${chefs.length} of ${total} chef${total !== 1 ? "s" : ""}`}
-          </p>
-        )}
-
-        {/* Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex flex-col items-center gap-3 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 animate-pulse"
-              >
-                <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                <div className="h-3 w-3/4 rounded bg-zinc-100 dark:bg-zinc-800" />
-                <div className="h-3 w-1/2 rounded bg-zinc-100 dark:bg-zinc-800" />
-              </div>
-            ))}
-          </div>
-        ) : chefs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center min-h-[40vh] gap-3">
-            <p className="text-base font-medium">No chefs found</p>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-xs">
-              Try a different search term.
+              Chefs
+            </h1>
+            <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
+              Meet the talented chefs behind your favourite recipes and cookbooks.
             </p>
-            {search && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => updateParams({ search: null })}
-              >
-                Clear search
-              </Button>
-            )}
           </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
-            {chefs.map((chef) => (
-              <Link
-                key={chef._id}
-                href={`/chefs/${chef._id}`}
-                className="group flex flex-col items-center gap-3 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200"
-              >
-                {/* Avatar */}
-                <div className="relative w-20 h-20 shrink-0">
-                  <Image
-                    src={chef.profile_url}
-                    alt={chef.fullName}
-                    fill
-                    sizes="80px"
-                    loading="lazy"
-                    className="rounded-full object-cover"
-                  />
-                </div>
 
-                {/* Info */}
-                <div className="text-center min-w-0 w-full">
-                  <p className="text-sm font-semibold text-foreground leading-snug line-clamp-1">
-                    {chef.fullName}
-                  </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-0.5">
-                    @{chef.username}
-                  </p>
-                  {(chef.recipeCount !== undefined || chef.cookbookCount !== undefined) && (
-                    <div className="flex items-center justify-center gap-3 mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                      {chef.recipeCount !== undefined && (
-                        <span className="flex items-center gap-1 text-[11px] text-zinc-500 dark:text-zinc-400">
-                          <ChefHat className="w-3 h-3" />
-                          {chef.recipeCount}
-                        </span>
-                      )}
-                      {chef.cookbookCount !== undefined && (
-                        <span className="flex items-center gap-1 text-[11px] text-zinc-500 dark:text-zinc-400">
-                          <BookOpen className="w-3 h-3" />
-                          {chef.cookbookCount}
-                        </span>
+          {/* Search */}
+          <div className="flex gap-3 mb-6">
+            <div
+              className="flex items-center gap-2 rounded-full px-3.5 py-2 flex-1 max-w-sm"
+              style={{ border: "1px solid var(--cs-border-default)", backgroundColor: "var(--cs-surface-1)" }}
+            >
+              <MagnifyingGlassIcon size={14} style={{ color: "var(--cs-text-tertiary)" }} />
+              <input
+                value={search}
+                onChange={(e) => updateParams({ search: e.target.value || null })}
+                placeholder="Search chefs…"
+                className="flex-1 bg-transparent outline-none text-sm placeholder:text-[var(--cs-text-tertiary)]"
+                style={{ color: "var(--cs-text-primary)" }}
+              />
+              {search && (
+                <button onClick={() => updateParams({ search: null })}>
+                  <XIcon size={13} style={{ color: "var(--cs-text-tertiary)" }} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Count */}
+          {!isLoading && chefs.length > 0 && (
+            <p className="text-sm mb-5" style={{ color: "var(--cs-text-tertiary)" }}>
+              {`Showing ${chefs.length} of ${total} chef${total !== 1 ? "s" : ""}`}
+            </p>
+          )}
+
+          {/* Grid */}
+          {isLoading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col items-center gap-3 p-5 rounded-xl"
+                  style={{
+                    backgroundColor: "var(--cs-surface-2)",
+                    border: "1px solid var(--cs-border-subtle)",
+                  }}
+                >
+                  <div
+                    className="w-20 h-20 rounded-full"
+                    style={{ backgroundColor: "var(--cs-surface-3)" }}
+                  />
+                  <div className="space-y-1.5 w-full flex flex-col items-center">
+                    <div className="h-3.5 w-3/4 rounded" style={{ backgroundColor: "var(--cs-surface-3)" }} />
+                    <div className="h-3 w-1/2 rounded" style={{ backgroundColor: "var(--cs-surface-3)" }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : chefs.length === 0 ? (
+            <EmptyState
+              icon={<UsersIcon size={28} style={{ color: "var(--cs-accent)" }} />}
+              title="No chefs found"
+              description={search ? "Try a different search term." : "No chefs are available yet."}
+            />
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {chefs.map((chef) => {
+                const initials = chef.fullName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase();
+
+                return (
+                  <Link
+                    key={chef._id}
+                    href={`/chefs/${chef._id}`}
+                    className="group flex flex-col items-center gap-3 p-5 rounded-xl hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
+                    style={{
+                      backgroundColor: "var(--cs-surface-2)",
+                      border: "1px solid var(--cs-border-subtle)",
+                    }}
+                  >
+                    {/* Avatar */}
+                    <div className="relative w-20 h-20 shrink-0">
+                      {chef.profile_url ? (
+                        <Image
+                          src={chef.profile_url}
+                          alt={chef.fullName}
+                          fill
+                          sizes="80px"
+                          loading="lazy"
+                          className="rounded-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="w-20 h-20 rounded-full flex items-center justify-center text-xl font-bold"
+                          style={{ backgroundColor: "var(--cs-accent)", color: "#111110" }}
+                        >
+                          {initials}
+                        </div>
                       )}
                     </div>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
 
-        <div ref={sentinelRef} className="h-4" />
-        {isFetchingNextPage && (
-          <div className="flex justify-center py-4">
-            <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
-          </div>
-        )}
+                    {/* Info */}
+                    <div className="text-center min-w-0 w-full">
+                      <p
+                        className="text-sm font-semibold leading-snug line-clamp-1"
+                        style={{ color: "var(--cs-text-primary)" }}
+                      >
+                        {chef.fullName}
+                      </p>
+                      <p
+                        className="text-xs line-clamp-1 mt-0.5"
+                        style={{ color: "var(--cs-text-tertiary)" }}
+                      >
+                        @{chef.username}
+                      </p>
+
+                      {(chef.recipeCount !== undefined || chef.cookbookCount !== undefined) && (
+                        <div
+                          className="flex items-center justify-center gap-3 mt-2 pt-2"
+                          style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
+                        >
+                          {chef.recipeCount !== undefined && (
+                            <span
+                              className="flex items-center gap-1 text-[11px]"
+                              style={{ color: "var(--cs-text-secondary)" }}
+                            >
+                              <ForkKnifeIcon size={11} />
+                              {chef.recipeCount}
+                            </span>
+                          )}
+                          {chef.cookbookCount !== undefined && (
+                            <span
+                              className="flex items-center gap-1 text-[11px]"
+                              style={{ color: "var(--cs-text-secondary)" }}
+                            >
+                              <BookOpenIcon size={11} />
+                              {chef.cookbookCount}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          <div ref={sentinelRef} className="h-4" />
+          {isFetchingNextPage && (
+            <div className="flex justify-center py-6">
+              <Loader2Icon className="animate-spin" size={20} style={{ color: "var(--cs-text-tertiary)" }} />
+            </div>
+          )}
+        </div>
       </div>
     </>
   );

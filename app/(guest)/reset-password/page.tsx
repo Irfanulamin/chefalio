@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import * as z from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
-import { LockKeyIcon } from "@phosphor-icons/react/dist/ssr";
+import { LockKeyIcon, WarningCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
@@ -32,12 +32,9 @@ function ResetPasswordForm() {
     validators: { onSubmit: resetPasswordSchema },
     onSubmit: async ({ value }) => {
       if (!resetToken) {
-        toast.error(
-          "Reset token is missing. Please use the link from your email.",
-          {
-            position: "bottom-right",
-          },
-        );
+        toast.error("Reset token is missing. Please use the link from your email.", {
+          position: "bottom-right",
+        });
         return;
       }
 
@@ -58,75 +55,68 @@ function ResetPasswordForm() {
 
   return (
     <div
-      className="relative min-h-[90vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-zinc-950 [--grid-color:rgba(0,0,0,0.07)] dark:[--grid-color:rgba(255,255,255,0.05)]"
-      style={{
-        backgroundImage: `
-          linear-gradient(var(--grid-color) 1px, transparent 1px),
-          linear-gradient(90deg, var(--grid-color) 1px, transparent 1px)
-        `,
-        backgroundSize: "50px 50px",
-      }}
+      className="min-h-screen flex items-center justify-center px-4 py-16"
+      style={{ backgroundColor: "var(--cs-surface-1)" }}
     >
-      {/* Top & bottom fade */}
-      <div className="absolute inset-x-0 top-0 h-40 bg-linear-to-b from-white dark:from-zinc-950 to-transparent pointer-events-none z-10" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-white dark:from-zinc-950 to-transparent pointer-events-none z-10" />
-
-      <div className="relative z-20">
-        {/* Spinning glow halo */}
-        <div
-          className="absolute -inset-2 rounded-[22px] blur-2xl opacity-50"
-          style={{
-            background:
-              "conic-gradient(from var(--angle2), transparent 30%, rgba(167,209,41,0.4) 47%, rgba(167,209,41,0.75) 50%, rgba(167,209,41,0.4) 53%, transparent 70%)",
-            animation: "spin 4s linear infinite",
-          }}
-        />
-
-        {/* Spinning border ring */}
-        <div
-          className="relative p-[1.5px] rounded-2xl"
-          style={{
-            background:
-              "conic-gradient(from var(--angle), transparent 28%, #A7D129 44%, #EEFABD 50%, #7A8F3A 56%, transparent 72%)",
-            animation: "spin 4s linear infinite",
-          }}
+      <div
+        className="w-full max-w-md rounded-2xl p-8 shadow-sm"
+        style={{
+          backgroundColor: "var(--cs-surface-1)",
+          border: "1px solid var(--cs-border-subtle)",
+        }}
+      >
+        {/* Logo */}
+        <Link
+          href="/"
+          className="block text-xl font-extrabold tracking-tight mb-8"
+          style={{ color: "var(--cs-accent)" }}
         >
-          {/* Card */}
-          <div className="relative bg-white dark:bg-zinc-950 rounded-[14px] px-8 py-8 w-full lg:w-104 max-w-full">
-            {/* Inner ambient glow at top */}
-            <div
-              className="absolute inset-x-0 top-0 h-24 rounded-t-[14px] pointer-events-none"
-              style={{
-                background:
-                  "radial-gradient(ellipse 70% 60% at 50% 0%, rgba(167,209,41,0.12) 0%, transparent 100%)",
-              }}
-            />
+          Chefalio
+        </Link>
 
-            {/* Icon */}
-            <div className="mb-5">
-              <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-[#A7D129]/10 dark:bg-[#A7D129]/15">
-                <LockKeyIcon
-                  size={26}
-                  weight="fill"
-                  className="text-[#7A9A20] dark:text-[#A7D129]"
-                />
-              </div>
+        {!resetToken ? (
+          <div className="flex flex-col items-center text-center gap-4 py-4">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center bg-red-50">
+              <WarningCircleIcon size={28} className="text-red-500" weight="fill" />
             </div>
-
-            {/* Heading */}
-            <div className="mb-6">
-              <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-                Set a new password
-              </h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
-                Choose a strong password. It must be at least 6 characters long.
+            <div>
+              <h2 className="text-xl font-semibold mb-1" style={{ color: "var(--cs-text-primary)" }}>
+                Invalid reset link
+              </h2>
+              <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
+                This password reset link is invalid or has expired. Please request a new one.
               </p>
             </div>
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium mt-2"
+              style={{ color: "var(--cs-accent)" }}
+            >
+              Request new link
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* Icon */}
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
+              style={{ backgroundColor: "var(--cs-accent-muted)" }}
+            >
+              <LockKeyIcon size={22} weight="duotone" style={{ color: "var(--cs-accent)" }} />
+            </div>
 
-            {/* Divider */}
-            <div className="h-px bg-zinc-100 dark:bg-zinc-800 mb-6" />
+            <h1
+              className="text-xl font-semibold tracking-tight mb-1"
+              style={{ color: "var(--cs-text-primary)" }}
+            >
+              Set a new password
+            </h1>
+            <p className="text-sm mb-6" style={{ color: "var(--cs-text-secondary)" }}>
+              Choose a strong password of at least 6 characters.
+            </p>
 
-            {/* Form */}
+            <div className="h-px mb-6" style={{ backgroundColor: "var(--cs-border-subtle)" }} />
+
             <form
               className="space-y-5"
               onSubmit={(e) => {
@@ -154,41 +144,26 @@ function ResetPasswordForm() {
 
               <Button
                 type="submit"
-                className="w-full rounded-lg py-5 font-bold text-sm tracking-wide"
+                className="w-full py-5 font-semibold"
                 disabled={isLoading || !resetToken}
               >
                 {isLoading ? "Resetting…" : "Reset Password"}
               </Button>
 
-              <p className="text-center text-sm text-zinc-400 dark:text-zinc-500">
+              <p className="text-center text-sm" style={{ color: "var(--cs-text-secondary)" }}>
                 Back to{" "}
                 <Link
                   href="/login"
-                  className="font-medium text-zinc-800 dark:text-zinc-200 hover:underline underline-offset-2"
+                  className="font-medium hover:underline"
+                  style={{ color: "var(--cs-accent)" }}
                 >
                   Sign in
                 </Link>
               </p>
             </form>
-          </div>
-        </div>
+          </>
+        )}
       </div>
-
-      <style>{`
-        @property --angle {
-          syntax: '<angle>';
-          initial-value: 0deg;
-          inherits: false;
-        }
-        @property --angle2 {
-          syntax: '<angle>';
-          initial-value: 0deg;
-          inherits: false;
-        }
-        @keyframes spin {
-          to { --angle: 360deg; --angle2: 360deg; }
-        }
-      `}</style>
     </div>
   );
 }

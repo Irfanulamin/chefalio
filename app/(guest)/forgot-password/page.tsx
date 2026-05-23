@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import * as z from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
-import { FingerprintIcon } from "@phosphor-icons/react/dist/ssr";
+import { EnvelopeSimpleIcon, CheckCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
 
 export default function ForgotPasswordPage() {
@@ -27,9 +27,7 @@ export default function ForgotPasswordPage() {
         await forgotPassword(value);
         toast.success(
           "If an account exists, a password reset link has been sent to your email.",
-          {
-            position: "bottom-right",
-          },
+          { position: "bottom-right" },
         );
         setOnSuccess(true);
       } catch (err: Error | unknown) {
@@ -44,141 +42,114 @@ export default function ForgotPasswordPage() {
 
   return (
     <div
-      className="relative min-h-[90vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-zinc-950 [--grid-color:rgba(0,0,0,0.07)] dark:[--grid-color:rgba(255,255,255,0.05)]"
-      style={{
-        backgroundImage: `
-          linear-gradient(var(--grid-color) 1px, transparent 1px),
-          linear-gradient(90deg, var(--grid-color) 1px, transparent 1px)
-        `,
-        backgroundSize: "50px 50px",
-      }}
+      className="min-h-screen flex items-center justify-center px-4 py-16"
+      style={{ backgroundColor: "var(--cs-surface-1)" }}
     >
-      {/* Top & bottom fade */}
-      <div className="absolute inset-x-0 top-0 h-40 bg-linear-to-b from-white dark:from-zinc-950 to-transparent pointer-events-none z-10" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-white dark:from-zinc-950 to-transparent pointer-events-none z-10" />
-
-      <div className="relative z-20">
-        {/* Spinning glow halo — softened, stays behind */}
-        <div
-          className="absolute -inset-2 rounded-[22px] blur-2xl opacity-50"
-          style={{
-            background:
-              "conic-gradient(from var(--angle2), transparent 30%, rgba(167,209,41,0.4) 47%, rgba(167,209,41,0.75) 50%, rgba(167,209,41,0.4) 53%, transparent 70%)",
-            animation: "spin 4s linear infinite",
-          }}
-        />
-
-        {/* Spinning border ring */}
-        <div
-          className="relative p-[1.5px] rounded-2xl"
-          style={{
-            background:
-              "conic-gradient(from var(--angle), transparent 28%, #A7D129 44%, #EEFABD 50%, #7A8F3A 56%, transparent 72%)",
-            animation: "spin 4s linear infinite",
-          }}
+      <div
+        className="w-full max-w-md rounded-2xl p-8 shadow-sm"
+        style={{
+          backgroundColor: "var(--cs-surface-1)",
+          border: "1px solid var(--cs-border-subtle)",
+        }}
+      >
+        {/* Logo */}
+        <Link
+          href="/"
+          className="block text-xl font-extrabold tracking-tight mb-8"
+          style={{ color: "var(--cs-accent)" }}
         >
-          {/* Card */}
-          <div className="relative bg-white dark:bg-zinc-950 rounded-[14px] px-8 py-8 w-full lg:w-104 max-w-full">
-            {/* Inner ambient glow at top */}
+          Chefalio
+        </Link>
+
+        {onSuccess ? (
+          <div className="flex flex-col items-center text-center gap-4 py-4">
             <div
-              className="absolute inset-x-0 top-0 h-24 rounded-t-[14px] pointer-events-none"
-              style={{
-                background:
-                  "radial-gradient(ellipse 70% 60% at 50% 0%, rgba(167,209,41,0.12) 0%, transparent 100%)",
+              className="w-14 h-14 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "var(--cs-accent-muted)" }}
+            >
+              <CheckCircleIcon size={28} style={{ color: "var(--cs-accent)" }} weight="fill" />
+            </div>
+            <div>
+              <h2
+                className="text-xl font-semibold mb-1"
+                style={{ color: "var(--cs-text-primary)" }}
+              >
+                Check your email
+              </h2>
+              <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
+                If an account exists for that email, a password reset link has been sent. Check your spam folder if you don&apos;t see it.
+              </p>
+            </div>
+            <Link
+              href="/login"
+              className="text-sm font-medium mt-2"
+              style={{ color: "var(--cs-accent)" }}
+            >
+              Back to sign in
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* Icon */}
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
+              style={{ backgroundColor: "var(--cs-accent-muted)" }}
+            >
+              <EnvelopeSimpleIcon size={22} weight="duotone" style={{ color: "var(--cs-accent)" }} />
+            </div>
+
+            <h1
+              className="text-xl font-semibold tracking-tight mb-1"
+              style={{ color: "var(--cs-text-primary)" }}
+            >
+              Forgot your password?
+            </h1>
+            <p className="text-sm mb-6" style={{ color: "var(--cs-text-secondary)" }}>
+              Enter your email and we&apos;ll send you a link to reset your password.
+            </p>
+
+            <div className="h-px mb-6" style={{ backgroundColor: "var(--cs-border-subtle)" }} />
+
+            <form
+              className="space-y-5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                form.handleSubmit();
               }}
-            />
-            <div className="relative z-10">
-              {onSuccess ? (
-              <div className="flex items-center gap-2 rounded-lg text-base text-[#7A9A20] dark:text-[#A7D129]">
-                Please check your email for the password reset link. If you
-                don&apos;t see it, check your spam folder.
-              </div>
-              ) : (
-              <>
-                {/* Icon */}
-                <div className="mb-5">
-                <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-[#A7D129]/10 dark:bg-[#A7D129]/15">
-                  <FingerprintIcon
-                  size={26}
-                  weight="fill"
-                  className="text-[#7A9A20] dark:text-[#A7D129]"
-                  />
-                </div>
-                </div>
-
-                {/* Heading */}
-                <div className="mb-6">
-                <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-                  Forgot your password?
-                </h1>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
-                  Enter your email and we&apos;ll send you a link to reset
-                  your password.
-                </p>
-                </div>
-
-                {/* Divider */}
-                <div className="h-px bg-zinc-100 dark:bg-zinc-800 mb-6" />
-
-                {/* Form */}
-                <form
-                className="space-y-5"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  form.handleSubmit();
-                }}
-                >
-                <FieldGroup>
-                  <FormField
+            >
+              <FieldGroup>
+                <FormField
                   form={form}
                   name="email"
                   label="Email address"
                   placeholder="you@example.com"
                   type="email"
-                  />
-                </FieldGroup>
+                />
+              </FieldGroup>
 
-                <Button
-                  type="submit"
-                  className="w-full rounded-lg py-5 font-bold text-sm tracking-wide"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Sending…" : "Send Reset Link"}
-                </Button>
+              <Button
+                type="submit"
+                className="w-full py-5 font-semibold"
+                disabled={isLoading}
+              >
+                {isLoading ? "Sending…" : "Send Reset Link"}
+              </Button>
 
-                <p className="text-center text-sm text-zinc-400 dark:text-zinc-500">
-                  Remembered it?{" "}
-                  <Link
+              <p className="text-center text-sm" style={{ color: "var(--cs-text-secondary)" }}>
+                Remembered it?{" "}
+                <Link
                   href="/login"
-                  className="font-medium text-zinc-800 dark:text-zinc-200 hover:underline underline-offset-2"
-                  >
+                  className="font-medium hover:underline"
+                  style={{ color: "var(--cs-accent)" }}
+                >
                   Back to sign in
-                  </Link>
-                </p>
-                </form>
-              </>
-              )}
-            </div>
-          </div>
-        </div>
+                </Link>
+              </p>
+            </form>
+          </>
+        )}
       </div>
-
-      <style>{`
-        @property --angle {
-          syntax: '<angle>';
-          initial-value: 0deg;
-          inherits: false;
-        }
-        @property --angle2 {
-          syntax: '<angle>';
-          initial-value: 0deg;
-          inherits: false;
-        }
-        @keyframes spin {
-          to { --angle: 360deg; --angle2: 360deg; }
-        }
-      `}</style>
     </div>
   );
 }

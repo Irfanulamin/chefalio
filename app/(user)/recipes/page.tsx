@@ -120,17 +120,23 @@ export default function RecipesPage() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <>
+    <div className="page-root">
       <title>Chefalio - Recipes</title>
-      <div className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
-        {/* Header */}
-        <div className="pb-5 border-b border-zinc-200 dark:border-zinc-800">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Recipes</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 max-w-xl">
+
+      {/* Page header */}
+      <div className="page-content pb-0">
+        <div className="pb-6" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
+          <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--cs-text-primary)" }}>
+            Recipes
+          </h1>
+          <p className="text-sm mt-1 max-w-xl" style={{ color: "var(--cs-text-secondary)" }}>
             Discover delicious recipes tailored to your taste. Filter by difficulty, tags, or author to find your next favourite dish.
           </p>
         </div>
+      </div>
 
+      {/* Filters */}
+      <div className="page-content py-4">
         <RecipeFilters
           DIFFICULTIES={DIFFICULTIES}
           DIFFICULTY_STYLES={DIFFICULTY_STYLES}
@@ -149,9 +155,12 @@ export default function RecipesPage() {
           setDifficulty={(d) => updateParams({ difficulty: d || null })}
           search={search}
         />
+      </div>
 
+      {/* Content */}
+      <div className="page-content pt-0">
         {!isLoading && data.length > 0 && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm mb-4" style={{ color: "var(--cs-text-secondary)" }}>
             {total === 0
               ? "No recipes found"
               : `Showing ${data.length} of ${total} recipe${total !== 1 ? "s" : ""}`}
@@ -164,13 +173,13 @@ export default function RecipesPage() {
           data={data}
         />
 
-        <div ref={sentinelRef} className="h-4" />
+        <div ref={sentinelRef} className="h-4 mt-4" />
         {isFetchingNextPage && (
           <div className="flex justify-center py-4">
-            <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+            <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--cs-text-tertiary)" }} />
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

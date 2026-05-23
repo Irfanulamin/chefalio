@@ -50,21 +50,21 @@ export const PaginationSection = ({
   };
 
   return (
-    <div className="flex justify-center">
+    <div className="flex flex-col items-center gap-3">
       <Pagination>
-        <PaginationContent className="flex gap-4">
-          {/* ── PREVIOUS ── */}
+        <PaginationContent className="flex gap-1">
           <PaginationItem>
             <PaginationPrevious
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                handlePageChange(Math.max(currentPage - 1, 1));
+                if (currentPage > 1) handlePageChange(currentPage - 1);
               }}
+              aria-disabled={currentPage <= 1}
+              className={currentPage <= 1 ? "pointer-events-none opacity-40" : ""}
             />
           </PaginationItem>
 
-          {/* ── PAGES ── */}
           {getPages().map((item, idx) => {
             if (item === "ellipsis") {
               return (
@@ -90,18 +90,25 @@ export const PaginationSection = ({
             );
           })}
 
-          {/* ── NEXT ── */}
           <PaginationItem>
             <PaginationNext
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                handlePageChange(Math.min(currentPage + 1, totalPages));
+                if (currentPage < totalPages) handlePageChange(currentPage + 1);
               }}
+              aria-disabled={currentPage >= totalPages}
+              className={currentPage >= totalPages ? "pointer-events-none opacity-40" : ""}
             />
           </PaginationItem>
         </PaginationContent>
       </Pagination>
+
+      {totalPages > 1 && (
+        <p className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>
+          Page {currentPage} of {totalPages}
+        </p>
+      )}
     </div>
   );
 };

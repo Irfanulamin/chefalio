@@ -69,6 +69,18 @@ body {
   --ring: #A7D129;
 
   --radius: 0.625rem;
+
+  /* Chefalio surface tokens (non-landing pages) */
+  --cs-surface-1: #ffffff;
+  --cs-surface-2: #f9f9f7;
+  --cs-surface-3: #f2f2ef;
+  --cs-text-primary: #111110;
+  --cs-text-secondary: #6b6b68;
+  --cs-text-tertiary: #a0a09d;
+  --cs-border-subtle: #e8e8e5;
+  --cs-border-default: #d4d4cf;
+  --cs-accent: #A7D129;
+  --cs-accent-muted: rgba(167,209,41,0.1);
 }
 
 /* DARK MODE */
@@ -101,4 +113,67 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Page layout utilities */
+.page-root {
+  min-height: 100vh;
+  background-color: var(--cs-surface-1);
+  color: var(--cs-text-primary);
+}
+
+.page-header {
+  padding: 2rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--cs-border-subtle);
+}
+
+.page-content {
+  padding: 2rem 1.5rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Badge utility classes */
+.badge-success {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.badge-warning {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #fef9c3;
+  color: #a16207;
+}
+
+.badge-error {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge-muted {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: var(--cs-surface-3);
+  color: var(--cs-text-secondary);
 }

@@ -30,6 +30,14 @@ const schema = z.object({
   image: z.array(z.instanceof(File)).max(1, "Only one cover image is allowed"),
 });
 
+const sectionHeaderStyle = {
+  fontSize: "11px",
+  fontWeight: 600,
+  letterSpacing: "0.06em",
+  textTransform: "uppercase" as const,
+  color: "var(--cs-text-tertiary)",
+};
+
 export default function CookbookForm({
   initialData,
   onSubmit,
@@ -59,11 +67,12 @@ export default function CookbookForm({
       className="space-y-4"
     >
       {/* Details */}
-      <fieldset className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
-        <div className="px-5 py-4">
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4">
-            Details
-          </p>
+      <fieldset
+        className="rounded-xl overflow-hidden"
+        style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+      >
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
+          <p style={sectionHeaderStyle} className="mb-4">Details</p>
           <div className="space-y-4">
             <FormField
               form={form}
@@ -83,10 +92,8 @@ export default function CookbookForm({
           </div>
         </div>
 
-        <div className="px-5 py-4">
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4">
-            Pricing & Stock
-          </p>
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
+          <p style={sectionHeaderStyle} className="mb-4">Pricing & Stock</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               form={form}
@@ -106,19 +113,20 @@ export default function CookbookForm({
         </div>
 
         <div className="px-5 py-4">
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">
-            Cover Image
-          </p>
+          <p style={sectionHeaderStyle} className="mb-1">Cover Image</p>
           {initialData ? (
-            <p className="text-xs text-zinc-400 mb-4">
+            <p className="text-xs mb-4" style={{ color: "var(--cs-text-tertiary)" }}>
               Upload a new image to replace the current cover (optional)
             </p>
           ) : (
-            <p className="text-xs text-zinc-400 mb-4">Required</p>
+            <p className="text-xs mb-4" style={{ color: "var(--cs-text-tertiary)" }}>Required</p>
           )}
 
           {initialData && (
-            <div className="relative h-28 w-44 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 mb-4">
+            <div
+              className="relative h-28 w-44 rounded-lg overflow-hidden mb-4"
+              style={{ border: "1px solid var(--cs-border-subtle)" }}
+            >
               <Image
                 src={initialData.cookbook_image}
                 alt={initialData.title}

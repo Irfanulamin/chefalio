@@ -131,12 +131,12 @@ export default function RegisterPage() {
       ) : (
         <>
           <div>
-            <h1 className="text-2xl font-semibold">Create Account</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-semibold" style={{ color: "var(--cs-text-primary)" }}>Create Account</h1>
+            <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
               Please enter your details to create an account.
             </p>
           </div>
-          <div className="h-px bg-zinc-100 dark:bg-zinc-800 mb-6" />
+          <div className="h-px mb-6" style={{ backgroundColor: "var(--cs-border-subtle)" }} />
           <form
             className={`space-y-4 transition-opacity duration-200 ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
             onSubmit={(e) => {
@@ -166,10 +166,10 @@ export default function RegisterPage() {
 
           <div className="relative my-2">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-zinc-200 dark:border-zinc-700" />
+              <div className="w-full" style={{ borderTop: "1px solid var(--cs-border-default)" }} />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-zinc-950 px-2 text-zinc-400">
+              <span className="px-2" style={{ backgroundColor: "var(--cs-surface-1)", color: "var(--cs-text-tertiary)" }}>
                 or sign up with
               </span>
             </div>
@@ -177,11 +177,12 @@ export default function RegisterPage() {
 
           <OAuthButtons />
 
-          <p className="text-sm text-center text-gray-500 tracking-wide">
+          <p className="text-sm text-center" style={{ color: "var(--cs-text-secondary)" }}>
             Already have an account?{" "}
             <Link
               href="/login"
-              className="text-primary font-medium cursor-pointer hover:underline"
+              className="font-medium hover:underline"
+              style={{ color: "var(--cs-accent)" }}
             >
               Sign in
             </Link>

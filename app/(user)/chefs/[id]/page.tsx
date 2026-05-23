@@ -9,73 +9,58 @@ import {
 import { useChefProfile } from "@/hooks/useChefProfile";
 import { useBatchRecipeStats } from "@/hooks/useRecipe";
 import { RecipeCard } from "@/components/User/Recipe/RecipeCard";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { BookOpen, ChefHat, Loader2, Trophy } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2Icon } from "lucide-react";
+import { TrophyIcon, ForkKnifeIcon, BookOpenIcon } from "@phosphor-icons/react/dist/ssr";
+import type { Cookbook } from "@/hooks/useCookbook";
 
-function ChefCookbookCard({
-  cookbook,
-}: {
-  cookbook: import("@/hooks/useCookbook").Cookbook;
-}) {
+function ChefCookbookCard({ cookbook }: { cookbook: Cookbook }) {
+  const discountedPrice =
+    (cookbook.discount ?? 0) > 0
+      ? cookbook.price * (1 - cookbook.discount / 100)
+      : null;
+
   return (
-    <div className="group rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200 flex flex-col">
-      {/* Image */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+    <div
+      className="group rounded-xl overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
+      style={{
+        backgroundColor: "var(--cs-surface-2)",
+        border: "1px solid var(--cs-border-subtle)",
+      }}
+    >
+      <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
         <Image
           src={cookbook.cookbook_image}
           alt={cookbook.title}
           fill
           loading="lazy"
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          className="object-cover"
         />
         <span
-          className={cn(
-            "absolute top-2.5 right-2.5 text-[11px] font-medium px-2 py-0.5 rounded-md shadow-sm",
-            cookbook.stockCount <= 3
-              ? "bg-orange-500 text-white dark:bg-orange-500 dark:text-white"
-              : "bg-black/60 text-white dark:bg-black/70 dark:text-white",
-          )}
+          className="absolute bottom-2.5 right-2.5 text-sm font-bold px-2.5 py-1 rounded-lg z-10"
+          style={{ backgroundColor: "rgba(0,0,0,0.65)", color: "#fff" }}
         >
-          {cookbook.stockCount <= 3
-            ? `${cookbook.stockCount} left`
-            : `${cookbook.stockCount} in stock`}
+          ${(discountedPrice ?? cookbook.price).toFixed(2)}
         </span>
       </div>
-
-      {/* Body */}
       <div className="p-4 flex flex-col flex-1">
-        <p className="text-[15px] font-semibold text-foreground leading-snug mb-1 line-clamp-2">
+        <p
+          className="text-[15px] font-semibold leading-snug line-clamp-2 mb-3"
+          style={{ color: "var(--cs-text-primary)" }}
+        >
           {cookbook.title}
         </p>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-3 leading-relaxed">
-          {cookbook.description}
-        </p>
-
-        <div className="mt-auto pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-          <div>
-            <p className="text-lg font-bold text-foreground">
-              ${cookbook.price.toFixed(2)}
-            </p>
-            <p className="text-[11px] text-zinc-400 flex items-center gap-1">
-              <span
-                className={cn(
-                  "w-1.5 h-1.5 rounded-full inline-block",
-                  cookbook.stockCount <= 3 ? "bg-orange-500" : "bg-emerald-500",
-                )}
-              />
-              {cookbook.stockCount <= 3 ? "Almost gone" : "In stock"}
-            </p>
-          </div>
-          <Link href={`/purchase-cookbook/${cookbook._id}`}>
-            <Button size="sm" className="h-8 px-4 text-xs font-medium rounded-lg">
-              Buy now
-            </Button>
+        <div className="mt-auto">
+          <Link
+            href={`/purchase-cookbook/${cookbook._id}`}
+            className="block w-full text-center py-2 rounded-xl text-sm font-semibold transition-colors duration-150"
+            style={{ backgroundColor: "var(--cs-accent)", color: "#111110" }}
+          >
+            Buy now
           </Link>
         </div>
       </div>
@@ -83,27 +68,22 @@ function ChefCookbookCard({
   );
 }
 
-function GridSkeleton({ type = "cookbook" }: { type?: "recipe" | "cookbook" }) {
+function GridSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-      {Array.from({ length: 8 }).map((_, i) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
-          className="rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-900"
+          className="rounded-xl overflow-hidden"
+          style={{
+            backgroundColor: "var(--cs-surface-2)",
+            border: "1px solid var(--cs-border-subtle)",
+          }}
         >
-          <Skeleton className={cn("w-full rounded-none", type === "recipe" ? "h-44" : "aspect-[4/3]")} />
-          <div className="p-4 space-y-2.5">
-            <div className="flex items-center gap-2">
-              <Skeleton className="w-5 h-5 rounded-full shrink-0" />
-              <Skeleton className="h-3 w-20" />
-            </div>
+          <Skeleton className="w-full" style={{ aspectRatio: "4/3" }} />
+          <div className="p-4 space-y-2">
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-3 w-full" />
-            <Skeleton className="h-3 w-2/3" />
-            <div className="flex items-center justify-between pt-1">
-              <Skeleton className="h-6 w-16" />
-              <Skeleton className="h-8 w-20 rounded-lg" />
-            </div>
           </div>
         </div>
       ))}
@@ -168,9 +148,8 @@ export default function ChefProfilePage() {
     if (!el) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && recipesHasNextPage && !isRecipesFetchingNextPage) {
+        if (entries[0].isIntersecting && recipesHasNextPage && !isRecipesFetchingNextPage)
           fetchNextRecipesPage();
-        }
       },
       { threshold: 0.1 },
     );
@@ -183,9 +162,8 @@ export default function ChefProfilePage() {
     if (!el) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && cookbooksHasNextPage && !isCookbooksFetchingNextPage) {
+        if (entries[0].isIntersecting && cookbooksHasNextPage && !isCookbooksFetchingNextPage)
           fetchNextCookbooksPage();
-        }
       },
       { threshold: 0.1 },
     );
@@ -195,228 +173,341 @@ export default function ChefProfilePage() {
 
   if (isChefLoading) {
     return (
-      <div className="space-y-8 my-4 md:my-8 max-w-7xl mx-auto px-3">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-          <Skeleton className="w-28 h-28 rounded-full shrink-0" />
-          <div className="flex-1 space-y-3">
-            <Skeleton className="h-7 w-48" />
-            <Skeleton className="h-4 w-24" />
-            <div className="flex gap-3 mt-2">
-              <Skeleton className="h-7 w-24 rounded-lg" />
-              <Skeleton className="h-7 w-28 rounded-lg" />
+      <div className="page-root">
+        <div className="page-content space-y-8">
+          <div
+            className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 rounded-2xl"
+            style={{ backgroundColor: "var(--cs-surface-2)", border: "1px solid var(--cs-border-subtle)" }}
+          >
+            <Skeleton className="w-24 h-24 rounded-full shrink-0" />
+            <div className="flex-1 space-y-3">
+              <Skeleton className="h-7 w-48" />
+              <Skeleton className="h-4 w-24" />
+              <div className="flex gap-3">
+                <Skeleton className="h-7 w-24 rounded-lg" />
+                <Skeleton className="h-7 w-28 rounded-lg" />
+              </div>
             </div>
           </div>
+          <Skeleton className="h-10 w-48 rounded-xl" />
+          <GridSkeleton />
         </div>
-        <Skeleton className="h-10 w-48 rounded-xl" />
-        <GridSkeleton type="recipe" />
       </div>
     );
   }
 
   if (!chef) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <p className="text-base font-medium">Chef not found</p>
-        <Link href="/chefs">
-          <Button variant="outline">Back to Chefs</Button>
-        </Link>
+      <div className="page-root flex items-center justify-center min-h-[70vh]">
+        <div className="flex flex-col items-center text-center px-4 max-w-sm">
+          <h1 className="text-2xl font-bold mb-4" style={{ color: "var(--cs-text-primary)" }}>
+            Chef not found
+          </h1>
+          <Link
+            href="/chefs"
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-150"
+            style={{ backgroundColor: "var(--cs-accent)", color: "#111110" }}
+          >
+            Back to Chefs
+          </Link>
+        </div>
       </div>
     );
   }
 
+  const initials = chef.fullName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
-    <div className="space-y-6 my-4 md:my-8 max-w-7xl mx-auto px-3">
-      {/* ── Chef Hero ── */}
-      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-        <div className="relative w-24 h-24 shrink-0">
-          <Image
-            src={chef.profile_url}
-            alt={chef.fullName}
-            fill
-            sizes="96px"
-            className="rounded-full object-cover"
-          />
-        </div>
-
-        <div className="flex-1 text-center sm:text-left">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {chef.fullName}
-          </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-            @{chef.username}
-          </p>
-
-          <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
-            <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400">
-              <ChefHat className="w-3.5 h-3.5" />
-              {recipesTotal > 0 ? (
-                `${recipesTotal} Recipes`
-              ) : isRecipesLoading ? (
-                <Loader2 className="animate-spin w-3.5 h-3.5" />
+    <>
+      <title>{chef.fullName} — Chefalio</title>
+      <div className="page-root">
+        <div className="page-content space-y-6">
+          {/* Chef Hero */}
+          <div
+            className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 rounded-2xl"
+            style={{
+              backgroundColor: "var(--cs-surface-2)",
+              border: "1px solid var(--cs-border-subtle)",
+            }}
+          >
+            {/* Avatar */}
+            <div className="relative w-24 h-24 shrink-0">
+              {chef.profile_url ? (
+                <Image
+                  src={chef.profile_url}
+                  alt={chef.fullName}
+                  fill
+                  sizes="96px"
+                  className="rounded-full object-cover"
+                />
               ) : (
-                "0 Recipes"
+                <div
+                  className="w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold"
+                  style={{ backgroundColor: "var(--cs-accent)", color: "#111110" }}
+                >
+                  {initials}
+                </div>
               )}
-            </span>
-            <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400">
-              <BookOpen className="w-3.5 h-3.5" />
-              {cookbooksTotal > 0 ? (
-                `${cookbooksTotal} Cookbooks`
-              ) : isCookbooksLoading ? (
-                <Loader2 className="animate-spin w-3.5 h-3.5" />
-              ) : (
-                "0 Cookbooks"
+            </div>
+
+            <div className="flex-1 text-center sm:text-left">
+              <h1
+                className="text-2xl font-bold tracking-tight"
+                style={{ color: "var(--cs-text-primary)" }}
+              >
+                {chef.fullName}
+              </h1>
+              <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
+                @{chef.username}
+              </p>
+
+              {/* Stats row */}
+              <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
+                <span
+                  className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg"
+                  style={{
+                    backgroundColor: "var(--cs-surface-3)",
+                    color: "var(--cs-text-secondary)",
+                    border: "1px solid var(--cs-border-subtle)",
+                  }}
+                >
+                  <ForkKnifeIcon size={13} />
+                  {isRecipesLoading ? "…" : recipesTotal} Recipes
+                </span>
+                <span
+                  className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg"
+                  style={{
+                    backgroundColor: "var(--cs-surface-3)",
+                    color: "var(--cs-text-secondary)",
+                    border: "1px solid var(--cs-border-subtle)",
+                  }}
+                >
+                  <BookOpenIcon size={13} />
+                  {isCookbooksLoading ? "…" : cookbooksTotal} Cookbooks
+                </span>
+              </div>
+
+              {/* Bio */}
+              {chefProfile?.bio && (
+                <p
+                  className="text-sm mt-3 leading-relaxed max-w-2xl"
+                  style={{ color: "var(--cs-text-secondary)" }}
+                >
+                  {chefProfile.bio}
+                </p>
               )}
-            </span>
+
+              {/* Genres */}
+              {chefProfile?.genres && chefProfile.genres.length > 0 && (
+                <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mt-3">
+                  {chefProfile.genres.map((g) => (
+                    <span
+                      key={g}
+                      className="text-xs font-medium px-2.5 py-0.5 rounded-full"
+                      style={{
+                        backgroundColor: "var(--cs-accent-muted)",
+                        color: "var(--cs-accent)",
+                        border: "1px solid var(--cs-accent)",
+                      }}
+                    >
+                      {g}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Achievements */}
+              {chefProfile?.achievements && chefProfile.achievements.length > 0 && (
+                <div className="mt-3">
+                  <p
+                    className="text-[11px] font-semibold uppercase tracking-wider mb-2 text-center sm:text-left"
+                    style={{ color: "var(--cs-text-tertiary)" }}
+                  >
+                    Achievements
+                  </p>
+                  <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                    {chefProfile.achievements.map((a, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg"
+                        style={{
+                          backgroundColor: "#fef9c3",
+                          border: "1px solid #fde047",
+                          color: "#a16207",
+                        }}
+                      >
+                        <TrophyIcon size={12} weight="fill" />
+                        <span className="font-semibold">{a.title}</span>
+                        {a.year && <span style={{ color: "#ca8a04" }}>· {a.year}</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          {chefProfile?.bio && (
-            <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-3 leading-relaxed max-w-2xl text-center sm:text-left">
-              {chefProfile.bio}
-            </p>
+          {/* Tabs */}
+          <div
+            className="flex gap-1 p-1 rounded-xl w-fit"
+            style={{ backgroundColor: "var(--cs-surface-3)" }}
+          >
+            {(["recipes", "cookbooks"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className="px-5 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-150"
+                style={
+                  tab === t
+                    ? {
+                        backgroundColor: "var(--cs-surface-1)",
+                        color: "var(--cs-text-primary)",
+                        boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                        border: "1px solid var(--cs-border-subtle)",
+                      }
+                    : { color: "var(--cs-text-secondary)" }
+                }
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab Content */}
+          {tab === "recipes" ? (
+            <>
+              {isRecipesLoading ? (
+                <GridSkeleton />
+              ) : recipes.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <ForkKnifeIcon
+                    size={40}
+                    style={{ color: "var(--cs-border-default)", marginBottom: "0.75rem" }}
+                  />
+                  <p className="text-sm" style={{ color: "var(--cs-text-tertiary)" }}>
+                    No recipes yet
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {recipes.map((recipe) => (
+                    <RecipeCard key={recipe._id} recipe={recipe} statsFor={statsFor} />
+                  ))}
+                </div>
+              )}
+              <div ref={recipesSentinelRef} className="h-4" />
+              {isRecipesFetchingNextPage && (
+                <div className="flex justify-center py-4">
+                  <Loader2Icon className="animate-spin" size={20} style={{ color: "var(--cs-text-tertiary)" }} />
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {isCookbooksLoading ? (
+                <GridSkeleton />
+              ) : cookbooks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <BookOpenIcon
+                    size={40}
+                    style={{ color: "var(--cs-border-default)", marginBottom: "0.75rem" }}
+                  />
+                  <p className="text-sm" style={{ color: "var(--cs-text-tertiary)" }}>
+                    No cookbooks yet
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {cookbooks.map((cookbook) => (
+                    <ChefCookbookCard key={cookbook._id} cookbook={cookbook} />
+                  ))}
+                </div>
+              )}
+              <div ref={cookbooksSentinelRef} className="h-4" />
+              {isCookbooksFetchingNextPage && (
+                <div className="flex justify-center py-4">
+                  <Loader2Icon className="animate-spin" size={20} style={{ color: "var(--cs-text-tertiary)" }} />
+                </div>
+              )}
+            </>
           )}
 
-          {chefProfile?.genres && chefProfile.genres.length > 0 && (
-            <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mt-3">
-              {chefProfile.genres.map((g) => (
-                <span
-                  key={g}
-                  className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700"
-                >
-                  {g}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {chefProfile?.achievements && chefProfile.achievements.length > 0 && (
-            <div className="mt-3 space-y-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 text-center sm:text-left">
-                Achievements
-              </p>
-              <div className="flex flex-wrap justify-center sm:justify-start gap-2">
-                {chefProfile.achievements.map((a, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300"
-                  >
-                    <Trophy className="w-3 h-3 shrink-0" />
-                    <span className="font-semibold">{a.title}</span>
-                    {a.year && (
-                      <span className="text-amber-500 dark:text-amber-400">· {a.year}</span>
-                    )}
-                  </div>
-                ))}
+          {/* Other Chefs */}
+          {relatedChefs.length > 0 && (
+            <div
+              className="space-y-4 pt-6"
+              style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
+            >
+              <h2
+                className="text-base font-semibold"
+                style={{ color: "var(--cs-text-primary)" }}
+              >
+                Other Chefs
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {relatedChefs.map((related) => {
+                  const relInitials = related.fullName
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
+                  return (
+                    <Link
+                      key={related._id}
+                      href={`/chefs/${related._id}`}
+                      className="group flex flex-col items-center gap-3 p-4 rounded-xl hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
+                      style={{
+                        backgroundColor: "var(--cs-surface-2)",
+                        border: "1px solid var(--cs-border-subtle)",
+                      }}
+                    >
+                      <div className="relative w-14 h-14 shrink-0">
+                        {related.profile_url ? (
+                          <Image
+                            src={related.profile_url}
+                            alt={related.fullName}
+                            fill
+                            sizes="56px"
+                            loading="lazy"
+                            className="rounded-full object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="w-14 h-14 rounded-full flex items-center justify-center text-base font-bold"
+                            style={{ backgroundColor: "var(--cs-accent)", color: "#111110" }}
+                          >
+                            {relInitials}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-center min-w-0 w-full">
+                        <p
+                          className="text-sm font-semibold line-clamp-1"
+                          style={{ color: "var(--cs-text-primary)" }}
+                        >
+                          {related.fullName}
+                        </p>
+                        <p
+                          className="text-xs line-clamp-1 mt-0.5"
+                          style={{ color: "var(--cs-text-tertiary)" }}
+                        >
+                          @{related.username}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* ── Tabs ── */}
-      <div className="flex gap-1 p-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 w-fit">
-        {(["recipes", "cookbooks"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={cn(
-              "px-5 py-2 rounded-md text-sm font-medium capitalize transition-all duration-200",
-              tab === t
-                ? "bg-white dark:bg-zinc-900 text-foreground shadow-sm border border-zinc-200 dark:border-zinc-700"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-foreground",
-            )}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Tab Content ── */}
-      {tab === "recipes" ? (
-        <>
-          {isRecipesLoading ? (
-            <GridSkeleton type="recipe" />
-          ) : recipes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center gap-3 min-h-[30vh]">
-              <ChefHat className="w-10 h-10 text-zinc-300 dark:text-zinc-700" />
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">No recipes yet</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {recipes.map((recipe) => (
-                <RecipeCard
-                  key={recipe._id}
-                  recipe={recipe}
-                  statsFor={statsFor}
-                />
-              ))}
-            </div>
-          )}
-          <div ref={recipesSentinelRef} className="h-4" />
-          {isRecipesFetchingNextPage && (
-            <div className="flex justify-center py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          {isCookbooksLoading ? (
-            <GridSkeleton type="cookbook" />
-          ) : cookbooks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center gap-3 min-h-[30vh]">
-              <BookOpen className="w-10 h-10 text-zinc-300 dark:text-zinc-700" />
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">No cookbooks yet</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {cookbooks.map((cookbook) => (
-                <ChefCookbookCard key={cookbook._id} cookbook={cookbook} />
-              ))}
-            </div>
-          )}
-          <div ref={cookbooksSentinelRef} className="h-4" />
-          {isCookbooksFetchingNextPage && (
-            <div className="flex justify-center py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
-            </div>
-          )}
-        </>
-      )}
-
-      {/* ── Other Chefs ── */}
-      {relatedChefs.length > 0 && (
-        <div className="space-y-4 pt-6 border-t border-zinc-200 dark:border-zinc-800">
-          <h2 className="text-base font-semibold text-foreground">Other Chefs</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {relatedChefs.map((related) => (
-              <Link
-                key={related._id}
-                href={`/chefs/${related._id}`}
-                className="group flex flex-col items-center gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200"
-              >
-                <div className="relative w-14 h-14 shrink-0">
-                  <Image
-                    src={related.profile_url}
-                    alt={related.fullName}
-                    fill
-                    sizes="56px"
-                    loading="lazy"
-                    className="rounded-full object-cover"
-                  />
-                </div>
-                <div className="text-center min-w-0 w-full">
-                  <p className="text-sm font-semibold text-foreground line-clamp-1">
-                    {related.fullName}
-                  </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-0.5">
-                    @{related.username}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

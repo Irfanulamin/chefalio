@@ -76,7 +76,7 @@ export const RecipeFilters = ({
       <div className="space-y-3">
         {/* Difficulty row */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium text-muted-foreground w-20">
+          <span className="text-sm font-medium w-20" style={{ color: "var(--cs-text-secondary)" }}>
             Difficulty
           </span>
           {DIFFICULTIES.map((d) => (
@@ -94,7 +94,7 @@ export const RecipeFilters = ({
 
         {/* Tags row */}
         <div className="flex items-start gap-2 flex-wrap">
-          <span className="text-sm font-medium text-muted-foreground w-20 pt-1">
+          <span className="text-sm font-medium w-20 pt-1" style={{ color: "var(--cs-text-secondary)" }}>
             Tags
           </span>
           <div className="flex flex-wrap gap-2 flex-1">
@@ -127,7 +127,7 @@ export const RecipeFilters = ({
 
         {/* Author row */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground w-20">
+          <span className="text-sm font-medium w-20" style={{ color: "var(--cs-text-secondary)" }}>
             Author
           </span>
           <div className="flex items-center gap-1 border rounded-full px-3 py-1 text-xs border-dashed border-muted-foreground/50 focus-within:border-primary transition-colors w-48">

@@ -81,11 +81,11 @@ export default function ChefOrdersPage() {
       <div className="space-y-5 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-base font-semibold text-foreground">Orders</h1>
-            <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
+            <h1 className="text-base font-semibold" style={{ color: "var(--cs-text-primary)" }}>Orders</h1>
+            <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
               {orders.length} order{orders.length !== 1 ? "s" : ""} total
               {isFetching && (
-                <span className="ml-2 text-xs text-zinc-400">Refreshing…</span>
+                <span className="ml-2 text-xs">Refreshing…</span>
               )}
             </p>
           </div>

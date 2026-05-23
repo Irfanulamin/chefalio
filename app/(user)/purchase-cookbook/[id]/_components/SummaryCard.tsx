@@ -3,58 +3,76 @@ import Image from "next/image";
 
 export const SummaryCard = ({ cookbook }: { cookbook: Cookbook }) => {
   const isLowStock = cookbook.stockCount <= 5;
+  const discountedPrice =
+    (cookbook.discount ?? 0) > 0
+      ? cookbook.price * (1 - cookbook.discount / 100)
+      : null;
+
+  const authorInitials = cookbook.authorId.fullName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
-    <div className="flex gap-4 items-start border border-border rounded-xl bg-card p-4 max-w-lg mx-auto">
-      {/* Image */}
-      <div className="w-28 h-28 rounded-lg overflow-hidden shrink-0">
-        {cookbook.cookbook_image ? (
-          <Image
-            src={cookbook.cookbook_image}
-            alt={cookbook.title}
-            width={112}
-            height={112}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-muted animate-pulse" />
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{
+        border: "1px solid var(--cs-border-subtle)",
+        backgroundColor: "var(--cs-surface-2)",
+      }}
+    >
+      {/* Cover image */}
+      <div className="relative w-full" style={{ aspectRatio: "3/4" }}>
+        <Image
+          src={cookbook.cookbook_image}
+          alt={cookbook.title}
+          fill
+          className="object-cover"
+        />
+        <span
+          className="absolute bottom-2.5 right-2.5 text-sm font-bold px-2.5 py-1 rounded-lg z-10"
+          style={{ backgroundColor: "rgba(0,0,0,0.65)", color: "#fff" }}
+        >
+          ${(discountedPrice ?? cookbook.price).toFixed(2)}
+        </span>
+        {isLowStock && (
+          <span
+            className="absolute top-2.5 left-2.5 text-[11px] font-bold px-2 py-0.5 rounded-lg z-10"
+            style={{ backgroundColor: "#fee2e2", color: "#b91c1c" }}
+          >
+            Only {cookbook.stockCount} left
+          </span>
         )}
       </div>
 
-      {/* Content */}
-      <div className="flex flex-col flex-1 min-w-0">
-        {/* Top */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1">
-            <span className="text-[11px] uppercase tracking-wide text-muted-foreground bg-accent px-2 py-0.5 rounded-full font-medium">
-              Cookbook
-            </span>
+      {/* Details */}
+      <div className="p-4">
+        {/* Badge */}
+        <span
+          className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full"
+          style={{
+            backgroundColor: "var(--cs-accent-muted)",
+            color: "var(--cs-accent)",
+          }}
+        >
+          Cookbook
+        </span>
 
-            <p className="text-base font-semibold text-foreground leading-snug line-clamp-2 mt-2">
-              {cookbook.title.trim()}
-            </p>
-          </div>
+        <p
+          className="text-base font-semibold leading-snug line-clamp-2 mt-2 mb-2"
+          style={{ color: "var(--cs-text-primary)" }}
+        >
+          {cookbook.title}
+        </p>
 
-          {/* Stock */}
-          <span
-            className={`text-xs px-2.5 py-1 rounded-full border shrink-0 ${
-              isLowStock
-                ? "bg-red-50 text-red-600 border-red-200"
-                : "bg-muted/10 text-muted-foreground border-border"
-            }`}
-          >
-            {isLowStock
-              ? `Only ${cookbook.stockCount} left`
-              : `${cookbook.stockCount} in stock`}
-          </span>
-        </div>
-
-        {/* Description */}
-        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+        <p className="text-sm line-clamp-2 mb-3" style={{ color: "var(--cs-text-secondary)" }}>
           {cookbook.description}
         </p>
 
         {/* Author */}
-        <div className="flex items-center gap-2 mt-3">
+        <div className="flex items-center gap-2 mb-4">
           {cookbook.authorId.profile_url ? (
             <Image
               src={cookbook.authorId.profile_url}
@@ -64,36 +82,42 @@ export const SummaryCard = ({ cookbook }: { cookbook: Cookbook }) => {
               className="w-6 h-6 rounded-full object-cover"
             />
           ) : (
-            <div className="w-6 h-6 rounded-full bg-blue-50 text-blue-700 text-xs flex items-center justify-center">
-              {cookbook.authorId.fullName.charAt(0).toUpperCase()}
+            <div
+              className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
+              style={{ backgroundColor: "var(--cs-accent)", color: "#111110" }}
+            >
+              {authorInitials}
             </div>
           )}
-
-          <span className="text-sm text-muted-foreground truncate">
+          <span className="text-sm truncate" style={{ color: "var(--cs-text-secondary)" }}>
             {cookbook.authorId.fullName} · @{cookbook.authorId.username}
           </span>
         </div>
 
         {/* Price */}
-        <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Price</span>
-          {(cookbook.discount ?? 0) > 0 ? (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground line-through">
-                ${cookbook.price.toFixed(2)}
-              </span>
-              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded-full">
-                -{cookbook.discount}%
-              </span>
-              <span className="text-lg font-semibold text-foreground">
-                ${(cookbook.price * (1 - cookbook.discount / 100)).toFixed(2)}
-              </span>
-            </div>
-          ) : (
-            <span className="text-lg font-semibold text-foreground">
-              ${cookbook.price.toFixed(2)}
+        <div
+          className="pt-3 flex items-center justify-between"
+          style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
+        >
+          <span className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>Price</span>
+          <div className="flex items-center gap-2">
+            {discountedPrice !== null && (
+              <>
+                <span className="text-xs line-through" style={{ color: "var(--cs-text-tertiary)" }}>
+                  ${cookbook.price.toFixed(2)}
+                </span>
+                <span
+                  className="text-xs font-medium px-1.5 py-0.5 rounded-full"
+                  style={{ backgroundColor: "#dcfce7", color: "#15803d" }}
+                >
+                  -{cookbook.discount}%
+                </span>
+              </>
+            )}
+            <span className="text-lg font-semibold" style={{ color: "var(--cs-text-primary)" }}>
+              ${(discountedPrice ?? cookbook.price).toFixed(2)}
             </span>
-          )}
+          </div>
         </div>
       </div>
     </div>

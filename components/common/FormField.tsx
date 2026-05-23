@@ -403,7 +403,14 @@ export const FormField = ({
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute inset-y-0 right-0 flex items-center justify-center w-10 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 rounded-r"
+                  className="absolute inset-y-0 right-0 flex items-center justify-center w-10 transition-colors duration-150 focus:outline-none rounded-r"
+                  style={{ color: "var(--cs-text-tertiary)" }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "var(--cs-text-primary)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "var(--cs-text-tertiary)")
+                  }
                 >
                   {showPassword ? (
                     <EyeSlashIcon size={32} weight="fill" className="w-4 h-4" />

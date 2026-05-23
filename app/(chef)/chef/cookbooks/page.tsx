@@ -45,10 +45,10 @@ export default function ChefCookbooksPage() {
       <div className="space-y-5 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-base font-semibold text-foreground">
+            <h1 className="text-base font-semibold" style={{ color: "var(--cs-text-primary)" }}>
               My Cookbooks
             </h1>
-            <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
+            <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
               {cookbooks.length} cookbook{cookbooks.length !== 1 ? "s" : ""}{" "}
               published
             </p>

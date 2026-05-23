@@ -95,7 +95,7 @@ function StepIndicator({ current }: { current: number }) {
                     ? "bg-primary border-primary text-white"
                     : active
                       ? "border-primary text-primary bg-primary/10"
-                      : "border-zinc-300 dark:border-zinc-700 text-zinc-400",
+                      : "border-[var(--cs-border-default)] text-[var(--cs-text-tertiary)]",
                 )}
               >
                 {done ? <CheckCircleIcon size={16} weight="fill" /> : step}
@@ -103,7 +103,7 @@ function StepIndicator({ current }: { current: number }) {
               <span
                 className={cn(
                   "mt-1 text-[10px] font-medium hidden sm:block whitespace-nowrap",
-                  active ? "text-primary" : "text-zinc-400",
+                  active ? "text-primary" : "text-[var(--cs-text-tertiary)]",
                 )}
               >
                 {label}
@@ -113,7 +113,7 @@ function StepIndicator({ current }: { current: number }) {
               <div
                 className={cn(
                   "flex-1 h-0.5 mb-4 mx-1 transition-all",
-                  done ? "bg-primary" : "bg-zinc-200 dark:bg-zinc-800",
+                  done ? "bg-primary" : "bg-[var(--cs-border-subtle)]",
                 )}
               />
             )}
@@ -161,10 +161,10 @@ function KycDropzone({
         className={cn(
           "relative flex h-52 w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed cursor-pointer transition-all overflow-hidden",
           isDragActive
-            ? "border-sky-400 bg-sky-50/60 dark:bg-sky-950/30"
+            ? "border-sky-400 bg-sky-50/60"
             : file
-              ? "border-zinc-300 dark:border-zinc-600"
-              : "border-zinc-300 dark:border-zinc-700 bg-zinc-50/80 dark:bg-zinc-900/60 hover:border-zinc-400 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60",
+              ? "border-[var(--cs-border-default)]"
+              : "border-[var(--cs-border-default)] bg-[var(--cs-surface-3)] hover:border-[var(--cs-accent)]",
         )}
       >
         <input {...getInputProps()} />
@@ -255,7 +255,12 @@ function AchievementInput({
             }
           }}
           placeholder="e.g. Michelin Star 2022"
-          className="flex-1 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+          className="flex-1 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 transition"
+          style={{
+            border: "1px solid var(--cs-border-default)",
+            backgroundColor: "var(--cs-surface-1)",
+            color: "var(--cs-text-primary)",
+          }}
           maxLength={80}
         />
         <button
@@ -586,17 +591,21 @@ export default function ApplyChefPage() {
     application && !showForm;
 
   return (
-    <div className="mx-auto max-w-2xl py-10 px-4">
+    <div className="page-root">
+      <div className="mx-auto max-w-2xl py-10 px-4">
       {/* Header */}
       <div className="mb-8 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-          <ChefHatIcon size={22} weight="duotone" className="text-primary" />
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-xl"
+          style={{ backgroundColor: "var(--cs-accent-muted)" }}
+        >
+          <ChefHatIcon size={22} weight="duotone" style={{ color: "var(--cs-accent)" }} />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-foreground">
+          <h1 className="text-xl font-bold" style={{ color: "var(--cs-text-primary)" }}>
             {isResubmit ? "Resubmit Chef Application" : "Become a Chef"}
           </h1>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
             {showStatus
               ? "Track your application status"
               : "Complete the form to apply for chef status"}
@@ -604,7 +613,13 @@ export default function ApplyChefPage() {
         </div>
       </div>
 
-      <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-6 shadow-sm">
+      <div
+        className="rounded-2xl p-6 shadow-sm"
+        style={{
+          border: "1px solid var(--cs-border-subtle)",
+          backgroundColor: "var(--cs-surface-2)",
+        }}
+      >
         {/* Status views */}
         {showStatus && application.status === "pending" && <PendingView />}
         {showStatus && application.status === "approved" && <ApprovedView />}
@@ -840,14 +855,22 @@ export default function ApplyChefPage() {
 
       {/* Info card at bottom */}
       {!application && (
-        <div className="mt-4 flex items-start gap-3 rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-4 py-3 text-xs text-zinc-500">
-          <LinkIcon size={14} className="mt-0.5 shrink-0 text-primary" />
+        <div
+          className="mt-4 flex items-start gap-3 rounded-2xl px-4 py-3 text-xs"
+          style={{
+            border: "1px solid var(--cs-border-subtle)",
+            backgroundColor: "var(--cs-surface-3)",
+            color: "var(--cs-text-secondary)",
+          }}
+        >
+          <LinkIcon size={14} className="mt-0.5 shrink-0" style={{ color: "var(--cs-accent)" }} />
           <p>
             All submitted information is reviewed by our admin team. We typically
             respond within 2–5 business days.
           </p>
         </div>
       )}
+      </div>
     </div>
   );
 }

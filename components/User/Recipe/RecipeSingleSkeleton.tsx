@@ -1,57 +1,40 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
 export const RecipeSingleSkeleton = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-8 items-stretch animate-pulse bg-background">
-      {/* ── LEFT COLUMN ── */}
-      <div className="lg:flex-1 flex flex-col w-full lg:w-120 gap-5">
-        {/* Image carousel placeholder */}
-        <div className="w-full aspect-4/3 rounded-2xl bg-muted" />
+    <div className="max-w-6xl mx-auto px-4 py-8 animate-pulse">
+      {/* Hero image */}
+      <Skeleton className="w-full rounded-xl mb-6" style={{ aspectRatio: "16/7" }} />
 
-        {/* Title block */}
-        <div className="space-y-2">
-          <div className="h-9 w-3/4 bg-muted rounded-lg" />
-          <div className="h-4 w-full bg-muted rounded" />
-          <div className="h-4 w-5/6 bg-muted rounded" />
-        </div>
-
-        {/* Author card */}
-        <div className="flex items-center gap-4 rounded-2xl border border-border p-4">
-          <div className="w-11 h-11 rounded-xl bg-muted shrink-0" />
-          <div className="flex-1 space-y-1.5">
-            <div className="h-4 w-32 bg-muted rounded" />
-            <div className="h-3 w-48 bg-muted rounded" />
-          </div>
-        </div>
-
-        {/* Tags */}
-        <div className="flex flex-wrap gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-7 w-16 bg-muted rounded-lg" />
-          ))}
-        </div>
+      {/* Metadata row */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <Skeleton className="h-6 w-20 rounded-full" />
+        <Skeleton className="h-6 w-24 rounded-full" />
+        <Skeleton className="h-6 w-16 rounded-full" />
       </div>
 
-      {/* ── RIGHT COLUMN ── */}
-      <div className="w-full lg:flex-1 flex flex-col lg:pl-6 lg:border-l lg:border-border gap-8">
-        {/* Ingredients */}
-        <section className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div className="h-6 w-28 bg-muted rounded" />
-            <div className="h-6 w-16 bg-muted rounded-lg" />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-12 rounded-xl bg-muted" />
-            ))}
-          </div>
-        </section>
+      {/* Title */}
+      <Skeleton className="h-8 w-2/3 mb-2" />
+      <Skeleton className="h-4 w-full mb-1" />
+      <Skeleton className="h-4 w-4/5 mb-8" />
 
-        {/* Instructions */}
-        <section className="space-y-3">
-          <div className="h-6 w-32 bg-muted rounded" />
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-xl bg-muted" />
+      {/* 2-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Ingredients column */}
+        <div className="space-y-3">
+          <Skeleton className="h-6 w-28 mb-2" />
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-lg" />
           ))}
-        </section>
+        </div>
+
+        {/* Steps column */}
+        <div className="lg:col-span-2 space-y-4">
+          <Skeleton className="h-6 w-32 mb-2" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full rounded-xl" />
+          ))}
+        </div>
       </div>
     </div>
   );

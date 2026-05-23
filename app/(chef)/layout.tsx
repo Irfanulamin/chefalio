@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
-import { ToggleThemeButton } from "@/components/common/ToggleThemeButton";
 import { ProfileDropdown } from "@/components/common/ProfileDropdown";
 import {
   Sheet,
@@ -32,6 +31,7 @@ const studioItems = [
   { label: "My Recipes", href: "/chef/recipes", icon: ForkKnifeIcon },
   { label: "My Cookbooks", href: "/chef/cookbooks", icon: BookOpenIcon },
   { label: "Orders", href: "/chef/orders", icon: PackageIcon },
+  { label: "Settings", href: "/chef/settings", icon: GearSixIcon },
 ];
 
 function NavLinks({
@@ -55,15 +55,24 @@ function NavLinks({
               title={collapsed ? label : undefined}
               onClick={onNavigate}
               className={[
-                "relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors",
-                isActive
-                  ? "text-foreground bg-zinc-100 dark:bg-zinc-800 font-medium"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-foreground hover:bg-zinc-100/70 dark:hover:bg-zinc-800/50 font-normal",
+                "relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors duration-150",
                 collapsed ? "justify-center px-2" : "",
               ].join(" ")}
+              style={
+                isActive
+                  ? {
+                      backgroundColor: "var(--cs-accent-muted)",
+                      color: "var(--cs-accent)",
+                      fontWeight: 600,
+                    }
+                  : { color: "var(--cs-text-secondary)" }
+              }
             >
               {isActive && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[2px] rounded-full bg-primary" />
+                <span
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[2px] rounded-full"
+                  style={{ backgroundColor: "var(--cs-accent)" }}
+                />
               )}
               <Icon
                 size={16}
@@ -77,15 +86,19 @@ function NavLinks({
       </div>
 
       {/* Exit Studio */}
-      <div className={["pt-3 mt-3 border-t border-zinc-100 dark:border-zinc-800", collapsed ? "px-0" : ""].join(" ")}>
+      <div
+        className={["pt-3 mt-3", collapsed ? "px-0" : ""].join(" ")}
+        style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
+      >
         <Link
           href="/recipes"
           onClick={onNavigate}
           title={collapsed ? "Exit Studio" : undefined}
           className={[
-            "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-zinc-400 dark:text-zinc-500 hover:text-foreground hover:bg-zinc-100/70 dark:hover:bg-zinc-800/50",
+            "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors duration-150",
             collapsed ? "justify-center px-2" : "",
           ].join(" ")}
+          style={{ color: "var(--cs-text-tertiary)" }}
         >
           <ArrowLeftIcon size={14} weight="bold" className="shrink-0" />
           {!collapsed && <span>Exit Studio</span>}
@@ -98,19 +111,15 @@ function NavLinks({
 function StudioLogo() {
   return (
     <Link href="/chef/dashboard" className="flex items-center gap-2 min-w-0">
-      <ChefHatIcon size={15} weight="duotone" className="text-primary shrink-0" />
-      <span className="text-sm font-semibold tracking-tight text-foreground truncate">
-        Chef <span className="text-primary">Studio</span>
+      <ChefHatIcon size={15} weight="duotone" style={{ color: "var(--cs-accent)" }} className="shrink-0" />
+      <span className="text-sm font-semibold tracking-tight truncate" style={{ color: "var(--cs-text-primary)" }}>
+        Chef <span style={{ color: "var(--cs-accent)" }}>Studio</span>
       </span>
     </Link>
   );
 }
 
-export default function ChefLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ChefLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const pathname = usePathname();
@@ -120,32 +129,42 @@ export default function ChefLayout({
 
   return (
     <ProtectedRoute allowedRoles={["chef"]}>
-      <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <div
+        className="flex min-h-screen"
+        style={{ backgroundColor: "var(--cs-surface-1)" }}
+      >
         {/* Desktop Sidebar */}
         <aside
           className={[
             "fixed left-0 top-0 z-40 hidden md:flex h-full flex-col",
-            "border-r border-zinc-200 dark:border-zinc-800",
-            "bg-white dark:bg-zinc-950",
             "transition-[width] duration-200",
             collapsed ? "w-14" : "w-56",
           ].join(" ")}
+          style={{
+            borderRight: "1px solid var(--cs-border-subtle)",
+            backgroundColor: "var(--cs-surface-2)",
+          }}
         >
-          <div className="flex h-14 items-center justify-between px-3 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+          <div
+            className="flex h-14 items-center justify-between px-3 shrink-0"
+            style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
+          >
             {collapsed ? (
               <button
                 onClick={() => setCollapsed(false)}
-                className="mx-auto flex h-7 w-7 items-center justify-center rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="mx-auto flex h-7 w-7 items-center justify-center rounded-lg transition-colors duration-150"
+                style={{ color: "var(--cs-accent)" }}
                 title="Expand sidebar"
               >
-                <ChefHatIcon size={16} weight="duotone" className="text-primary" />
+                <ChefHatIcon size={16} weight="duotone" />
               </button>
             ) : (
               <>
                 <StudioLogo />
                 <button
                   onClick={() => setCollapsed(true)}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors duration-150 shrink-0"
+                  style={{ color: "var(--cs-text-tertiary)" }}
                   title="Collapse sidebar"
                 >
                   <SidebarSimpleIcon size={15} />
@@ -166,39 +185,55 @@ export default function ChefLayout({
           ].join(" ")}
         >
           {/* Top bar */}
-          <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 md:px-5 shrink-0">
+          <header
+            className="sticky top-0 z-30 flex h-14 items-center justify-between px-4 md:px-5 shrink-0"
+            style={{
+              borderBottom: "1px solid var(--cs-border-subtle)",
+              backgroundColor: "var(--cs-surface-2)",
+            }}
+          >
             <div className="flex items-center gap-3">
               <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger asChild>
-                  <button className="flex md:hidden h-8 w-8 items-center justify-center rounded-lg text-zinc-500 hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                  <button
+                    className="flex md:hidden h-8 w-8 items-center justify-center rounded-lg transition-colors duration-150"
+                    style={{ color: "var(--cs-text-secondary)" }}
+                  >
                     <ListIcon size={16} />
                   </button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-56 p-0 flex flex-col bg-white dark:bg-zinc-950">
-                  <SheetHeader className="px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
+                <SheetContent
+                  side="left"
+                  className="w-56 p-0 flex flex-col"
+                  style={{ backgroundColor: "var(--cs-surface-2)" }}
+                >
+                  <SheetHeader
+                    className="px-4 py-4"
+                    style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
+                  >
                     <SheetTitle asChild>
                       <StudioLogo />
                     </SheetTitle>
                   </SheetHeader>
-                  <NavLinks
-                    pathname={pathname}
-                    onNavigate={() => setSheetOpen(false)}
-                  />
+                  <NavLinks pathname={pathname} onNavigate={() => setSheetOpen(false)} />
                 </SheetContent>
               </Sheet>
 
-              <span className="hidden md:inline text-sm font-medium text-foreground">
+              <span
+                className="hidden md:inline text-sm font-medium"
+                style={{ color: "var(--cs-text-primary)" }}
+              >
                 {activeLabel}
               </span>
-              <span className="flex md:hidden text-sm font-semibold text-foreground">
+              <span
+                className="flex md:hidden text-sm font-semibold"
+                style={{ color: "var(--cs-text-primary)" }}
+              >
                 Chef Studio
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <ToggleThemeButton />
-              <ProfileDropdown />
-            </div>
+            <ProfileDropdown />
           </header>
 
           <main className="flex-1 p-4 md:p-6">{children}</main>

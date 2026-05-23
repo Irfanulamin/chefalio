@@ -84,9 +84,18 @@ export function NotificationBell() {
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute right-0 mt-2 w-80 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl z-50 overflow-hidden">
+        <div
+          className="absolute right-0 mt-2 w-80 rounded-xl shadow-xl z-50 overflow-hidden"
+          style={{
+            backgroundColor: "var(--cs-surface-1)",
+            border: "1px solid var(--cs-border-subtle)",
+          }}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
+          <div
+            className="flex items-center justify-between px-4 py-3"
+            style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
+          >
             <span className="text-sm font-semibold text-foreground">
               Notifications
             </span>
@@ -98,7 +107,10 @@ export function NotificationBell() {
           </div>
 
           {/* List */}
-          <div className="max-h-96 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
+          <div
+            className="max-h-96 overflow-y-auto"
+            style={{ borderTop: "none" }}
+          >
             {isLoading ? (
               <div className="flex items-center justify-center h-24 text-xs text-zinc-400">
                 Loading…

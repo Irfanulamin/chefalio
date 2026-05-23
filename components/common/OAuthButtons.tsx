@@ -60,10 +60,21 @@ export function OAuthButtons() {
       type="button"
       onClick={handleGoogleLogin}
       disabled={loading}
-      className="w-full flex items-center justify-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2.5 text-xs font-semibold uppercase tracking-tight text-zinc-600 dark:text-zinc-300 transition-all duration-200 hover:border-primary/60 hover:shadow-sm hover:shadow-primary/15 active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
+      className="w-full flex items-center justify-center gap-2.5 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-150 disabled:pointer-events-none disabled:opacity-50"
+      style={{
+        backgroundColor: "var(--cs-surface-1)",
+        border: "1px solid var(--cs-border-default)",
+        color: "var(--cs-text-primary)",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = "var(--cs-surface-3)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "var(--cs-surface-1)";
+      }}
     >
       {loading ? <Spinner /> : <GoogleIcon />}
-      {loading ? "Redirecting..." : "Continue with Google"}
+      {loading ? "Redirecting…" : "Continue with Google"}
     </button>
   );
 }

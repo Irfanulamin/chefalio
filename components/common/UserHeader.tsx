@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ListIcon, XIcon } from "@phosphor-icons/react";
 import { ToggleThemeButton } from "./ToggleThemeButton";
 import {
@@ -13,7 +13,6 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ProfileDropdown } from "./ProfileDropdown";
-// import { AIAssistantSheet } from "./AIAssistantSheet";
 import { NotificationBell } from "./NotificationBell";
 import { useProfile } from "@/hooks/useAuth";
 
@@ -22,107 +21,135 @@ const BASE_NAV_LINKS = [
   { label: "Cookbooks", href: "/cookbooks" },
   { label: "Chefs", href: "/chefs" },
   { label: "Activity", href: "/activity" },
+  { label: "Settings", href: "/settings" },
 ];
 
 const BECOME_CHEF_LINK = { label: "Become a Chef", href: "/apply-chef" };
 
 export const UserHeader = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const { profile } = useProfile();
   const isChef = profile?.role === "chef";
 
   const navLinks = isChef ? BASE_NAV_LINKS : [...BASE_NAV_LINKS, BECOME_CHEF_LINK];
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 0);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <div className="sticky top-0 z-50 backdrop-blur-sm">
-      <div className="py-4 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-primary text-2xl font-extrabold tracking-tight cursor-pointer select-none">
-              <Link href="/">Chefalio</Link>
-            </h2>
+    <header
+      className="sticky top-0 z-50 transition-shadow duration-200"
+      style={{
+        backgroundColor: "var(--cs-surface-1)",
+        borderBottom: scrolled
+          ? "1px solid var(--cs-border-subtle)"
+          : "1px solid transparent",
+        boxShadow: scrolled ? "0 1px 8px 0 rgba(0,0,0,0.06)" : "none",
+      }}
+    >
+      <div className="container mx-auto px-4">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="text-2xl font-extrabold tracking-tight select-none"
+            style={{ color: "var(--cs-accent)" }}
+          >
+            Chefalio
+          </Link>
 
-            {/* Desktop */}
-            <nav className="hidden lg:flex gap-x-7 gap-y-4 text-muted-foreground items-center">
-              <ToggleThemeButton />
-              {/* <AIAssistantSheet /> */}
-              <NotificationBell />
-              {navLinks.map((link) => {
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className={`text-sm font-medium relative group transition-colors hover:text-foreground ${isActive ? "text-foreground" : ""}`}
-                  >
-                    {link.label}
-                    <span
-                      className={`absolute -bottom-0.5 left-0 h-px bg-primary transition-all duration-300 ${isActive ? "w-full" : "w-0 group-hover:w-full"}`}
-                    />
-                  </Link>
-                );
-              })}
-              <ProfileDropdown />
-            </nav>
-
-            {/* Mobile */}
-            <div className="lg:hidden flex items-center gap-3">
-              <ToggleThemeButton />
-              {/* <AIAssistantSheet /> */}
-              <NotificationBell />
-              <ProfileDropdown />
-              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                <SheetTrigger asChild>
-                  <button
-                    className="p-1.5 rounded-md hover:bg-accent transition-colors"
-                    aria-label="Open menu"
-                  >
-                    <div>
-                      {sheetOpen ? (
-                        <span key="close">
-                          <XIcon size={26} />
-                        </span>
-                      ) : (
-                        <span key="menu">
-                          <ListIcon size={26} />
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                </SheetTrigger>
-
-                <SheetContent
-                  side="left"
-                  className="px-0 pb-8 bg-white/85 dark:bg-black/85 backdrop-blur-sm"
+          {/* Desktop Nav */}
+          <nav className="hidden lg:flex items-center gap-6">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="relative text-sm font-medium transition-colors duration-150 group"
+                  style={{
+                    color: isActive
+                      ? "var(--cs-text-primary)"
+                      : "var(--cs-text-secondary)",
+                  }}
                 >
-                  <SheetHeader className="px-6 pt-6 pb-2">
-                    <SheetTitle className="text-2xl font-extrabold tracking-tight text-primary">
-                      Chefalio
-                    </SheetTitle>
-                  </SheetHeader>
+                  {link.label}
+                  <span
+                    className="absolute -bottom-0.5 left-0 h-px transition-all duration-300"
+                    style={{
+                      backgroundColor: "var(--cs-accent)",
+                      width: isActive ? "100%" : "0%",
+                    }}
+                  />
+                </Link>
+              );
+            })}
+          </nav>
 
-                  <nav className="flex flex-col px-6 mt-2 gap-1">
-                    {navLinks.map((link) => {
-                      const isActive = pathname === link.href;
-                      return (
-                        <Link
-                          key={link.label}
-                          href={link.href}
-                          onClick={() => setSheetOpen(false)}
-                          className={`py-3 text-base font-medium border-b border-border/40 last:border-none transition-colors ${isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                        >
-                          {link.label}
-                        </Link>
-                      );
-                    })}
-                  </nav>
-                </SheetContent>
-              </Sheet>
-            </div>
+          {/* Desktop Right */}
+          <div className="hidden lg:flex items-center gap-3">
+            <ToggleThemeButton />
+            <NotificationBell />
+            <ProfileDropdown />
+          </div>
+
+          {/* Mobile */}
+          <div className="lg:hidden flex items-center gap-2">
+            <ToggleThemeButton />
+            <NotificationBell />
+            <ProfileDropdown />
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+              <SheetTrigger asChild>
+                <button
+                  className="p-2 rounded-md transition-colors duration-150"
+                  style={{ color: "var(--cs-text-primary)" }}
+                  aria-label="Open menu"
+                >
+                  {sheetOpen ? <XIcon size={22} /> : <ListIcon size={22} />}
+                </button>
+              </SheetTrigger>
+
+              <SheetContent side="left" className="px-0 pb-8">
+                <SheetHeader className="px-6 pt-6 pb-2">
+                  <SheetTitle
+                    className="text-2xl font-extrabold tracking-tight"
+                    style={{ color: "var(--cs-accent)" }}
+                  >
+                    Chefalio
+                  </SheetTitle>
+                </SheetHeader>
+
+                <nav className="flex flex-col px-6 mt-4 gap-0">
+                  {navLinks.map((link) => {
+                    const isActive = pathname === link.href;
+                    return (
+                      <Link
+                        key={link.label}
+                        href={link.href}
+                        onClick={() => setSheetOpen(false)}
+                        className="py-3 text-base font-medium transition-colors duration-150"
+                        style={{
+                          color: isActive
+                            ? "var(--cs-accent)"
+                            : "var(--cs-text-secondary)",
+                          borderBottom: "1px solid var(--cs-border-subtle)",
+                        }}
+                      >
+                        {link.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 };

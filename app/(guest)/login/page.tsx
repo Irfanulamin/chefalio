@@ -95,18 +95,18 @@ function LoginForm() {
       imageAlt="Chefalio Login"
     >
       <div>
-        <h1 className="text-2xl font-semibold mb-2">Sign In</h1>
+        <h1 className="text-2xl font-semibold mb-2" style={{ color: "var(--cs-text-primary)" }}>Sign In</h1>
 
         {justReset ? (
-          <div className="flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/30 px-4 py-3 text-sm text-[#7A9A20] dark:text-primary">
+          <div className="rounded-lg px-4 py-3 text-sm" style={{ backgroundColor: "var(--cs-accent-muted)", color: "var(--cs-accent)", border: "1px solid var(--cs-accent)" }}>
             Password reset successfully. Sign in with your new password.
           </div>
         ) : oauthErrorMessage ? (
-          <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+          <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
             {oauthErrorMessage}
           </div>
         ) : (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
             Welcome back! Please enter your details to sign in.
           </p>
         )}
@@ -137,7 +137,7 @@ function LoginForm() {
           </div>
         )}
       </div>
-      <div className="h-px bg-zinc-100 dark:bg-zinc-800 mb-6" />
+      <div className="h-px mb-6" style={{ backgroundColor: "var(--cs-border-subtle)" }} />
       <form
         className={`space-y-4 transition-opacity duration-200 ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
         onSubmit={(e) => {
@@ -170,10 +170,10 @@ function LoginForm() {
 
       <div className="relative my-2">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-zinc-200 dark:border-zinc-700" />
+          <div className="w-full" style={{ borderTop: "1px solid var(--cs-border-default)" }} />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white dark:bg-zinc-950 px-2 text-zinc-400">
+          <span className="px-2" style={{ backgroundColor: "var(--cs-surface-1)", color: "var(--cs-text-tertiary)" }}>
             or continue with
           </span>
         </div>
@@ -181,11 +181,12 @@ function LoginForm() {
 
       <OAuthButtons />
 
-      <p className="text-sm text-center text-gray-500">
+      <p className="text-sm text-center" style={{ color: "var(--cs-text-secondary)" }}>
         Don&apos;t have an account?{" "}
         <Link
           href="/register"
-          className="text-primary font-medium cursor-pointer hover:underline"
+          className="font-medium hover:underline"
+          style={{ color: "var(--cs-accent)" }}
         >
           Sign up
         </Link>

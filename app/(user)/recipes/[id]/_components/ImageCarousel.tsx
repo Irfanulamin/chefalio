@@ -1,39 +1,11 @@
 "use client";
 import Image from "next/image";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Thumbs, FreeMode } from "swiper/modules";
-import type { Swiper as SwiperType } from "swiper";
-// @ts-ignore
-import "swiper/css";
-// @ts-ignore
-import "swiper/css/pagination";
-// @ts-ignore
-import "swiper/css/thumbs";
-// @ts-ignore
-import "swiper/css/free-mode";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
-const DIFF: Record<string, { label: string; dot: string; pill: string }> = {
-  beginner: {
-    label: "Beginner",
-    dot: "bg-emerald-400",
-    pill: "text-emerald-800 dark:text-emerald-200 bg-emerald-100/80 dark:bg-emerald-900/60 ring-emerald-300 dark:ring-emerald-700",
-  },
-  easy: {
-    label: "Easy",
-    dot: "bg-sky-400",
-    pill: "text-sky-800 dark:text-sky-200 bg-sky-100/80 dark:bg-sky-900/60 ring-sky-300 dark:ring-sky-700",
-  },
-  medium: {
-    label: "Medium",
-    dot: "bg-amber-400",
-    pill: "text-amber-800 dark:text-amber-200 bg-amber-100/80 dark:bg-amber-900/60 ring-amber-300 dark:ring-amber-700",
-  },
-  advance: {
-    label: "Advanced",
-    dot: "bg-rose-400",
-    pill: "text-rose-800 dark:text-rose-200 bg-rose-100/80 dark:bg-rose-900/60 ring-rose-300 dark:ring-rose-700",
-  },
+const DIFF: Record<string, { label: string; bg: string; color: string }> = {
+  beginner: { label: "Easy", bg: "#dcfce7", color: "#15803d" },
+  intermediate: { label: "Medium", bg: "#fef9c3", color: "#a16207" },
+  advance: { label: "Hard", bg: "#fee2e2", color: "#b91c1c" },
 };
 
 export function ImageCarousel({
@@ -45,116 +17,113 @@ export function ImageCarousel({
   title: string;
   difficulty: string;
 }) {
-  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const diff = DIFF[difficulty] ?? DIFF.advance;
 
-  return (
-    <div className="mb-10">
-      <div
-        className="relative bg-zinc-100 dark:bg-zinc-900 rounded-2xl p-3
-          border border-zinc-200 dark:border-zinc-800
-          transition-shadow duration-300 hover:shadow-md"
-      >
-        {/* Main image */}
-        <div className="relative rounded-2xl overflow-hidden w-full aspect-square mb-3">
-          <Swiper
-            modules={[Pagination, Thumbs]}
-            onSlideChange={(s) => setActiveIndex(s.activeIndex)}
-            pagination={{
-              clickable: true,
-              bulletClass:
-                "swiper-pagination-bullet !bg-white/50 !w-1.5 !h-1.5 !rounded-full !transition-all !duration-300",
-              bulletActiveClass:
-                "swiper-pagination-bullet-active !bg-white !w-5 !h-1.5 !rounded-full",
-            }}
-            thumbs={{ swiper: thumbsSwiper }}
-            className="w-full h-full"
-          >
-            {images.map((img, i) => (
-              <SwiperSlide key={i}>
-                <div className="relative w-full h-full">
-                  <Image
-                    src={img}
-                    alt={`${title} photo ${i + 1}`}
-                    fill
-                    className="object-cover transition-transform duration-700 scale-100 hover:scale-[1.02]"
-                    priority={i === 0}
-                  />
-                  {/* Rich multi-stop gradient for depth */}
-                  <div className="absolute inset-0 bg-linear-to-t from-black/40 via-black/5 to-transparent pointer-events-none" />
-                  {/* Subtle vignette */}
-                  <div
-                    className="absolute inset-0 pointer-events-none opacity-40"
-                    style={{
-                      background:
-                        "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.35) 100%)",
-                    }}
-                  />
-                </div>
-              </SwiperSlide>
-            ))}
+  const scrollToImage = (index: number) => {
+    setActiveIndex(index);
+    const container = scrollRef.current;
+    if (!container) return;
+    const slide = container.children[index] as HTMLElement;
+    slide?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+  };
 
-            {/* Difficulty badge */}
-            <span
-              className={`absolute top-3 left-3 z-10 text-[11px] font-bold px-3 py-1.5
-                rounded-xl ring-1 backdrop-blur-md flex items-center gap-1.5
-                shadow-sm ${diff.pill}`}
+  return (
+    <div className="mb-8">
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{
+          backgroundColor: "var(--cs-surface-3)",
+          border: "1px solid var(--cs-border-subtle)",
+        }}
+      >
+        {/* Main image area — CSS scroll snap */}
+        <div
+          ref={scrollRef}
+          className="relative flex overflow-x-auto"
+          style={{
+            scrollSnapType: "x mandatory",
+            scrollbarWidth: "none",
+            aspectRatio: "4/3",
+          }}
+          onScroll={(e) => {
+            const el = e.currentTarget;
+            const slideW = el.clientWidth;
+            const idx = Math.round(el.scrollLeft / slideW);
+            setActiveIndex(idx);
+          }}
+        >
+          {images.length > 0 ? (
+            images.map((img, i) => (
+              <div
+                key={i}
+                className="relative shrink-0 w-full h-full"
+                style={{ scrollSnapAlign: "start" }}
+              >
+                <Image
+                  src={img}
+                  alt={`${title} photo ${i + 1}`}
+                  fill
+                  className="object-cover"
+                  priority={i === 0}
+                />
+              </div>
+            ))
+          ) : (
+            <div
+              className="w-full h-full flex items-center justify-center"
+              style={{ backgroundColor: "var(--cs-surface-3)" }}
             >
               <span
-                className={`w-1.5 h-1.5 rounded-full ${diff.dot} animate-pulse`}
-              />
-              {diff.label}
-            </span>
-
-            {/* Image counter */}
-            {images.length > 1 && (
-              <span
-                className="absolute top-3 right-3 z-10 text-[11px] font-bold
-                  px-2.5 py-1 rounded-xl
-                  bg-black/30 text-white backdrop-blur-md"
+                className="text-5xl font-bold opacity-20"
+                style={{ color: "var(--cs-accent)" }}
               >
-                {activeIndex + 1} / {images.length}
+                {title.charAt(0)}
               </span>
-            )}
-          </Swiper>
+            </div>
+          )}
+
+          {/* Difficulty badge */}
+          <span
+            className="absolute top-3 left-3 z-10 text-[11px] font-semibold px-2.5 py-1 rounded-lg"
+            style={{ backgroundColor: diff.bg, color: diff.color }}
+          >
+            {diff.label}
+          </span>
+
+          {/* Image counter */}
+          {images.length > 1 && (
+            <span className="absolute top-3 right-3 z-10 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-black/30 text-white backdrop-blur-sm">
+              {activeIndex + 1} / {images.length}
+            </span>
+          )}
         </div>
 
         {/* Thumbnail strip */}
         {images.length > 1 && (
-          <Swiper
-            modules={[FreeMode, Thumbs]}
-            onSwiper={setThumbsSwiper}
-            freeMode
-            watchSlidesProgress
-            slidesPerView="auto"
-            spaceBetween={8}
+          <div
+            className="flex gap-2 p-3 overflow-x-auto"
+            style={{ scrollbarWidth: "none" }}
           >
             {images.map((img, i) => (
-              <SwiperSlide
+              <button
                 key={i}
-                style={{ width: 64, height: 64, flexShrink: 0 }}
+                onClick={() => scrollToImage(i)}
+                className="relative shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-150"
+                style={{
+                  opacity: activeIndex === i ? 1 : 0.5,
+                  outline:
+                    activeIndex === i
+                      ? "2px solid var(--cs-accent)"
+                      : "2px solid transparent",
+                  outlineOffset: "1px",
+                }}
               >
-                <div
-                  className={`w-full h-full rounded-xl overflow-hidden cursor-pointer
-                    transition-all duration-200 ring-2
-                    ${
-                      activeIndex === i
-                        ? "opacity-100 ring-zinc-900 dark:ring-zinc-100 scale-[1.04]"
-                        : "opacity-50 ring-transparent hover:opacity-70 hover:scale-[1.02]"
-                    }`}
-                >
-                  <Image
-                    src={img}
-                    alt=""
-                    width={64}
-                    height={64}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </SwiperSlide>
+                <Image src={img} alt="" fill className="object-cover" sizes="56px" />
+              </button>
             ))}
-          </Swiper>
+          </div>
         )}
       </div>
     </div>

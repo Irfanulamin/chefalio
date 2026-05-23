@@ -1,5 +1,3 @@
-import Footer from "@/components/common/Footer";
-import { Header } from "@/components/common/Header";
 import GuestOnlyRoute from "@/components/common/GuestOnlyRoute";
 
 export default function GuestLayout({
@@ -9,9 +7,12 @@ export default function GuestLayout({
 }) {
   return (
     <GuestOnlyRoute>
-      <Header />
-      {children}
-      <Footer />
+      <div
+        className="min-h-screen"
+        style={{ backgroundColor: "var(--cs-surface-1)" }}
+      >
+        {children}
+      </div>
     </GuestOnlyRoute>
   );
 }

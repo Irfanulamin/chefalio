@@ -34,7 +34,8 @@ export default function CreateRecipePage() {
         {/* Back nav */}
         <Link
           href="/chef/recipes"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm transition-colors duration-150 hover:opacity-70"
+          style={{ color: "var(--cs-text-tertiary)" }}
         >
           <ArrowLeftIcon size={14} weight="bold" />
           Back to My Recipes
@@ -42,10 +43,10 @@ export default function CreateRecipePage() {
 
         {/* Header */}
         <div>
-          <h1 className="text-base font-semibold text-foreground">
+          <h1 className="text-base font-semibold" style={{ color: "var(--cs-text-primary)" }}>
             Create Recipe
           </h1>
-          <p className="text-sm text-zinc-400 mt-0.5">
+          <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
             Fill in the details below to publish your recipe.
           </p>
         </div>

@@ -30,18 +30,21 @@ export function createChefCookbookColumns({
     {
       id: "cookbook",
       header: () => (
-        <span className="text-xs font-medium text-zinc-400">Cookbook</span>
+        <span className="text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Cookbook</span>
       ),
       cell: ({ row }) => {
         const c = row.original
         return (
           <div className="flex items-center gap-3">
-            <div className="relative h-10 w-14 rounded-lg overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
+            <div
+              className="relative h-10 w-14 rounded-lg overflow-hidden shrink-0"
+              style={{ backgroundColor: "var(--cs-surface-3)" }}
+            >
               <Image src={c.cookbook_image} alt={c.title} fill className="object-cover" sizes="56px" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate max-w-[240px]">{c.title}</p>
-              <p className="text-xs text-zinc-400 mt-0.5 line-clamp-1 max-w-[240px]">{c.description}</p>
+              <p className="text-sm font-semibold truncate max-w-[240px]" style={{ color: "var(--cs-text-primary)" }}>{c.title}</p>
+              <p className="text-xs mt-0.5 line-clamp-1 max-w-[240px]" style={{ color: "var(--cs-text-tertiary)" }}>{c.description}</p>
             </div>
           </div>
         )
@@ -55,7 +58,7 @@ export function createChefCookbookColumns({
         <SortableHeader column={column} title="Price" />
       ),
       cell: ({ row }) => (
-        <span className="text-sm font-bold text-foreground tabular-nums">
+        <span className="text-sm font-bold tabular-nums" style={{ color: "var(--cs-text-primary)" }}>
           ${row.original.price.toFixed(2)}
         </span>
       ),
@@ -67,24 +70,20 @@ export function createChefCookbookColumns({
       header: ({ column }) => (
         <SortableHeader column={column} title="Stock" />
       ),
-      cell: ({ row }) => (
-        <span
-          className={`text-xs font-medium tabular-nums ${
-            row.original.stockCount === 0
-              ? "text-red-500"
-              : row.original.stockCount < 5
-                ? "text-amber-500"
-                : "text-zinc-500"
-          }`}
-        >
-          {row.original.stockCount} in stock
-        </span>
-      ),
+      cell: ({ row }) => {
+        const count = row.original.stockCount
+        const color = count === 0 ? "#ef4444" : count < 5 ? "#f59e0b" : "var(--cs-text-secondary)"
+        return (
+          <span className="text-xs font-medium tabular-nums" style={{ color }}>
+            {count} in stock
+          </span>
+        )
+      },
     },
     {
       id: "actions",
       header: () => (
-        <span className="text-xs font-medium text-zinc-400 text-right block pr-1">Actions</span>
+        <span className="text-xs font-medium text-right block pr-1" style={{ color: "var(--cs-text-tertiary)" }}>Actions</span>
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-1.5 justify-end">
@@ -92,7 +91,8 @@ export function createChefCookbookColumns({
             <Button
               variant="outline"
               size="sm"
-              className="h-7 gap-1.5 text-xs border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground px-2.5"
+              className="h-7 gap-1.5 text-xs px-2.5 transition-colors duration-150"
+              style={{ color: "var(--cs-text-secondary)" }}
             >
               <PencilSimpleIcon size={12} />
               Edit
@@ -103,7 +103,8 @@ export function createChefCookbookColumns({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 px-2.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"
+                className="h-7 px-2.5 rounded-lg transition-colors duration-150 hover:text-red-500 hover:bg-red-50"
+                style={{ color: "var(--cs-text-tertiary)" }}
               >
                 <TrashIcon size={13} />
               </Button>

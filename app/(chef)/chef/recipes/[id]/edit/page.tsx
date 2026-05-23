@@ -44,10 +44,11 @@ export default function EditRecipePage() {
   if (!recipe) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <p className="text-muted-foreground">Recipe not found.</p>
+        <p className="text-sm" style={{ color: "var(--cs-text-tertiary)" }}>Recipe not found.</p>
         <Link
           href="/chef/recipes"
-          className="text-sm text-primary hover:underline"
+          className="text-sm font-medium hover:underline"
+          style={{ color: "var(--cs-accent)" }}
         >
           ← Back to my recipes
         </Link>
@@ -63,7 +64,8 @@ export default function EditRecipePage() {
         {/* Back nav */}
         <Link
           href="/chef/recipes"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm transition-colors duration-150 hover:opacity-70"
+          style={{ color: "var(--cs-text-tertiary)" }}
         >
           <ArrowLeftIcon size={14} weight="bold" />
           Back to My Recipes
@@ -71,11 +73,11 @@ export default function EditRecipePage() {
 
         {/* Header */}
         <div>
-          <h1 className="text-base font-semibold text-foreground">
+          <h1 className="text-base font-semibold" style={{ color: "var(--cs-text-primary)" }}>
             Edit Recipe
           </h1>
-          <p className="text-sm text-zinc-400 mt-0.5">
-            Editing: <strong className="text-foreground font-medium">{recipe.title}</strong>
+          <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
+            Editing: <strong style={{ color: "var(--cs-text-primary)", fontWeight: 500 }}>{recipe.title}</strong>
           </p>
         </div>
 

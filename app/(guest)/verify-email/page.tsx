@@ -78,10 +78,10 @@ function VerifyEmailContent() {
       <div className="flex flex-col items-center text-center gap-5 py-4">
         {status === "loading" && (
           <>
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <Loader2 className="h-12 w-12 animate-spin" style={{ color: "var(--cs-accent)" }} />
             <div className="space-y-1">
-              <h2 className="text-xl font-semibold">Verifying your email…</h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <h2 className="text-xl font-semibold" style={{ color: "var(--cs-text-primary)" }}>Verifying your email…</h2>
+              <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
                 Please wait a moment.
               </p>
             </div>
@@ -90,18 +90,21 @@ function VerifyEmailContent() {
 
         {status === "success" && (
           <>
-            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
+            <span
+              className="flex h-16 w-16 items-center justify-center rounded-2xl"
+              style={{ backgroundColor: "var(--cs-accent-muted)", border: "1px solid var(--cs-accent)" }}
+            >
               <CheckCircleIcon
                 size={36}
                 weight="fill"
-                className="text-emerald-500"
+                style={{ color: "var(--cs-accent)" }}
               />
             </span>
             <div className="space-y-1.5">
-              <h2 className="text-xl font-semibold text-foreground">
+              <h2 className="text-xl font-semibold" style={{ color: "var(--cs-text-primary)" }}>
                 Email verified!
               </h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
                 Your account is now active. Redirecting you in a moment…
               </p>
             </div>
@@ -115,21 +118,21 @@ function VerifyEmailContent() {
 
         {status === "error" && (
           <>
-            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 border border-red-200">
               <XCircleIcon size={36} weight="fill" className="text-red-500" />
             </span>
             <div className="space-y-1.5">
-              <h2 className="text-xl font-semibold text-foreground">
+              <h2 className="text-xl font-semibold" style={{ color: "var(--cs-text-primary)" }}>
                 Verification failed
               </h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-xs">
+              <p className="text-sm max-w-xs" style={{ color: "var(--cs-text-secondary)" }}>
                 {errorMsg}
               </p>
             </div>
 
             {!resendSent ? (
               <div className="w-full space-y-3 pt-1">
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
                   Request a new link by entering your email or username:
                 </p>
                 <input
@@ -137,7 +140,12 @@ function VerifyEmailContent() {
                   value={resendInput}
                   onChange={(e) => setResendInput(e.target.value)}
                   placeholder="Email or username"
-                  className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2.5 text-sm text-foreground placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-600"
+                  className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none"
+                  style={{
+                    border: "1px solid var(--cs-border-default)",
+                    backgroundColor: "var(--cs-surface-2)",
+                    color: "var(--cs-text-primary)",
+                  }}
                 />
                 <Button
                   type="button"
@@ -154,14 +162,18 @@ function VerifyEmailContent() {
                 </Button>
               </div>
             ) : (
-              <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300 w-full">
+              <div
+                className="rounded-lg px-4 py-3 text-sm w-full"
+                style={{ backgroundColor: "var(--cs-accent-muted)", color: "var(--cs-accent)", border: "1px solid var(--cs-accent)" }}
+              >
                 If that account exists and is unverified, a new link has been sent.
               </div>
             )}
 
             <Link
               href="/login"
-              className="text-sm text-primary font-medium hover:underline"
+              className="text-sm font-medium hover:underline"
+              style={{ color: "var(--cs-accent)" }}
             >
               Back to sign in
             </Link>

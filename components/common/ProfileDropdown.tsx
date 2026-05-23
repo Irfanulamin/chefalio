@@ -103,7 +103,11 @@ export const ProfileDropdown = () => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-64 p-1.5 rounded-xl shadow-lg border border-border/60 bg-white dark:bg-slate-950 dark:border-slate-800"
+        className="w-64 p-1.5 rounded-xl shadow-lg"
+        style={{
+          backgroundColor: "var(--cs-surface-1)",
+          border: "1px solid var(--cs-border-subtle)",
+        }}
         align="end"
         sideOffset={8}
       >
