@@ -115,39 +115,27 @@ function getRelativeTime(iso: string): string {
 
 export const CompactPurchaseCardSkeleton = () => {
   return (
-    <div className="flex items-start gap-4 px-5 py-4 bg-background border border-slate-200/50 dark:border-slate-800/50 rounded-lg animate-pulse">
-      {/* Thumbnail skeleton */}
-      <div className="shrink-0 w-36 h-36 rounded bg-muted" />
-
-      {/* Content skeleton */}
-      <div className="flex-1 min-w-0 space-y-3">
-        {/* Title + badge */}
+    <div
+      className="flex items-center gap-4 px-4 py-3 animate-pulse"
+      style={{
+        backgroundColor: "var(--cs-surface-2)",
+        borderBottom: "1px solid var(--cs-border-subtle)",
+      }}
+    >
+      <div
+        className="shrink-0 w-16 h-16 rounded-lg"
+        style={{ backgroundColor: "var(--cs-surface-3)" }}
+      />
+      <div className="flex-1 min-w-0 space-y-2">
         <div className="flex items-center gap-2">
-          <div className="h-5 w-48 rounded bg-muted" />
-          <div className="h-4 w-12 rounded bg-muted" />
+          <div className="h-4 w-40 rounded" style={{ backgroundColor: "var(--cs-surface-3)" }} />
+          <div className="h-4 w-12 rounded" style={{ backgroundColor: "var(--cs-surface-3)" }} />
         </div>
-
-        {/* Author */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-muted shrink-0" />
-          <div className="h-4 w-32 rounded bg-muted" />
+        <div className="h-3 w-28 rounded" style={{ backgroundColor: "var(--cs-surface-3)" }} />
+        <div className="flex gap-3">
+          <div className="h-3 w-16 rounded" style={{ backgroundColor: "var(--cs-surface-3)" }} />
+          <div className="h-3 w-20 rounded" style={{ backgroundColor: "var(--cs-surface-3)" }} />
         </div>
-
-        {/* Description */}
-        <div className="space-y-1.5">
-          <div className="h-3 w-full rounded bg-muted" />
-          <div className="h-3 w-3/4 rounded bg-muted" />
-        </div>
-
-        {/* Meta row */}
-        <div className="hidden md:flex items-center gap-4">
-          <div className="h-4 w-16 rounded bg-muted" />
-          <div className="h-4 w-24 rounded bg-muted" />
-          <div className="h-4 w-20 rounded bg-muted" />
-          <div className="h-4 w-20 rounded bg-muted" />
-        </div>
-
-        <div className="h-4 w-16 rounded bg-muted" />
       </div>
     </div>
   );
@@ -159,45 +147,51 @@ export const CompactPurchaseCard = ({ purchase }: { purchase: Purchase }) => {
   const status =
     statusConfig[purchase.paymentStatus as keyof typeof statusConfig];
   const initials = getInitials(purchase.billingAddress?.name);
-  const location = [
-    purchase.billingAddress?.city,
-    purchase.billingAddress?.country,
-  ]
-    .filter(Boolean)
-    .join(", ");
   const shortId = purchase._id.slice(-8).toUpperCase();
 
   return (
-    <article className="group relative flex items-start gap-4 px-5 py-4 bg-white dark:bg-slate-950/50 border border-slate-200/50 dark:border-slate-800/50 rounded-lg hover:border-slate-300/70 dark:hover:border-slate-700/70 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all duration-200">
+    <div
+      className="flex items-center gap-3 px-4 py-3 transition-opacity duration-150 hover:opacity-90"
+      style={{
+        backgroundColor: "var(--cs-surface-2)",
+        borderBottom: "1px solid var(--cs-border-subtle)",
+      }}
+    >
       {/* Thumbnail */}
-      <div className="shrink-0 w-36 h-36 rounded-lg overflow-hidden bg-linear-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
+      <div
+        className="shrink-0 w-16 h-16 rounded-lg overflow-hidden flex items-center justify-center"
+        style={{ backgroundColor: "var(--cs-surface-3)" }}
+      >
         {purchase.cookbookImage ? (
           <Image
             src={purchase.cookbookImage}
             alt={purchase.cookbookTitle ?? "Cookbook image"}
-            width={200}
-            height={200}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-            crossOrigin="anonymous"
-            loading="eager"
+            width={64}
+            height={64}
+            className="w-full h-full object-cover"
+            loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <BookOpenIcon className="w-6 h-6 text-slate-400 dark:text-slate-600" />
-          </div>
+          <BookOpenIcon
+            className="w-5 h-5"
+            style={{ color: "var(--cs-text-tertiary)" }}
+          />
         )}
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
         {/* Title + Status badge */}
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50 truncate">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p
+            className="text-sm font-semibold truncate"
+            style={{ color: "var(--cs-text-primary)" }}
+          >
             {purchase.cookbookTitle ?? "Untitled Cookbook"}
-          </h2>
+          </p>
           {status && (
             <span
-              className={`inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-md whitespace-nowrap ${status.className}`}
+              className={`inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-md whitespace-nowrap ${status.className}`}
             >
               {status.label}
             </span>
@@ -205,48 +199,49 @@ export const CompactPurchaseCard = ({ purchase }: { purchase: Purchase }) => {
         </div>
 
         {/* Buyer */}
-        <div className="flex items-center gap-1.5 mb-2">
-          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700/80 text-[10px] font-semibold text-slate-700 dark:text-slate-200 shrink-0">
-            {initials}
+        <div className="flex items-center gap-1.5">
+          <span
+            className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[8px] font-bold shrink-0"
+            style={{
+              backgroundColor: "var(--cs-surface-3)",
+              color: "var(--cs-text-secondary)",
+            }}
+          >
+            {initials.charAt(0)}
           </span>
-          <p className="text-sm text-slate-600 dark:text-slate-300 truncate capitalize">
+          <span
+            className="text-xs truncate capitalize"
+            style={{ color: "var(--cs-text-secondary)" }}
+          >
             {purchase.billingAddress?.name ?? "Unknown buyer"}
-          </p>
+          </span>
         </div>
-
-        {/* Receipt email + location */}
-        {(purchase.receiptEmail || location) && (
-          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-2">
-            {[purchase.receiptEmail, location].filter(Boolean).join(" · ")}
-          </p>
-        )}
 
         {/* Meta row */}
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
-            <CurrencyDollarIcon className="w-5 h-5 text-primary" />
+          <span
+            className="inline-flex items-center gap-1 text-[11px]"
+            style={{ color: "var(--cs-text-tertiary)" }}
+          >
+            <CurrencyDollarIcon className="w-3.5 h-3.5" style={{ color: "var(--cs-accent)" }} />
             {formatPrice(purchase.price)}
           </span>
-          <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-            <HashStraightIcon className="w-5 h-5 text-blue-500" />
+          <span
+            className="inline-flex items-center gap-1 text-[11px]"
+            style={{ color: "var(--cs-text-tertiary)" }}
+          >
+            <HashStraightIcon className="w-3.5 h-3.5" />
             {shortId}
           </span>
-          <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-            <CalendarIcon className="w-5 h-5 text-amber-500" />
-            {formatDate(purchase.createdAt)}
-          </span>
-          {location && (
-            <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-              <MapPinIcon className="w-5 h-5 text-rose-400" />
-              {location}
-            </span>
-          )}
-          <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-            <CalendarIcon className="w-5 h-5 text-orange-500" />
-            {getRelativeTime(purchase.createdAt)}
+          <span
+            className="inline-flex items-center gap-1 text-[11px]"
+            style={{ color: "var(--cs-text-tertiary)" }}
+          >
+            <CalendarIcon className="w-3.5 h-3.5" />
+            {formatDate(purchase.createdAt)} · {getRelativeTime(purchase.createdAt)}
           </span>
         </div>
       </div>
-    </article>
+    </div>
   );
 };

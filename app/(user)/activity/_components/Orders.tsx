@@ -79,7 +79,7 @@ export default function OrdersSection() {
 
   return (
     <div
-      className="rounded-2xl overflow-hidden divide-y shadow-sm"
+      className="rounded-2xl overflow-hidden"
       style={{ border: "1px solid var(--cs-border-subtle)" }}
     >
       {purchaseHistory.data.map((order) => (

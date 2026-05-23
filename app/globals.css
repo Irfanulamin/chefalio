@@ -103,6 +103,18 @@ body {
   --border: #262626;
   --input: #262626;
   --ring: #A7D129;
+
+  /* Chefalio surface tokens — dark overrides */
+  --cs-surface-1: #0f0f0d;
+  --cs-surface-2: #161614;
+  --cs-surface-3: #1e1e1b;
+  --cs-text-primary: #f0f0ee;
+  --cs-text-secondary: #9a9a96;
+  --cs-text-tertiary: #64645f;
+  --cs-border-subtle: #2a2a27;
+  --cs-border-default: #383835;
+  --cs-accent: #A7D129;
+  --cs-accent-muted: rgba(167, 209, 41, 0.12);
 }
 
 @layer base {
@@ -176,4 +188,20 @@ body {
   font-weight: 500;
   background-color: var(--cs-surface-3);
   color: var(--cs-text-secondary);
+}
+
+/* Dark-mode badge overrides */
+.dark .badge-success {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+}
+
+.dark .badge-warning {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: #fde047;
+}
+
+.dark .badge-error {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
 }
