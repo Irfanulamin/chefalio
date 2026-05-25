@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 import { ProfileDropdown } from "@/components/common/ProfileDropdown";
+import { ToggleThemeButton } from "@/components/common/ToggleThemeButton";
 import {
   Sheet,
   SheetContent,
@@ -233,7 +234,10 @@ export default function ChefLayout({ children }: { children: React.ReactNode }) 
               </span>
             </div>
 
-            <ProfileDropdown />
+            <div className="flex items-center gap-2">
+              <ToggleThemeButton />
+              <ProfileDropdown />
+            </div>
           </header>
 
           <main className="flex-1 p-4 md:p-6">{children}</main>

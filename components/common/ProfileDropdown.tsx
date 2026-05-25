@@ -182,7 +182,7 @@ export const ProfileDropdown = () => {
 
         {/* Settings */}
         <DropdownMenuGroup>
-          <Link href="/settings" className="w-full">
+          <Link href={profile?.role === "admin" ? "/admin/settings" : "/settings"} className="w-full">
             <DropdownMenuItem className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm cursor-pointer hover:bg-accent focus:bg-accent">
               <GearSixIcon size={32} className="shrink-0" weight="bold" />
               <span>Settings</span>

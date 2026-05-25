@@ -24,7 +24,7 @@ export default function ChefError({
           Something went wrong
         </h1>
         <p className="text-sm mb-1" style={{ color: "var(--cs-text-secondary)" }}>
-          An error occurred in your studio.
+          An error occurred in your chef studio.
         </p>
         {error.message && (
           <p

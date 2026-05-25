@@ -60,28 +60,30 @@ export const Header = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-6">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="relative text-sm font-medium transition-colors duration-150 group"
-                style={{ color: "var(--cs-text-secondary)" }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = "var(--cs-text-primary)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "var(--cs-text-secondary)")
-                }
-              >
-                {link.label}
-                <span
-                  className="absolute -bottom-0.5 left-0 h-px w-0 transition-all duration-300 group-hover:w-full"
-                  style={{ backgroundColor: "var(--cs-accent)" }}
-                />
-              </Link>
-            ))}
-          </nav>
+          {user && (
+            <nav className="hidden lg:flex items-center gap-6">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="relative text-sm font-medium transition-colors duration-150 group"
+                  style={{ color: "var(--cs-text-secondary)" }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "var(--cs-text-primary)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "var(--cs-text-secondary)")
+                  }
+                >
+                  {link.label}
+                  <span
+                    className="absolute -bottom-0.5 left-0 h-px w-0 transition-all duration-300 group-hover:w-full"
+                    style={{ backgroundColor: "var(--cs-accent)" }}
+                  />
+                </Link>
+              ))}
+            </nav>
+          )}
 
           {/* Desktop Auth */}
           <div className="hidden lg:flex items-center gap-3">
@@ -137,22 +139,24 @@ export const Header = () => {
                   </SheetTitle>
                 </SheetHeader>
 
-                <nav className="flex flex-col px-6 mt-4 gap-0">
-                  {NAV_LINKS.map((link) => (
-                    <Link
-                      key={link.label}
-                      href={link.href}
-                      onClick={closeSheet}
-                      className="py-3 text-base font-medium transition-colors duration-150"
-                      style={{
-                        color: "var(--cs-text-secondary)",
-                        borderBottom: "1px solid var(--cs-border-subtle)",
-                      }}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </nav>
+                {user && (
+                  <nav className="flex flex-col px-6 mt-4 gap-0">
+                    {NAV_LINKS.map((link) => (
+                      <Link
+                        key={link.label}
+                        href={link.href}
+                        onClick={closeSheet}
+                        className="py-3 text-base font-medium transition-colors duration-150"
+                        style={{
+                          color: "var(--cs-text-secondary)",
+                          borderBottom: "1px solid var(--cs-border-subtle)",
+                        }}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </nav>
+                )}
 
                 {!isLoading && (
                   <div className="flex flex-col gap-3 px-6 mt-6">
