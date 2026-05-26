@@ -155,6 +155,16 @@ export const RecipeCard = memo(
             </h2>
           </Link>
 
+          {/* Description */}
+          {recipe.description && (
+            <p
+              className="text-[13px] line-clamp-3 leading-relaxed"
+              style={{ color: "var(--cs-text-secondary)" }}
+            >
+              {recipe.description}
+            </p>
+          )}
+
           {/* Tags as cuisine labels */}
           {recipe.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">

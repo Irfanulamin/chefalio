@@ -3,25 +3,27 @@ import { Skeleton } from "@/components/ui/skeleton";
 export const CompactRecipeSkeletonCard = () => {
   return (
     <div
-      className="flex flex-col overflow-hidden rounded-lg"
+      className="flex flex-row items-center gap-3 px-4 py-3 w-full"
       style={{
-        width: "200px",
-        maxWidth: "200px",
         backgroundColor: "var(--cs-surface-2)",
-        border: "1px solid var(--cs-border-subtle)",
+        borderBottom: "1px solid var(--cs-border-subtle)",
       }}
     >
-      {/* 1:1 thumbnail */}
-      <Skeleton className="w-full" style={{ aspectRatio: "1/1" }} />
-      {/* Info */}
-      <div className="p-2.5 space-y-1.5">
-        <Skeleton className="h-4 w-full" />
+      {/* Text column — left */}
+      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+        <Skeleton className="h-4 w-full" style={{ backgroundColor: "var(--cs-surface-3)" }} />
         <div className="flex items-center gap-1.5">
-          <Skeleton className="w-3.5 h-3.5 rounded-full shrink-0" />
-          <Skeleton className="h-3 w-20" />
+          <Skeleton className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: "var(--cs-surface-3)" }} />
+          <Skeleton className="h-3 w-20" style={{ backgroundColor: "var(--cs-surface-3)" }} />
         </div>
-        <Skeleton className="h-3 w-16" />
+        <Skeleton className="h-3 w-16" style={{ backgroundColor: "var(--cs-surface-3)" }} />
       </div>
+
+      {/* Thumbnail — right */}
+      <Skeleton
+        className="w-16 h-16 rounded-lg shrink-0"
+        style={{ backgroundColor: "var(--cs-surface-3)" }}
+      />
     </div>
   );
 };

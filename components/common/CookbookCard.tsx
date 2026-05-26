@@ -123,6 +123,15 @@ export function CookbookCard({ cookbook }: { cookbook: Cookbook }) {
             {cookbook.authorId.fullName}
           </span>
         </div>
+
+        {cookbook.description && (
+          <p
+            className="text-xs line-clamp-3 leading-relaxed"
+            style={{ color: "var(--cs-text-secondary)" }}
+          >
+            {cookbook.description}
+          </p>
+        )}
       </div>
     </Link>
   );
