@@ -105,7 +105,7 @@ body {
   --ring: #A7D129;
 
   /* Chefalio surface tokens — dark overrides */
-  --cs-surface-1: #0f0f0d;
+  --cs-surface-1: #000;
   --cs-surface-2: #161614;
   --cs-surface-3: #1e1e1b;
   --cs-text-primary: #f0f0ee;
