@@ -196,12 +196,14 @@ export default function CookbooksPage() {
                   >
                     {/* Image */}
                     <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
-                      <Image
-                        src={cookbook.cookbook_image}
-                        alt={cookbook.title}
-                        fill
-                        className="object-cover"
-                      />
+                      {cookbook.cookbook_image && (
+                        <Image
+                          src={cookbook.cookbook_image}
+                          alt={cookbook.title}
+                          fill
+                          className="object-cover"
+                        />
+                      )}
 
                       {/* Discount badge */}
                       {(cookbook.discount ?? 0) > 0 && (

@@ -25,12 +25,14 @@ export const SummaryCard = ({ cookbook }: { cookbook: Cookbook }) => {
     >
       {/* Cover image */}
       <div className="relative w-full" style={{ aspectRatio: "3/4" }}>
-        <Image
-          src={cookbook.cookbook_image}
-          alt={cookbook.title}
-          fill
-          className="object-cover"
-        />
+        {cookbook.cookbook_image && (
+          <Image
+            src={cookbook.cookbook_image}
+            alt={cookbook.title}
+            fill
+            className="object-cover"
+          />
+        )}
         <span
           className="absolute bottom-2.5 right-2.5 text-sm font-bold px-2.5 py-1 rounded-lg z-10"
           style={{ backgroundColor: "rgba(0,0,0,0.65)", color: "#fff" }}

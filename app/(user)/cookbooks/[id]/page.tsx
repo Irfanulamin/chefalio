@@ -81,13 +81,15 @@ export default function CookbookDetailPage({
             {/* Cover image */}
             <div className="lg:w-72 shrink-0 w-full max-w-sm">
               <div className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: "3/4" }}>
-                <Image
-                  src={cookbook.cookbook_image}
-                  alt={cookbook.title}
-                  fill
-                  className="object-cover"
-                  priority
-                />
+                {cookbook.cookbook_image && (
+                  <Image
+                    src={cookbook.cookbook_image}
+                    alt={cookbook.title}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                )}
                 {(cookbook.discount ?? 0) > 0 && (
                   <span className="absolute top-3 left-3 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-500 text-white z-10">
                     -{cookbook.discount}% OFF
