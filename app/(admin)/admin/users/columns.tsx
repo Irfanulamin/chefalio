@@ -73,7 +73,7 @@ export function createUserColumns({
         </span>
       ),
       cell: ({ row }) => (
-        <span className="text-xs text-zinc-500 hidden sm:block">{row.original.email}</span>
+        <span className="text-xs text-zinc-500 hidden sm:block truncate max-w-[180px]">{row.original.email}</span>
       ),
     },
     {

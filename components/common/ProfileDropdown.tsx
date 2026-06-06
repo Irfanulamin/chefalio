@@ -113,15 +113,17 @@ export const ProfileDropdown = () => {
       >
         {/* Profile header */}
         <div className="flex items-center gap-3 px-2.5 py-2.5 mb-1">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0 ring-2 ring-primary shadow-sm">
-            {profile?.profile_url && (
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0 ring-2 ring-primary shadow-sm" style={{ backgroundColor: "var(--cs-accent)" }}>
+            {profile?.profile_url ? (
               <Image
                 src={profile.profile_url}
                 alt="Profile"
                 width={36}
                 height={36}
-                className="rounded-full object-cover h-8 w-8"
+                className="rounded-full object-cover h-9 w-9"
               />
+            ) : (
+              profile?.fullName?.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase()
             )}
           </div>
           <div className="flex flex-col min-w-0">

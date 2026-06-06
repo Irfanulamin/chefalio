@@ -9,6 +9,7 @@ import {
   useApproveChefApplication,
   useRejectChefApplication,
 } from "@/hooks/useChefApplication";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { ApplicationStatus } from "@/types/chef-application.type";
 import {
@@ -181,13 +182,17 @@ export default function AdminChefApplicationDetailPage() {
   const handleApprove = () => {
     approveMutation.mutate(application._id, {
       onSuccess: () => router.push("/admin/chef-applications"),
+      onError: () => toast.error("Failed to approve application"),
     });
   };
 
   const handleReject = (note: string) => {
     rejectMutation.mutate(
       { id: application._id, rejectionNote: note },
-      { onSuccess: () => router.push("/admin/chef-applications") },
+      {
+        onSuccess: () => router.push("/admin/chef-applications"),
+        onError: () => toast.error("Failed to reject application"),
+      },
     );
   };
 
