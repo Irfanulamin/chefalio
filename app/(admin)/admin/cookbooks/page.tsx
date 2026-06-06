@@ -155,11 +155,12 @@ export default function AdminCookbooksPage() {
           open={!!editTarget}
           onOpenChange={(open) => !open && setEditTarget(null)}
         >
-          <DialogContent className="sm:max-w-sm">
+          <DialogContent className="sm:max-w-sm flex flex-col max-h-[90vh]">
             <DialogHeader>
               <DialogTitle>Edit Cookbook</DialogTitle>
             </DialogHeader>
-            {editTarget && (
+            <div className="overflow-y-auto flex-1 px-1">
+              {editTarget && (
               <form onSubmit={handleUpdate} className="space-y-4 pt-1">
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 min-w-0">
                   <div className="relative h-10 w-10 rounded-md overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
@@ -271,6 +272,7 @@ export default function AdminCookbooksPage() {
                 </DialogFooter>
               </form>
             )}
+            </div>
           </DialogContent>
         </Dialog>
 
