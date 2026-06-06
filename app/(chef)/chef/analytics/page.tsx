@@ -323,7 +323,186 @@ export default function ChefAnalyticsPage() {
 
         {/* Faint shimmer overlay while re-fetching */}
         <div className={isFetching ? "pointer-events-none opacity-60 transition-opacity duration-150" : "transition-opacity duration-150"}>
+ {/* ── Engagement ── */}
+          <div className="space-y-4 mt-6">
+            <SectionDivider title="Recipe Engagement" />
 
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <MetricCard
+                icon={HeartIcon}
+                label="Loves"
+                value={totalLoves.toLocaleString()}
+                sub={`Across recipes, ${periodSub}`}
+              />
+              <MetricCard
+                icon={BookmarkSimpleIcon}
+                label="Saves"
+                value={totalSaves.toLocaleString()}
+                sub={`Across recipes, ${periodSub}`}
+              />
+              <MetricCard
+                icon={UsersIcon}
+                label="Unique Engagers"
+                value={totalUniqueUsers.toLocaleString()}
+                sub={`Distinct users, ${periodSub}`}
+              />
+              <MetricCard
+                icon={TrendUpIcon}
+                label="Engagement Score"
+                value={totalEngagement.toLocaleString()}
+                sub="Loves×2 + Saves×1.5"
+              />
+            </div>
+
+            {recipes.length === 0 ? (
+              <div
+                className="rounded-xl border-dashed py-16 flex flex-col items-center gap-2 text-center"
+                style={{ border: "1px dashed var(--cs-border-subtle)" }}
+              >
+                <p className="text-sm font-medium" style={{ color: "var(--cs-text-primary)" }}>No engagement data</p>
+                <p className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>
+                  {period === "lifetime"
+                    ? "Publish recipes to start seeing engagement metrics."
+                    : `No engagement recorded for this period.`}
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div
+                    className="rounded-xl p-5"
+                    style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+                  >
+                    <h3 className="text-sm font-semibold mb-5" style={{ color: "var(--cs-text-primary)" }}>
+                      Engagement by Recipe
+                    </h3>
+                    <div className="h-[200px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={recipes.slice(0, 7).map((r) => ({
+                            name: r.title.length > 18 ? r.title.slice(0, 18) + "…" : r.title,
+                            score: r.engagementScore,
+                          }))}
+                          layout="vertical"
+                          margin={{ left: 0, right: 8 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} horizontal={false} />
+                          <XAxis type="number" tick={{ fontSize: 10, fill: TICK_COLOR }} tickLine={false} axisLine={false} />
+                          <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: TICK_COLOR }} tickLine={false} axisLine={false} width={100} />
+                          <Tooltip
+                            cursor={{ fill: "var(--cs-surface-3)" }}
+                            contentStyle={TOOLTIP_STYLE}
+                          />
+                          <Bar dataKey="score" radius={[0, 4, 4, 0]} isAnimationActive={false}>
+                            {recipes.slice(0, 7).map((_, i) => (
+                              <Cell key={i} fill={i === 0 ? "#a7d129" : i < 3 ? "#c8e87a" : "#e4f4a8"} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  <div
+                    className="rounded-xl p-5"
+                    style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+                  >
+                    <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--cs-text-primary)" }}>Top Performing</h3>
+                    <div className="space-y-3">
+                      {recipes.slice(0, 5).map((recipe, i) => (
+                        <div key={recipe._id} className="flex items-center gap-3">
+                          <span className="text-xs font-semibold w-4 shrink-0 tabular-nums" style={{ color: "var(--cs-text-tertiary)" }}>
+                            {i + 1}
+                          </span>
+                          <div
+                            className="relative h-9 w-12 rounded-lg overflow-hidden shrink-0"
+                            style={{ backgroundColor: "var(--cs-surface-3)" }}
+                          >
+                            <Image src={recipe.thumbnail} alt={recipe.title} fill className="object-cover" sizes="48px" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium truncate" style={{ color: "var(--cs-text-primary)" }}>{recipe.title}</p>
+                            <EngagementBar value={recipe.engagementScore} max={maxEngagement} color="#a7d129" />
+                            <div className="flex gap-3 mt-0.5">
+                              <span className="text-[11px]" style={{ color: "var(--cs-text-tertiary)" }}>{recipe.lovedCount} loves</span>
+                              <span className="text-[11px]" style={{ color: "var(--cs-text-tertiary)" }}>{recipe.savedCount} saves</span>
+                            </div>
+                          </div>
+                          <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: "var(--cs-accent)" }}>
+                            {recipe.engagementScore.toFixed(0)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Full table */}
+                <div
+                  className="rounded-xl overflow-hidden"
+                  style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+                >
+                  <div
+                    className="px-5 py-4"
+                    style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
+                  >
+                    <h3 className="text-sm font-semibold" style={{ color: "var(--cs-text-primary)" }}>All Recipe Engagement</h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
+                          <th className="py-2.5 pl-5 pr-3 text-left text-xs font-medium w-8" style={{ color: "var(--cs-text-tertiary)" }}>#</th>
+                          <th className="py-2.5 px-3 text-left text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Recipe</th>
+                          <th className="py-2.5 px-3 text-right text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Loves</th>
+                          <th className="py-2.5 px-3 text-right text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Saves</th>
+                          <th className="py-2.5 px-3 text-right text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Users</th>
+                          <th className="py-2.5 pl-3 pr-5 text-right text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Score</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recipes.map((recipe, i) => (
+                          <tr
+                            key={recipe._id}
+                            className="last:border-0 hover:bg-(--cs-surface-3) transition-colors duration-150"
+                            style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
+                          >
+                            <td className="py-3 pl-5 pr-3 text-xs tabular-nums" style={{ color: "var(--cs-text-tertiary)" }}>{i + 1}</td>
+                            <td className="py-3 px-3">
+                              <div className="flex items-center gap-2.5">
+                                <div
+                                  className="relative h-8 w-11 rounded-md overflow-hidden shrink-0"
+                                  style={{ backgroundColor: "var(--cs-surface-3)" }}
+                                >
+                                  <Image src={recipe.thumbnail} alt={recipe.title} fill className="object-cover" sizes="44px" />
+                                </div>
+                                <span className="text-xs font-medium line-clamp-1 max-w-[160px]" style={{ color: "var(--cs-text-primary)" }}>
+                                  {recipe.title}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-3">
+                              <div className="flex items-center justify-end gap-2">
+                                <EngagementBar value={recipe.lovedCount} max={maxLoved} color="#f87171" />
+                                <span className="text-xs tabular-nums w-8 text-right" style={{ color: "var(--cs-text-primary)" }}>{recipe.lovedCount}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-3 text-right text-xs tabular-nums" style={{ color: "var(--cs-text-primary)" }}>{recipe.savedCount}</td>
+                            <td className="py-3 px-3 text-right text-xs tabular-nums" style={{ color: "var(--cs-text-primary)" }}>{recipe.uniqueUsersCount}</td>
+                            <td className="py-3 pl-3 pr-5 text-right">
+                              <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--cs-accent)" }}>
+                                {recipe.engagementScore.toFixed(1)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
           {/* ── Earnings ── */}
           <div className="space-y-4">
             <SectionDivider title="Earnings" />
@@ -470,186 +649,7 @@ export default function ChefAnalyticsPage() {
             </div>
           </div>
 
-          {/* ── Engagement ── */}
-          <div className="space-y-4 mt-6">
-            <SectionDivider title="Recipe Engagement" />
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <MetricCard
-                icon={HeartIcon}
-                label="Loves"
-                value={totalLoves.toLocaleString()}
-                sub={`Across recipes, ${periodSub}`}
-              />
-              <MetricCard
-                icon={BookmarkSimpleIcon}
-                label="Saves"
-                value={totalSaves.toLocaleString()}
-                sub={`Across recipes, ${periodSub}`}
-              />
-              <MetricCard
-                icon={UsersIcon}
-                label="Unique Engagers"
-                value={totalUniqueUsers.toLocaleString()}
-                sub={`Distinct users, ${periodSub}`}
-              />
-              <MetricCard
-                icon={TrendUpIcon}
-                label="Engagement Score"
-                value={totalEngagement.toLocaleString()}
-                sub="Loves×2 + Saves×1.5"
-              />
-            </div>
-
-            {recipes.length === 0 ? (
-              <div
-                className="rounded-xl border-dashed py-16 flex flex-col items-center gap-2 text-center"
-                style={{ border: "1px dashed var(--cs-border-subtle)" }}
-              >
-                <p className="text-sm font-medium" style={{ color: "var(--cs-text-primary)" }}>No engagement data</p>
-                <p className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>
-                  {period === "lifetime"
-                    ? "Publish recipes to start seeing engagement metrics."
-                    : `No engagement recorded for this period.`}
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div
-                    className="rounded-xl p-5"
-                    style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-                  >
-                    <h3 className="text-sm font-semibold mb-5" style={{ color: "var(--cs-text-primary)" }}>
-                      Engagement by Recipe
-                    </h3>
-                    <div className="h-[200px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={recipes.slice(0, 7).map((r) => ({
-                            name: r.title.length > 18 ? r.title.slice(0, 18) + "…" : r.title,
-                            score: r.engagementScore,
-                          }))}
-                          layout="vertical"
-                          margin={{ left: 0, right: 8 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} horizontal={false} />
-                          <XAxis type="number" tick={{ fontSize: 10, fill: TICK_COLOR }} tickLine={false} axisLine={false} />
-                          <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: TICK_COLOR }} tickLine={false} axisLine={false} width={100} />
-                          <Tooltip
-                            cursor={{ fill: "var(--cs-surface-3)" }}
-                            contentStyle={TOOLTIP_STYLE}
-                          />
-                          <Bar dataKey="score" radius={[0, 4, 4, 0]} isAnimationActive={false}>
-                            {recipes.slice(0, 7).map((_, i) => (
-                              <Cell key={i} fill={i === 0 ? "#a7d129" : i < 3 ? "#c8e87a" : "#e4f4a8"} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  <div
-                    className="rounded-xl p-5"
-                    style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-                  >
-                    <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--cs-text-primary)" }}>Top Performing</h3>
-                    <div className="space-y-3">
-                      {recipes.slice(0, 5).map((recipe, i) => (
-                        <div key={recipe._id} className="flex items-center gap-3">
-                          <span className="text-xs font-semibold w-4 shrink-0 tabular-nums" style={{ color: "var(--cs-text-tertiary)" }}>
-                            {i + 1}
-                          </span>
-                          <div
-                            className="relative h-9 w-12 rounded-lg overflow-hidden shrink-0"
-                            style={{ backgroundColor: "var(--cs-surface-3)" }}
-                          >
-                            <Image src={recipe.thumbnail} alt={recipe.title} fill className="object-cover" sizes="48px" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium truncate" style={{ color: "var(--cs-text-primary)" }}>{recipe.title}</p>
-                            <EngagementBar value={recipe.engagementScore} max={maxEngagement} color="#a7d129" />
-                            <div className="flex gap-3 mt-0.5">
-                              <span className="text-[11px]" style={{ color: "var(--cs-text-tertiary)" }}>{recipe.lovedCount} loves</span>
-                              <span className="text-[11px]" style={{ color: "var(--cs-text-tertiary)" }}>{recipe.savedCount} saves</span>
-                            </div>
-                          </div>
-                          <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: "var(--cs-accent)" }}>
-                            {recipe.engagementScore.toFixed(0)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Full table */}
-                <div
-                  className="rounded-xl overflow-hidden"
-                  style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-                >
-                  <div
-                    className="px-5 py-4"
-                    style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
-                  >
-                    <h3 className="text-sm font-semibold" style={{ color: "var(--cs-text-primary)" }}>All Recipe Engagement</h3>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
-                          <th className="py-2.5 pl-5 pr-3 text-left text-xs font-medium w-8" style={{ color: "var(--cs-text-tertiary)" }}>#</th>
-                          <th className="py-2.5 px-3 text-left text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Recipe</th>
-                          <th className="py-2.5 px-3 text-right text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Loves</th>
-                          <th className="py-2.5 px-3 text-right text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Saves</th>
-                          <th className="py-2.5 px-3 text-right text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Users</th>
-                          <th className="py-2.5 pl-3 pr-5 text-right text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Score</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {recipes.map((recipe, i) => (
-                          <tr
-                            key={recipe._id}
-                            className="last:border-0 hover:bg-[var(--cs-surface-3)] transition-colors duration-150"
-                            style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
-                          >
-                            <td className="py-3 pl-5 pr-3 text-xs tabular-nums" style={{ color: "var(--cs-text-tertiary)" }}>{i + 1}</td>
-                            <td className="py-3 px-3">
-                              <div className="flex items-center gap-2.5">
-                                <div
-                                  className="relative h-8 w-11 rounded-md overflow-hidden shrink-0"
-                                  style={{ backgroundColor: "var(--cs-surface-3)" }}
-                                >
-                                  <Image src={recipe.thumbnail} alt={recipe.title} fill className="object-cover" sizes="44px" />
-                                </div>
-                                <span className="text-xs font-medium line-clamp-1 max-w-[160px]" style={{ color: "var(--cs-text-primary)" }}>
-                                  {recipe.title}
-                                </span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-3">
-                              <div className="flex items-center justify-end gap-2">
-                                <EngagementBar value={recipe.lovedCount} max={maxLoved} color="#f87171" />
-                                <span className="text-xs tabular-nums w-8 text-right" style={{ color: "var(--cs-text-primary)" }}>{recipe.lovedCount}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-3 text-right text-xs tabular-nums" style={{ color: "var(--cs-text-primary)" }}>{recipe.savedCount}</td>
-                            <td className="py-3 px-3 text-right text-xs tabular-nums" style={{ color: "var(--cs-text-primary)" }}>{recipe.uniqueUsersCount}</td>
-                            <td className="py-3 pl-3 pr-5 text-right">
-                              <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--cs-accent)" }}>
-                                {recipe.engagementScore.toFixed(1)}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+         
 
         </div>
       </div>

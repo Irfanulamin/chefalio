@@ -10,7 +10,6 @@ import { ImageCarousel } from "./_components/ImageCarousel";
 import { Instructions } from "./_components/Instructions";
 import { Recipe } from "@/types/recipes.type";
 import Image from "next/image";
-import { RecipeSingleSkeleton } from "@/components/User/Recipe/RecipeSingleSkeleton";
 import Link from "next/link";
 
 const DIFF: Record<string, { label: string; bg: string; color: string }> = {
@@ -200,9 +199,11 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
             </div>
           </div>
 
+          <hr className="lg:hidden my-6" style={{ borderColor: "var(--cs-border-subtle)" }} />
+
           {/* RIGHT COLUMN */}
           <div
-            className="w-full flex flex-col lg:pl-6 lg:sticky lg:top-6 h-fit"
+            className="w-full flex flex-col lg:pl-8 lg:sticky lg:top-6 h-fit"
             style={{ borderLeft: "1px solid transparent" }}
           >
             {/* Apply border only on lg */}
@@ -272,7 +273,7 @@ export default function SingleRecipePage({
   const { singleRecipe, isSingleRecipeLoading } = useSingleRecipe(id);
   const recipe = singleRecipe?.data;
 
-  if (isSingleRecipeLoading) return <RecipeSingleSkeleton />;
+  if (isSingleRecipeLoading) return null;
   if (!recipe) return <p>Recipe not found</p>;
   return <RecipeDetail recipe={recipe} />;
 }

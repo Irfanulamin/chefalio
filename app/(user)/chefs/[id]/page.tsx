@@ -115,7 +115,7 @@ export default function ChefProfilePage() {
   const setTab = (t: "recipes" | "cookbooks") => updateParams({ tab: t });
 
   const { chef, isLoading: isChefLoading } = useChef(chefId);
-  const { profile: chefProfile } = useChefProfile(chefId);
+  const { profile: chefProfile, isLoading: isChefProfileLoading } = useChefProfile(chefId);
 
   const {
     recipes,
@@ -171,30 +171,7 @@ export default function ChefProfilePage() {
     return () => observer.disconnect();
   }, [cookbooksHasNextPage, isCookbooksFetchingNextPage, fetchNextCookbooksPage]);
 
-  if (isChefLoading) {
-    return (
-      <div className="page-root">
-        <div className="page-content space-y-8">
-          <div
-            className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 rounded-2xl"
-            style={{ backgroundColor: "var(--cs-surface-2)", border: "1px solid var(--cs-border-subtle)" }}
-          >
-            <Skeleton className="w-24 h-24 rounded-full shrink-0" />
-            <div className="flex-1 space-y-3">
-              <Skeleton className="h-7 w-48" />
-              <Skeleton className="h-4 w-24" />
-              <div className="flex gap-3">
-                <Skeleton className="h-7 w-24 rounded-lg" />
-                <Skeleton className="h-7 w-28 rounded-lg" />
-              </div>
-            </div>
-          </div>
-          <Skeleton className="h-10 w-48 rounded-xl" />
-          <GridSkeleton />
-        </div>
-      </div>
-    );
-  }
+  if (isChefLoading) return null;
 
   if (!chef) {
     return (
@@ -262,9 +239,11 @@ export default function ChefProfilePage() {
               >
                 {chef.fullName}
               </h1>
-              <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
-                @{chef.username}
-              </p>
+              {chef.username && (
+                <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
+                  @{chef.username}
+                </p>
+              )}
 
               {/* Stats row */}
               <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
@@ -293,12 +272,12 @@ export default function ChefProfilePage() {
               </div>
 
               {/* Bio */}
-              {chefProfile?.bio && (
+              {!isChefProfileLoading && (
                 <p
                   className="text-sm mt-3 leading-relaxed max-w-2xl"
-                  style={{ color: "var(--cs-text-secondary)" }}
+                  style={{ color: chefProfile?.bio ? "var(--cs-text-secondary)" : "var(--cs-text-tertiary)" }}
                 >
-                  {chefProfile.bio}
+                  {chefProfile?.bio ?? "No bio yet"}
                 </p>
               )}
 
