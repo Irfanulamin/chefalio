@@ -81,6 +81,9 @@ body {
   --cs-border-default: #d4d4cf;
   --cs-accent: #A7D129;
   --cs-accent-muted: rgba(167,209,41,0.1);
+  /* Readable accent for text. The raw brand lime fails contrast on white,
+     so light mode uses a deepened olive and dark mode brightens it. */
+  --cs-accent-text: #4d6b16;
 }
 
 /* DARK MODE */
@@ -115,6 +118,7 @@ body {
   --cs-border-default: #383835;
   --cs-accent: #A7D129;
   --cs-accent-muted: rgba(167, 209, 41, 0.12);
+  --cs-accent-text: #B8DE4A;
 }
 
 @layer base {

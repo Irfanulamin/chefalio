@@ -23,6 +23,15 @@ const NAV_LINKS = [
   { label: "Chefs", href: "/chefs" },
 ] as const;
 
+// Guests land on the marketing page, so they get section anchors instead of
+// app routes they cannot reach yet.
+const GUEST_LINKS = [
+  { label: "Who it's for", href: "/#personas" },
+  { label: "Features", href: "/#features" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "FAQ", href: "/#faq" },
+] as const;
+
 export const Header = () => {
   const router = useRouter();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -60,20 +69,13 @@ export const Header = () => {
           </Link>
 
           {/* Desktop Nav */}
-          {user && (
+          {!isLoading && (
             <nav className="hidden lg:flex items-center gap-6">
-              {NAV_LINKS.map((link) => (
+              {(user ? NAV_LINKS : GUEST_LINKS).map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="relative text-sm font-medium transition-colors duration-150 group"
-                  style={{ color: "var(--cs-text-secondary)" }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.color = "var(--cs-text-primary)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.color = "var(--cs-text-secondary)")
-                  }
+                  className="relative text-sm font-medium text-[var(--cs-text-secondary)] transition-colors duration-150 hover:text-[var(--cs-text-primary)] group"
                 >
                   {link.label}
                   <span
@@ -139,9 +141,9 @@ export const Header = () => {
                   </SheetTitle>
                 </SheetHeader>
 
-                {user && (
+                {!isLoading && (
                   <nav className="flex flex-col px-6 mt-4 gap-0">
-                    {NAV_LINKS.map((link) => (
+                    {(user ? NAV_LINKS : GUEST_LINKS).map((link) => (
                       <Link
                         key={link.label}
                         href={link.href}

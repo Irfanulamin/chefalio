@@ -1,35 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { XIcon } from "@phosphor-icons/react/dist/ssr";
-import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
+import { PlusIcon } from "@phosphor-icons/react/dist/ssr";
+import { EASE, VIEWPORT } from "./motion";
 
 const QnA = [
   {
-    question: "How quickly can I start cooking with ChefAlio?",
+    question: "Does it cost anything to browse recipes?",
     answer:
-      "You can start exploring recipes in under 5 minutes! Just sign up, set your taste preferences, and our onboarding wizard guides you to recipes and meal plans tailored to you. No credit card needed for the free tier.",
+      "No. Creating an account and browsing the full recipe catalogue is free. You only pay when you decide to buy a cookbook.",
   },
   {
-    question: "Are my personal recipes and preferences private?",
+    question: "How does buying a cookbook work?",
     answer:
-      "Absolutely. We use AES-256 encryption at rest and TLS 1.3 in transit. Your saved recipes, ingredients, and taste preferences are stored securely and never shared with third parties.",
+      "Pick a cookbook, pay once, and it lands in your library straight away. There is no subscription and no recurring charge. Purchased cookbooks stay in your account, so you can come back to them whenever you cook.",
   },
   {
-    question: "Can I integrate ChefAlio with my existing kitchen apps?",
+    question: "How do I become a chef on Chefalio?",
     answer:
-      "Yes! ChefAlio works with popular tools like Notion for recipe notes, Google Calendar for meal planning, and even grocery apps. Our open API and webhooks let you connect your favorite cooking tools.",
+      "Sign up as a normal user, then submit a chef application from your account. Our team reviews it and, once approved, your chef dashboard unlocks so you can publish recipes and build cookbooks.",
   },
   {
-    question: "Do you offer premium or custom meal plans?",
+    question: "What do chefs earn from a cookbook?",
     answer:
-      "Yes. Our premium plans include exclusive recipes, personalized meal plans, shopping lists, and priority chef support. Contact our team and we’ll tailor a plan around your cooking style and goals.",
+      "Chefs set their own price on every cookbook they publish. Orders and earnings appear in the chef dashboard as they come in, alongside views, likes, and saves for each recipe.",
   },
   {
-    question: "How does the 14-day free trial work?",
+    question: "Where do my saved recipes and cookbooks live?",
     answer:
-      "Get full access to all ChefAlio premium features for 14 days, no credit card required. At the end, choose a plan that fits your cooking style — or continue using our free tier with no pressure and no surprise charges.",
+      "Everything sits in one library on your account. Recipes you save and cookbooks you have bought appear side by side, so you are not hunting across the site mid-cook.",
   },
 ];
 
@@ -41,134 +41,103 @@ export const FAQ = () => {
   return (
     <section
       id="faq"
-      className="min-h-screen flex items-center justify-center px-6 py-12 md:py-24 overflow-hidden"
+      className="px-4 py-20 md:px-8 md:py-28"
+      style={{ backgroundColor: "var(--cs-surface-2)" }}
     >
-      <div className="w-full max-w-300">
+      <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[minmax(0,340px)_1fr] lg:gap-16">
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-16 text-center"
+          viewport={VIEWPORT}
+          transition={{ duration: 0.6, ease: EASE }}
+          className="lg:sticky lg:top-24 lg:self-start"
         >
-          <h2 className="text-3xl md:text-7xl font-bold text-primary leading-[1.15] tracking-tight mb-4">
-            Questions, <br />
-            <em className="not-italic text-black dark:text-white">
-              Answered honestly.
-            </em>
+          <h2
+            className="text-3xl font-bold leading-tight tracking-tighter md:text-4xl"
+            style={{ color: "var(--cs-text-primary)" }}
+          >
+            Questions, answered plainly
           </h2>
-
-          <p className="text-base text-black/90 dark:text-white/90 font-light leading-relaxed max-w-md mx-auto">
-            Everything you need to know before you commit. Still have questions?
-            Contact our support team — we&apos;re here to help!
+          <p
+            className="mt-4 text-base leading-relaxed"
+            style={{ color: "var(--cs-text-secondary)" }}
+          >
+            Still stuck on something? Contact support and a real person will get
+            back to you.
           </p>
         </motion.div>
-        <div className="flex flex-col gap-12 lg:flex-row lg:items-center lg:gap-24">
-          <motion.div
-            initial={{ opacity: 0, x: -24 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:sticky lg:top-24 shrink-0 flex justify-center lg:justify-start"
-          >
-            <Image
-              src="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530583/about-us_mrtdt2.png"
-              alt="FAQ illustration"
-              width={260}
-              height={260}
-              className="object-contain w-50 lg:w-65 h-auto rounded-2xl"
-            />
-          </motion.div>
-          <div className="flex flex-col gap-2.5 flex-1">
-            {QnA.map((qa, i) => {
-              const isOpen = openIndex === i;
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 18 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{
-                    delay: i * 0.07,
-                    duration: 0.5,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  className={`rounded-2xl border transition-colors duration-300 cursor-pointer overflow-hidden
-                  ${
-                    isOpen
-                      ? "border-black/10 bg-black/4 dark:border-white/10 dark:bg-white/4"
-                      : "border-black/6 bg-black/2 dark:border-white/6 dark:bg-white/2 hover:dark:border-white/10 hover:dark:bg-white/[0.035]"
-                  }`}
+
+        <div className="flex flex-col gap-2.5">
+          {QnA.map((qa, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <motion.div
+                key={qa.question}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ delay: i * 0.06, duration: 0.5, ease: EASE }}
+                className="overflow-hidden rounded-2xl transition-colors duration-300"
+                style={{
+                  backgroundColor: isOpen ? "var(--cs-surface-1)" : "transparent",
+                  border: `1px solid ${
+                    isOpen ? "var(--cs-border-default)" : "var(--cs-border-subtle)"
+                  }`,
+                }}
+              >
+                <button
+                  type="button"
                   onClick={() => toggle(i)}
+                  aria-expanded={isOpen}
+                  className="flex w-full cursor-pointer items-center justify-between gap-4 rounded-2xl px-5 py-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 >
-                  <button
-                    className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-2xl"
-                    aria-expanded={isOpen}
+                  <span
+                    className="text-[15px] font-medium leading-snug"
+                    style={{
+                      color: isOpen
+                        ? "var(--cs-text-primary)"
+                        : "var(--cs-text-secondary)",
+                    }}
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <span
-                        className={`shrink-0 text-[11px] font-semibold tabular-nums transition-colors duration-300 ${isOpen ? "text-black/50 dark:text-white/50" : "text-black/20 dark:text-white/20"}`}
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <span
-                        className={`text-[15px] font-medium leading-snug transition-colors duration-200 ${isOpen ? "text-black dark:text-white" : "text-black/65 dark:text-white/65"}`}
-                      >
-                        {qa.question}
-                      </span>
-                    </div>
+                    {qa.question}
+                  </span>
 
+                  <motion.span
+                    animate={{ rotate: isOpen ? 45 : 0 }}
+                    transition={{ duration: 0.3, ease: EASE }}
+                    className="grid h-7 w-7 shrink-0 place-items-center rounded-full"
+                    style={{ border: "1px solid var(--cs-border-default)" }}
+                  >
+                    <PlusIcon
+                      size={12}
+                      weight="bold"
+                      style={{ color: "var(--cs-text-secondary)" }}
+                    />
+                  </motion.span>
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {isOpen && (
                     <motion.div
-                      animate={{ rotate: isOpen ? 0 : 45 }}
-                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                      className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center border transition-all duration-300
-                      ${isOpen ? "border-black/20 bg-black/8 dark:border-white/20 dark:bg-white/8" : "border-black/10 dark:border-white/10"}`}
+                      key="body"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.34, ease: EASE }}
+                      className="overflow-hidden"
                     >
-                      <XIcon
-                        size={12}
-                        weight="bold"
-                        className={`transition-colors duration-300 ${isOpen ? "text-black/50 dark:text-white/50" : "text-black/20 dark:text-white/20"}`}
-                      />
-                    </motion.div>
-                  </button>
-
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        key="body"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{
-                          duration: 0.36,
-                          ease: [0.22, 1, 0.36, 1],
-                        }}
-                        className="overflow-hidden"
+                      <p
+                        className="px-5 pb-5 text-sm leading-[1.75]"
+                        style={{ color: "var(--cs-text-secondary)" }}
                       >
-                        <div className="px-6 pb-5 flex flex-col gap-4">
-                          <motion.div
-                            initial={{ scaleX: 0 }}
-                            animate={{ scaleX: 1 }}
-                            transition={{
-                              duration: 0.38,
-                              ease: [0.22, 1, 0.36, 1],
-                            }}
-                            className="h-px bg-linear-to-r from-primary to-transparent origin-left"
-                          />
-                          <div className="flex gap-3.5">
-                            <div className="w-0.5 self-stretch rounded-full bg-linear-to-b from-primary to-transparent shrink-0" />
-                            <p className="text-[14px] text-black/90 dark:text-white/90 leading-[1.75] font-light">
-                              {qa.answer}
-                            </p>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })}
-          </div>
+                        {qa.answer}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

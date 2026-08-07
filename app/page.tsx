@@ -1,27 +1,33 @@
 import type { Metadata } from "next";
 import { Header } from "../components/common/Header";
-import { Banner } from "../components/Home/Banner";
-import { TextTicker } from "../components/Home/TextTicker";
+import { Hero } from "../components/Home/Hero";
+import { SocialProof } from "../components/Home/SocialProof";
+import { Personas } from "../components/Home/Personas";
 import { Features } from "../components/Home/Features";
+import { HowItWorks } from "../components/Home/HowItWorks";
 import { AboutUs } from "../components/Home/AboutUs";
 import { FAQ } from "../components/Home/FAQ";
+import { CTA } from "../components/Home/CTA";
 import Footer from "../components/common/Footer";
 
 export const metadata: Metadata = {
   title: "Chefalio",
   description:
-    "Chefalio is your home for discovering recipes and buying cookbooks from professional chefs. Share your culinary creations and grow as a cook.",
+    "Chefalio is a marketplace for chef-tested recipes and cookbooks. Browse thousands of recipes for free, buy cookbooks from professional chefs, and publish and sell your own.",
 };
 
 export default function Home() {
   return (
     <>
       <Header />
-      <Banner />
+      <Hero />
+      <SocialProof />
+      <Personas />
       <Features />
-      <TextTicker />
+      <HowItWorks />
       <AboutUs />
       <FAQ />
+      <CTA />
       <Footer />
     </>
   );

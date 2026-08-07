@@ -376,7 +376,7 @@ export default function ChefAnalyticsPage() {
                     <h3 className="text-sm font-semibold mb-5" style={{ color: "var(--cs-text-primary)" }}>
                       Engagement by Recipe
                     </h3>
-                    <div className="h-[200px]">
+                    <div className="h-50">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                           data={recipes.slice(0, 7).map((r) => ({
@@ -476,7 +476,7 @@ export default function ChefAnalyticsPage() {
                                 >
                                   <Image src={recipe.thumbnail} alt={recipe.title} fill className="object-cover" sizes="44px" />
                                 </div>
-                                <span className="text-xs font-medium line-clamp-1 max-w-[160px]" style={{ color: "var(--cs-text-primary)" }}>
+                                <span className="text-xs font-medium line-clamp-1 max-w-40" style={{ color: "var(--cs-text-primary)" }}>
                                   {recipe.title}
                                 </span>
                               </div>
@@ -555,7 +555,7 @@ export default function ChefAnalyticsPage() {
                 </span>
               </div>
 
-              <div className="h-[200px]">
+              <div className="h-50">
                 {!hasRevenue && period === "lifetime" ? (
                   <div className="flex items-center justify-center h-full text-sm" style={{ color: "var(--cs-text-tertiary)" }}>
                     No sales data yet
@@ -614,7 +614,7 @@ export default function ChefAnalyticsPage() {
                 </p>
               </div>
 
-              <div className="h-[160px]">
+              <div className="h-40">
                 {!hasOrders ? (
                   <div className="flex items-center justify-center h-full text-sm" style={{ color: "var(--cs-text-tertiary)" }}>
                     No orders in this period
