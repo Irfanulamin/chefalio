@@ -1,167 +1,163 @@
 "use client";
 
-import { useRef } from "react";
 import Image from "next/image";
-import { motion, useInView } from "framer-motion";
-import { ChefHatIcon } from "@phosphor-icons/react/dist/ssr";
-import { EASE } from "./motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { ChefHatIcon, SealCheckIcon } from "@phosphor-icons/react/dist/ssr";
+import { SPRING } from "./motion";
+import { Reveal } from "./shared/Reveal";
 
-/* Figures below are the platform's published stats. Update them here when they change. */
-const STATS = [
-  { number: "120+", label: "Recipes shared" },
-  { number: "40+", label: "Countries" },
-  { number: "20+", label: "Pro chefs" },
-  { number: "4.8", label: "Average rating" },
+/**
+ * The platform's numbers used to live here as a four-card row. They now sit
+ * in the social-proof band directly under the hero, where a visitor is
+ * actually asking "is this real?" — so this section does one job: say what
+ * Chefalio is for.
+ */
+
+const PRINCIPLES = [
+  {
+    title: "Written to cook from",
+    body: "Not to rank. Prep time, difficulty, and the whole ingredient list are visible before you commit to the dish.",
+  },
+  {
+    title: "Attributed to a person",
+    body: "Every recipe belongs to a named chef with a profile and a body of work you can read back through.",
+  },
+  {
+    title: "Paid for properly",
+    body: "Chefs price their own cookbooks and keep the audience. The platform doesn't sit between them and the people cooking.",
+  },
 ];
 
-function StatCard({
-  number,
-  label,
-  delay,
-}: {
-  number: string;
-  label: string;
-  delay: number;
-}) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, scale: 0.9, y: 18 }}
-      animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, ease: EASE, delay }}
-      className="flex flex-col items-center justify-center rounded-2xl px-6 py-7 text-center"
-      style={{
-        backgroundColor: "var(--cs-surface-2)",
-        border: "1px solid var(--cs-border-subtle)",
-      }}
-    >
-      <span
-        className="text-3xl font-bold tracking-tight tabular-nums md:text-4xl"
-        style={{ color: "var(--cs-text-primary)" }}
-      >
-        {number}
-      </span>
-      <span
-        className="mt-1.5 text-xs font-medium uppercase tracking-[0.12em]"
-        style={{ color: "var(--cs-text-tertiary)" }}
-      >
-        {label}
-      </span>
-    </motion.div>
-  );
-}
-
 export const AboutUs = () => {
-  const missionRef = useRef(null);
-  const missionInView = useInView(missionRef, { once: true, margin: "-100px" });
+  const reduce = useReducedMotion();
 
   return (
     <section
       id="about"
-      className="overflow-hidden py-20 md:py-28"
-      style={{ backgroundColor: "var(--cs-surface-2)" }}
+      className="surface-raised overflow-hidden py-24 md:py-32"
     >
-      <div className="mx-auto max-w-6xl px-4 md:px-8">
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          {STATS.map((s, i) => (
-            <StatCard key={s.label} {...s} delay={i * 0.08} />
-          ))}
-        </div>
-
-        <div ref={missionRef} className="mt-20 grid items-center gap-12 md:mt-28 md:grid-cols-2 md:gap-16">
-          <motion.div
-            initial={{ opacity: 0, x: -36 }}
-            animate={missionInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, ease: EASE }}
-            className="relative hidden h-90 md:block"
-          >
-            <div
-              className="absolute inset-0 flex flex-col justify-between rounded-3xl p-8"
+      <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+          {/* Quote card */}
+          <Reveal distance={26}>
+            <motion.div
+              whileHover={reduce ? undefined : { y: -4 }}
+              transition={SPRING.snappy}
+              className="relative overflow-hidden rounded-3xl p-8 md:p-10"
               style={{
-                backgroundColor: "var(--cs-surface-2)",
-                border: "1px solid var(--cs-border-subtle)",
+                background:
+                  "linear-gradient(155deg, color-mix(in oklab, var(--primary) 72%, transparent), color-mix(in oklab, var(--accent) 94%, transparent))",
+                boxShadow: "var(--cs-shadow-float)",
               }}
             >
-              <ChefHatIcon
-                weight="duotone"
-                size={28}
-                style={{ color: "var(--cs-accent-text)" }}
-              />
+              <ChefHatIcon size={30} weight="fill" style={{ color: "#12200a", opacity: 0.5 }} />
 
-              <div>
-                <p
-                  className="text-2xl font-semibold leading-snug"
-                  style={{ color: "var(--cs-text-primary)" }}
+              <p
+                className="mt-8 text-2xl font-semibold md:text-[1.75rem]"
+                style={{
+                  color: "#12200a",
+                  lineHeight: 1.25,
+                  letterSpacing: "-0.025em",
+                }}
+              >
+                &ldquo;The best meals begin with curiosity and end with
+                connection.&rdquo;
+              </p>
+
+              <div className="mt-8 flex items-center gap-3">
+                <span
+                  className="h-11 w-11 overflow-hidden rounded-full"
+                  style={{ border: "2px solid rgba(255,255,255,0.5)" }}
                 >
-                  &ldquo;The best meals begin with{" "}
-                  <span style={{ color: "var(--cs-accent-text)" }}>curiosity</span> and end
-                  with <span style={{ color: "var(--cs-accent-text)" }}>connection</span>.&rdquo;
-                </p>
-
-                <div className="mt-6 flex items-center gap-3">
-                  <span
-                    className="h-9 w-9 overflow-hidden rounded-full"
-                    style={{ backgroundColor: "var(--cs-accent-muted)" }}
+                  <Image
+                    src="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530583/about-us_mrtdt2.png"
+                    width={44}
+                    height={44}
+                    alt=""
+                    className="h-11 w-11 object-cover"
+                  />
+                </span>
+                <div>
+                  <p
+                    className="type-caption font-semibold"
+                    style={{ color: "#12200a" }}
                   >
-                    <Image
-                      src="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530583/about-us_mrtdt2.png"
-                      width={36}
-                      height={36}
-                      alt=""
-                      className="h-9 w-9 object-cover"
-                    />
-                  </span>
-                  <div>
-                    <p
-                      className="text-sm font-medium"
-                      style={{ color: "var(--cs-text-primary)" }}
-                    >
-                      Sofia Anderson
-                    </p>
-                    <p className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>
-                      Co-founder and Head Chef
-                    </p>
-                  </div>
+                    Sofia Anderson
+                  </p>
+                  <p
+                    className="type-micro"
+                    style={{ color: "rgba(18,32,10,0.68)" }}
+                  >
+                    Co-founder and Head Chef
+                  </p>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </Reveal>
 
-          <motion.div
-            initial={{ opacity: 0, x: 36 }}
-            animate={missionInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, ease: EASE, delay: 0.1 }}
-          >
-            <h2
-              className="text-3xl font-bold leading-tight tracking-tighter md:text-4xl"
-              style={{ color: "var(--cs-text-primary)" }}
-            >
-              Built to close the gap between{" "}
-              <span style={{ color: "var(--cs-accent-text)" }}>
-                professional kitchens and home cooks
+          {/* Mission */}
+          <div>
+            <Reveal distance={16}>
+              <span
+                className="type-label"
+                style={{ color: "var(--cs-accent-text)" }}
+              >
+                Why we built it
               </span>
-            </h2>
+            </Reveal>
 
-            <p
-              className="mt-5 text-base leading-relaxed"
-              style={{ color: "var(--cs-text-secondary)" }}
-            >
-              Most recipes online are written to rank, not to cook from. Chefalio
-              works the other way round. Every recipe belongs to a chef you can
-              trace, every cookbook is something they chose to put their name on.
-            </p>
+            <Reveal delay={0.05}>
+              <h2
+                className="type-title mt-3"
+                style={{ color: "var(--cs-text-primary)" }}
+              >
+                Closing the gap between{" "}
+                <span style={{ color: "var(--cs-accent-text)" }}>
+                  professional kitchens
+                </span>{" "}
+                and home cooks
+              </h2>
+            </Reveal>
 
-            <p
-              className="mt-4 text-base leading-relaxed"
-              style={{ color: "var(--cs-text-secondary)" }}
-            >
-              That means chefs get paid for the work, and cooks get instructions
-              that hold up on a weeknight.
-            </p>
-          </motion.div>
+            <Reveal delay={0.1}>
+              <p
+                className="type-body-lg mt-5"
+                style={{ color: "var(--cs-text-secondary)" }}
+              >
+                Most recipes online are written to rank, not to cook from.
+                Chefalio works the other way round.
+              </p>
+            </Reveal>
+
+            <ul className="mt-9 space-y-6">
+              {PRINCIPLES.map((p, i) => (
+                <Reveal key={p.title} delay={0.15 + i * 0.06} as="li" distance={16}>
+                  <div className="flex gap-3.5">
+                    <SealCheckIcon
+                      size={20}
+                      weight="fill"
+                      className="mt-0.5 shrink-0"
+                      style={{ color: "var(--cs-accent-text)" }}
+                    />
+                    <div>
+                      <h3
+                        className="type-subheading"
+                        style={{ color: "var(--cs-text-primary)" }}
+                      >
+                        {p.title}
+                      </h3>
+                      <p
+                        className="type-caption mt-1.5"
+                        style={{ color: "var(--cs-text-secondary)" }}
+                      >
+                        {p.body}
+                      </p>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </section>

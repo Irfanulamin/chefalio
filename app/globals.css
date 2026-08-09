@@ -6,6 +6,14 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Reduced motion is a vestibular setting, not a stylistic one — a smooth
+   scroll-to-anchor is exactly the kind of large travel it asks us to drop. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 body {
@@ -84,6 +92,24 @@ body {
   /* Readable accent for text. The raw brand lime fails contrast on white,
      so light mode uses a deepened olive and dark mode brightens it. */
   --cs-accent-text: #4d6b16;
+
+  /* ── Materials ────────────────────────────────────────────────────────
+     Translucent layers that float above content rather than consuming a
+     strip of it. Weight encodes hierarchy: thin for chips and controls,
+     thick for structural chrome. Never stack thin on thin. */
+  --cs-material-thin: rgba(255, 255, 255, 0.5);
+  --cs-material-regular: rgba(255, 255, 255, 0.68);
+  --cs-material-thick: rgba(255, 255, 255, 0.86);
+  --cs-material-edge: rgba(255, 255, 255, 0.7);
+  --cs-material-blur: 20px;
+  --cs-scrim: rgba(17, 17, 16, 0.28);
+
+  /* Bigger surfaces read as thicker: more blur, deeper shadow. */
+  --cs-shadow-chip: 0 1px 2px rgba(17, 17, 16, 0.05);
+  --cs-shadow-card: 0 1px 2px rgba(17, 17, 16, 0.04),
+    0 10px 28px -14px rgba(17, 17, 16, 0.14);
+  --cs-shadow-float: 0 2px 6px rgba(17, 17, 16, 0.06),
+    0 28px 68px -28px rgba(17, 17, 16, 0.3);
 }
 
 /* DARK MODE */
@@ -119,6 +145,22 @@ body {
   --cs-accent: #A7D129;
   --cs-accent-muted: rgba(167, 209, 41, 0.12);
   --cs-accent-text: #B8DE4A;
+
+  /* Materials — dark overrides. Dark materials lean on luminance rather
+     than white veil, and keep a bright top edge so the surface still
+     reads as glass catching light. */
+  --cs-material-thin: rgba(28, 28, 26, 0.5);
+  --cs-material-regular: rgba(22, 22, 20, 0.66);
+  --cs-material-thick: rgba(16, 16, 15, 0.86);
+  --cs-material-edge: rgba(255, 255, 255, 0.08);
+  --cs-material-blur: 22px;
+  --cs-scrim: rgba(0, 0, 0, 0.5);
+
+  --cs-shadow-chip: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --cs-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35),
+    0 10px 28px -14px rgba(0, 0, 0, 0.6);
+  --cs-shadow-float: 0 2px 6px rgba(0, 0, 0, 0.4),
+    0 28px 68px -28px rgba(0, 0, 0, 0.8);
 }
 
 @layer base {
@@ -208,4 +250,276 @@ body {
 .dark .badge-error {
   background-color: rgba(239, 68, 68, 0.15);
   color: #fca5a5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Landing foundations
+   Type and materials for the marketing page. These are deliberately
+   unlayered plain CSS, so don't pair them with a conflicting Tailwind
+   size utility (`text-5xl` etc.) — the class here would win.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Type ──────────────────────────────────────────────────────────────
+   Tracking is size-specific, never one value for everything: large text
+   reads too loose as it grows, so it tightens; small text opens up a
+   touch for legibility. Leading moves inversely to size. Sizes are in
+   rem and scale with the user's text-size setting. */
+
+.type-display {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  font-optical-sizing: auto;
+  text-wrap: balance;
+}
+
+.type-title {
+  font-size: clamp(1.875rem, 4vw, 3rem);
+  line-height: 1.07;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  font-optical-sizing: auto;
+  text-wrap: balance;
+}
+
+.type-heading {
+  font-size: clamp(1.375rem, 2.2vw, 1.75rem);
+  line-height: 1.18;
+  letter-spacing: -0.021em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.type-subheading {
+  font-size: 1.0625rem;
+  line-height: 1.35;
+  letter-spacing: -0.014em;
+  font-weight: 600;
+}
+
+.type-body-lg {
+  font-size: clamp(1.0625rem, 1.3vw, 1.1875rem);
+  line-height: 1.55;
+  letter-spacing: -0.011em;
+  text-wrap: pretty;
+}
+
+.type-body {
+  font-size: 1rem;
+  line-height: 1.62;
+  letter-spacing: -0.004em;
+  text-wrap: pretty;
+}
+
+.type-caption {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  letter-spacing: 0.004em;
+}
+
+.type-micro {
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  letter-spacing: 0.012em;
+}
+
+/* Uppercase eyebrows need real tracking or the caps collide. */
+.type-label {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* ── Section surfaces ──────────────────────────────────────────────────
+   The page is one continuous surface, not a stack of differently
+   coloured slabs. `surface-raised` lifts a section slightly and fades
+   back to the base at both edges, so neighbouring sections meet without
+   a visible seam and the whole page reads as one material. Alternate
+   base / raised down the page. */
+
+/* The light field belongs to the *page*, not to each section. Painting a
+   gradient per section restarts it at every boundary, which is exactly
+   what makes the seams visible. One layer spans the whole document and
+   the sections sit on it as translucent bands, so the light carries
+   straight through the joins. */
+
+.landing-root {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--cs-surface-1);
+  background-image:
+    radial-gradient(
+      ellipse 70% 12% at 8% 3%,
+      var(--cs-accent-muted),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 10% at 94% 21%,
+      color-mix(in oklab, var(--primary) 8%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 65% 11% at 6% 44%,
+      var(--cs-accent-muted),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 10% at 96% 63%,
+      color-mix(in oklab, var(--secondary) 9%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 70% 12% at 50% 88%,
+      var(--cs-accent-muted),
+      transparent 62%
+    );
+}
+
+/* Bands, not blocks. `surface-raised` tints translucently and fades out at
+   both edges, so the page-level light stays continuous underneath it. */
+
+.surface-base {
+  background-color: transparent;
+}
+
+.surface-raised {
+  background-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in oklab, var(--cs-surface-2) 72%, transparent) 11%,
+    color-mix(in oklab, var(--cs-surface-2) 72%, transparent) 89%,
+    transparent 100%
+  );
+}
+
+/* The same light field, tuned for a single screen rather than a long
+   scroll — used behind the auth pages so signing in feels like part of
+   the same product, not a bare form on a white page. */
+.auth-field {
+  background-color: var(--cs-surface-2);
+  background-image:
+    radial-gradient(
+      ellipse 80% 55% at 12% 0%,
+      var(--cs-accent-muted),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 70% 55% at 92% 100%,
+      color-mix(in oklab, var(--primary) 8%, transparent),
+      transparent 62%
+    );
+}
+
+/* An extra pool overhead, for a section that needs more warmth than the
+   base carries on its own. Requires `position: relative` on the section. */
+.surface-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 55% 45% at 50% 0%,
+    var(--cs-accent-muted),
+    transparent 70%
+  );
+}
+
+/* ── Materials ─────────────────────────────────────────────────────────
+   A floating layer with content passing underneath. The bright top edge
+   is the light catching the material; the shadow is what separates it. */
+
+.material,
+.material-thin,
+.material-thick {
+  -webkit-backdrop-filter: blur(var(--cs-material-blur)) saturate(180%);
+  backdrop-filter: blur(var(--cs-material-blur)) saturate(180%);
+  border: 1px solid var(--cs-material-edge);
+}
+
+.material-thin {
+  background-color: var(--cs-material-thin);
+  --cs-material-blur: 12px;
+  box-shadow: var(--cs-shadow-chip);
+}
+
+.material {
+  background-color: var(--cs-material-regular);
+  box-shadow: var(--cs-shadow-card);
+}
+
+.material-thick {
+  background-color: var(--cs-material-thick);
+  --cs-material-blur: 30px;
+  box-shadow: var(--cs-shadow-float);
+}
+
+/* Vibrancy: text over a translucent, shifting backdrop needs more weight
+   and a hair more tracking than the same text on a solid surface. */
+.vibrant {
+  color: var(--cs-text-primary);
+  font-weight: 500;
+  letter-spacing: 0.002em;
+}
+
+.vibrant-secondary {
+  color: var(--cs-text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.004em;
+}
+
+/* Scroll edge effect — a soft fade where floating chrome overlaps
+   content, in place of a hard 1px divider. */
+.scroll-edge {
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--cs-surface-1) 70%, transparent),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+  mask-image: linear-gradient(to bottom, #000, transparent);
+}
+
+/* ── Accessibility fallbacks ───────────────────────────────────────────
+   Reduced transparency means frostier and solid, not blur-lite.
+   Increased contrast means near-solid with a defined border. */
+
+@media (prefers-reduced-transparency: reduce) {
+  .material,
+  .material-thin,
+  .material-thick {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: var(--cs-surface-1);
+    border-color: var(--cs-border-subtle);
+  }
+
+  .material-thin {
+    background-color: var(--cs-surface-2);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .material,
+  .material-thin,
+  .material-thick {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: var(--cs-surface-1);
+    border-color: var(--cs-text-secondary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Nothing on this page should travel; opacity and colour still carry
+     the meaning. Components handle their own spring opt-outs — this is
+     the backstop for CSS-driven motion. */
+  .motion-safe-only {
+    transition: opacity 200ms ease !important;
+    transform: none !important;
+    animation: none !important;
+  }
 }

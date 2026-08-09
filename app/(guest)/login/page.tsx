@@ -1,8 +1,13 @@
 "use client";
 
 import AuthLayout from "@/components/common/AuthLayout";
+import {
+  AuthDivider,
+  AuthLink,
+  AuthNotice,
+  AuthSubmit,
+} from "@/components/common/AuthBits";
 import { FormField } from "@/components/common/FormField";
-import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import { OAuthButtons } from "@/components/common/OAuthButtons";
 import { useForm } from "@tanstack/react-form";
@@ -12,7 +17,10 @@ import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { ArrowClockwiseIcon } from "@phosphor-icons/react/dist/ssr";
+import {
+  ArrowClockwiseIcon,
+  SignInIcon,
+} from "@phosphor-icons/react/dist/ssr";
 
 function LoginForm() {
   const { login, resendVerification, isResendingVerification } = useAuth();
@@ -86,38 +94,42 @@ function LoginForm() {
       "Your account has been deactivated. Please contact support.",
   };
   const oauthErrorMessage = oauthError
-    ? (oauthErrorMessages[oauthError] ?? "Something went wrong. Please try again.")
+    ? (oauthErrorMessages[oauthError] ??
+      "Something went wrong. Please try again.")
     : null;
 
   return (
     <AuthLayout
+      icon={SignInIcon}
+      title="Welcome back"
+      subtitle="Sign in to get to your library, your saved recipes, and your dashboard."
       imageSrc="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530582/login_wcwztq.png"
       imageAlt="Chefalio Login"
+      footer={
+        <>
+          Don&apos;t have an account? <AuthLink href="/register">Sign up</AuthLink>
+        </>
+      }
     >
-      <div>
-        <h1 className="text-2xl font-semibold mb-2" style={{ color: "var(--cs-text-primary)" }}>Sign In</h1>
-
-        {justReset ? (
-          <div className="rounded-lg px-4 py-3 text-sm" style={{ backgroundColor: "var(--cs-accent-muted)", color: "var(--cs-accent)", border: "1px solid var(--cs-accent)" }}>
+      <div className="space-y-5">
+        {justReset && (
+          <AuthNotice tone="success">
             Password reset successfully. Sign in with your new password.
-          </div>
-        ) : oauthErrorMessage ? (
-          <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
-            {oauthErrorMessage}
-          </div>
-        ) : (
-          <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
-            Welcome back! Please enter your details to sign in.
-          </p>
+          </AuthNotice>
+        )}
+
+        {oauthErrorMessage && (
+          <AuthNotice tone="error">{oauthErrorMessage}</AuthNotice>
         )}
 
         {unverifiedLogin && (
-          <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 space-y-2 mt-2">
-            <p className="text-sm text-amber-800 dark:text-amber-300">
-              Your email is not verified. Please check your inbox or request a new link.
+          <AuthNotice tone="warning">
+            <p>
+              Your email is not verified. Check your inbox, or request a new
+              link.
             </p>
             {resendSent ? (
-              <p className="text-xs text-emerald-600 dark:text-emerald-400">
+              <p className="mt-1.5 font-medium">
                 A new verification link has been sent if the account exists.
               </p>
             ) : (
@@ -125,72 +137,56 @@ function LoginForm() {
                 type="button"
                 onClick={handleResendFromLogin}
                 disabled={isResendingVerification}
-                className="flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 transition-colors"
+                className="mt-2 inline-flex cursor-pointer items-center gap-1.5 font-semibold underline underline-offset-2 disabled:opacity-60"
               >
                 <ArrowClockwiseIcon
                   size={13}
                   className={isResendingVerification ? "animate-spin" : ""}
                 />
-                {isResendingVerification ? "Sending…" : "Resend verification email"}
+                {isResendingVerification
+                  ? "Sending…"
+                  : "Resend verification email"}
               </button>
             )}
-          </div>
+          </AuthNotice>
         )}
-      </div>
-      <div className="h-px mb-6" style={{ backgroundColor: "var(--cs-border-subtle)" }} />
-      <form
-        className={`space-y-4 transition-opacity duration-200 ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-      >
-        <FieldGroup>
-          {fieldDefinitions.map((fieldDef) => (
-            <FormField key={fieldDef.name} form={form} {...fieldDef} />
-          ))}
-        </FieldGroup>
-        <p className="text-sm text-right">
-          <Link
-            href="/forgot-password"
-            className="text-sm text-gray-400 hover:text-black dark:hover:text-white transition-colors duration-200 underline underline-offset-4 decoration-dashed decoration-gray-400 hover:decoration-black dark:hover:decoration-white"
-          >
-            Forgot your password?
-          </Link>
-        </p>
-        <Button
-          type="submit"
-          className="w-full rounded-lg py-5 tracking-wide"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Signing in..." : "Sign In"}
-        </Button>
-      </form>
 
-      <div className="relative my-2">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full" style={{ borderTop: "1px solid var(--cs-border-default)" }} />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="px-2" style={{ backgroundColor: "var(--cs-surface-1)", color: "var(--cs-text-tertiary)" }}>
-            or continue with
-          </span>
+        <form
+          className={`space-y-5 transition-opacity duration-200 ${
+            isSubmitting ? "pointer-events-none opacity-60" : ""
+          }`}
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+        >
+          <FieldGroup>
+            {fieldDefinitions.map((fieldDef) => (
+              <FormField key={fieldDef.name} form={form} {...fieldDef} />
+            ))}
+          </FieldGroup>
+
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="type-caption font-medium transition-opacity duration-150 hover:opacity-70"
+              style={{ color: "var(--cs-text-secondary)" }}
+            >
+              Forgot your password?
+            </Link>
+          </div>
+
+          <AuthSubmit pending={isSubmitting} pendingLabel="Signing in…">
+            Sign in
+          </AuthSubmit>
+        </form>
+
+        <div>
+          <AuthDivider label="or continue with" />
+          <OAuthButtons />
         </div>
       </div>
-
-      <OAuthButtons />
-
-      <p className="text-sm text-center" style={{ color: "var(--cs-text-secondary)" }}>
-        Don&apos;t have an account?{" "}
-        <Link
-          href="/register"
-          className="font-medium hover:underline"
-          style={{ color: "var(--cs-accent)" }}
-        >
-          Sign up
-        </Link>
-      </p>
     </AuthLayout>
   );
 }

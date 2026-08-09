@@ -7,12 +7,9 @@ export default function GuestLayout({
 }) {
   return (
     <GuestOnlyRoute>
-      <div
-        className="min-h-screen"
-        style={{ backgroundColor: "var(--cs-surface-1)" }}
-      >
-        {children}
-      </div>
+      {/* No background here — each auth screen paints its own light field,
+          and an opaque wrapper would sit on top of it. */}
+      <div className="min-h-svh">{children}</div>
     </GuestOnlyRoute>
   );
 }

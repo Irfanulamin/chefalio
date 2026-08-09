@@ -1,71 +1,26 @@
 "use client";
 
 import AuthLayout from "@/components/common/AuthLayout";
+import {
+  AuthDivider,
+  AuthLink,
+  AuthResult,
+  AuthSecondary,
+  AuthSubmit,
+} from "@/components/common/AuthBits";
 import { FormField } from "@/components/common/FormField";
-import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import { OAuthButtons } from "@/components/common/OAuthButtons";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { useAuth } from "@/hooks/useAuth";
-import Link from "next/link";
 import { useState } from "react";
-import { EnvelopeSimpleIcon, ArrowClockwiseIcon } from "@phosphor-icons/react/dist/ssr";
-
-function CheckEmailState({
-  email,
-  onResend,
-  isResending,
-}: {
-  email: string;
-  onResend: () => void;
-  isResending: boolean;
-}) {
-  return (
-    <div className="flex flex-col items-center text-center gap-5 py-4">
-      <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
-        <EnvelopeSimpleIcon size={32} weight="duotone" className="text-primary" />
-      </span>
-
-      <div className="space-y-1.5">
-        <h2 className="text-xl font-semibold text-foreground">Check your email</h2>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-xs">
-          We sent a verification link to{" "}
-          <span className="font-medium text-foreground">{email}</span>.
-          Click the link to activate your account.
-        </p>
-      </div>
-
-      <div className="w-full space-y-3 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full rounded-lg gap-2"
-          onClick={onResend}
-          disabled={isResending}
-        >
-          <ArrowClockwiseIcon size={16} className={isResending ? "animate-spin" : ""} />
-          {isResending ? "Sending..." : "Resend verification email"}
-        </Button>
-
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Already verified?{" "}
-          <Link
-            href="/login"
-            className="text-primary font-medium hover:underline"
-          >
-            Sign in
-          </Link>
-        </p>
-      </div>
-
-      <p className="text-xs text-zinc-400 dark:text-zinc-500">
-        Check your spam folder if you don&apos;t see the email within a few minutes.
-      </p>
-    </div>
-  );
-}
+import {
+  ArrowClockwiseIcon,
+  EnvelopeSimpleIcon,
+  UserPlusIcon,
+} from "@phosphor-icons/react/dist/ssr";
 
 export default function RegisterPage() {
   const { register, resendVerification, isResendingVerification } = useAuth();
@@ -117,78 +72,127 @@ export default function RegisterPage() {
     }
   };
 
+  // Post-submit is a different screen, so it gets a different heading rather
+  // than the form's heading sitting over an empty card.
+  if (registeredEmail) {
+    return (
+      <AuthLayout
+        icon={EnvelopeSimpleIcon}
+        title="One more step"
+        subtitle="Your account exists — it just needs verifying before you can sign in."
+        imageSrc="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530581/register_eu7mjh.png"
+        imageAlt="Chefalio Register"
+        footer={
+          <>
+            Already verified? <AuthLink href="/login">Sign in</AuthLink>
+          </>
+        }
+      >
+        <AuthResult
+          icon={EnvelopeSimpleIcon}
+          title="Check your email"
+          actions={
+            <>
+              <AuthSecondary
+                onClick={handleResend}
+                disabled={isResendingVerification}
+              >
+                <ArrowClockwiseIcon
+                  size={15}
+                  className={isResendingVerification ? "animate-spin" : ""}
+                />
+                {isResendingVerification
+                  ? "Sending…"
+                  : "Resend verification email"}
+              </AuthSecondary>
+              <p
+                className="type-micro"
+                style={{ color: "var(--cs-text-tertiary)" }}
+              >
+                Nothing after a few minutes? Check your spam folder.
+              </p>
+            </>
+          }
+        >
+          We sent a verification link to{" "}
+          <span
+            className="font-semibold"
+            style={{ color: "var(--cs-text-primary)" }}
+          >
+            {registeredEmail}
+          </span>
+          . Click it to activate your account.
+        </AuthResult>
+      </AuthLayout>
+    );
+  }
+
   return (
     <AuthLayout
+      wide
+      icon={UserPlusIcon}
+      title="Create your account"
+      subtitle="Free to browse, free to save. You only pay for cookbooks you want to keep."
       imageSrc="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530581/register_eu7mjh.png"
       imageAlt="Chefalio Register"
-    >
-      {registeredEmail ? (
-        <CheckEmailState
-          email={registeredEmail}
-          onResend={handleResend}
-          isResending={isResendingVerification}
-        />
-      ) : (
+      footer={
         <>
-          <div>
-            <h1 className="text-2xl font-semibold" style={{ color: "var(--cs-text-primary)" }}>Create Account</h1>
-            <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
-              Please enter your details to create an account.
-            </p>
-          </div>
-          <div className="h-px mb-6" style={{ backgroundColor: "var(--cs-border-subtle)" }} />
-          <form
-            className={`space-y-4 transition-opacity duration-200 ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              form.handleSubmit();
-            }}
-          >
-            <FieldGroup>
-              {[
-                { name: "fullName", label: "Full Name", placeholder: "Enter your full name", type: "text" },
-                { name: "username", label: "Username", placeholder: "Enter your username", type: "text" },
-                { name: "email", label: "Email", placeholder: "Enter your email", type: "email" },
-                { name: "password", label: "Password", placeholder: "Enter your password", type: "password" },
-              ].map((fieldDef) => (
-                <FormField key={fieldDef.name} form={form} {...fieldDef} />
-              ))}
-            </FieldGroup>
-            <Button
-              type="submit"
-              className="w-full rounded-lg py-5"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Creating account..." : "Create Account"}
-            </Button>
-          </form>
-
-          <div className="relative my-2">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full" style={{ borderTop: "1px solid var(--cs-border-default)" }} />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="px-2" style={{ backgroundColor: "var(--cs-surface-1)", color: "var(--cs-text-tertiary)" }}>
-                or sign up with
-              </span>
-            </div>
-          </div>
-
-          <OAuthButtons />
-
-          <p className="text-sm text-center" style={{ color: "var(--cs-text-secondary)" }}>
-            Already have an account?{" "}
-            <Link
-              href="/login"
-              className="font-medium hover:underline"
-              style={{ color: "var(--cs-accent)" }}
-            >
-              Sign in
-            </Link>
-          </p>
+          Already have an account? <AuthLink href="/login">Sign in</AuthLink>
         </>
-      )}
+      }
+    >
+      <div className="space-y-5">
+        <form
+          className={`space-y-5 transition-opacity duration-200 ${
+            isSubmitting ? "pointer-events-none opacity-60" : ""
+          }`}
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+        >
+          <FieldGroup>
+            {[
+              {
+                name: "fullName",
+                label: "Full Name",
+                placeholder: "Enter your full name",
+                type: "text",
+              },
+              {
+                name: "username",
+                label: "Username",
+                placeholder: "Enter your username",
+                type: "text",
+              },
+              {
+                name: "email",
+                label: "Email",
+                placeholder: "Enter your email",
+                type: "email",
+              },
+              {
+                name: "password",
+                label: "Password",
+                placeholder: "At least 6 characters",
+                type: "password",
+              },
+            ].map((fieldDef) => (
+              <FormField key={fieldDef.name} form={form} {...fieldDef} />
+            ))}
+          </FieldGroup>
+
+          <AuthSubmit pending={isSubmitting} pendingLabel="Creating account…">
+            Create account
+          </AuthSubmit>
+        </form>
+
+        <div>
+          <AuthDivider label="or sign up with" />
+          <OAuthButtons />
+        </div>
+      </div>
     </AuthLayout>
   );
 }

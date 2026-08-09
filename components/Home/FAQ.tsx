@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { PlusIcon } from "@phosphor-icons/react/dist/ssr";
-import { EASE, VIEWPORT } from "./motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import Link from "next/link";
+import {
+  ChatCircleDotsIcon,
+  PlusIcon,
+} from "@phosphor-icons/react/dist/ssr";
+import { SPRING } from "./motion";
+import { Reveal } from "./shared/Reveal";
 
 const QnA = [
   {
@@ -35,107 +40,161 @@ const QnA = [
 
 export const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const reduce = useReducedMotion();
 
   const toggle = (i: number) => setOpenIndex(openIndex === i ? null : i);
 
   return (
     <section
       id="faq"
-      className="px-4 py-20 md:px-8 md:py-28"
-      style={{ backgroundColor: "var(--cs-surface-2)" }}
+      className="surface-base py-24 md:py-32"
     >
-      <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[minmax(0,340px)_1fr] lg:gap-16">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={VIEWPORT}
-          transition={{ duration: 0.6, ease: EASE }}
-          className="lg:sticky lg:top-24 lg:self-start"
-        >
-          <h2
-            className="text-3xl font-bold leading-tight tracking-tighter md:text-4xl"
-            style={{ color: "var(--cs-text-primary)" }}
-          >
-            Questions, answered plainly
-          </h2>
-          <p
-            className="mt-4 text-base leading-relaxed"
-            style={{ color: "var(--cs-text-secondary)" }}
-          >
-            Still stuck on something? Contact support and a real person will get
-            back to you.
-          </p>
-        </motion.div>
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 md:px-8 lg:grid-cols-[minmax(0,340px)_1fr] lg:gap-16">
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          <Reveal distance={16}>
+            <span
+              className="type-label"
+              style={{ color: "var(--cs-accent-text)" }}
+            >
+              FAQ
+            </span>
+          </Reveal>
+
+          <Reveal delay={0.05}>
+            <h2
+              className="type-title mt-3"
+              style={{ color: "var(--cs-text-primary)" }}
+            >
+              Questions, answered plainly
+            </h2>
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            {/* A dead end is the one thing a FAQ must not be — so it ends
+                with somewhere to go. */}
+            <Link
+              href="/#about"
+              className="mt-7 flex items-start gap-3 rounded-2xl p-4 transition-colors duration-150"
+              style={{
+                backgroundColor: "var(--cs-surface-1)",
+                border: "1px solid var(--cs-border-subtle)",
+              }}
+            >
+              <span
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-xl"
+                style={{ backgroundColor: "var(--cs-accent-muted)" }}
+              >
+                <ChatCircleDotsIcon
+                  size={17}
+                  weight="fill"
+                  style={{ color: "var(--cs-accent-text)" }}
+                />
+              </span>
+              <div>
+                <p
+                  className="type-caption font-semibold"
+                  style={{ color: "var(--cs-text-primary)" }}
+                >
+                  Still stuck on something?
+                </p>
+                <p
+                  className="type-micro mt-1"
+                  style={{ color: "var(--cs-text-secondary)" }}
+                >
+                  Contact support and a real person will get back to you.
+                </p>
+              </div>
+            </Link>
+          </Reveal>
+        </div>
 
         <div className="flex flex-col gap-2.5">
           {QnA.map((qa, i) => {
             const isOpen = openIndex === i;
             return (
-              <motion.div
-                key={qa.question}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ delay: i * 0.06, duration: 0.5, ease: EASE }}
-                className="overflow-hidden rounded-2xl transition-colors duration-300"
-                style={{
-                  backgroundColor: isOpen ? "var(--cs-surface-1)" : "transparent",
-                  border: `1px solid ${
-                    isOpen ? "var(--cs-border-default)" : "var(--cs-border-subtle)"
-                  }`,
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => toggle(i)}
-                  aria-expanded={isOpen}
-                  className="flex w-full cursor-pointer items-center justify-between gap-4 rounded-2xl px-5 py-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+              <Reveal key={qa.question} delay={i * 0.05} distance={16}>
+                <motion.div
+                  className="overflow-hidden rounded-2xl"
+                  animate={{
+                    backgroundColor: isOpen
+                      ? "var(--cs-surface-1)"
+                      : "var(--cs-surface-3)",
+                  }}
+                  transition={SPRING.default}
+                  style={{
+                    border: `1px solid ${
+                      isOpen
+                        ? "var(--cs-border-default)"
+                        : "var(--cs-border-subtle)"
+                    }`,
+                    boxShadow: isOpen ? "var(--cs-shadow-card)" : "none",
+                  }}
                 >
-                  <span
-                    className="text-[15px] font-medium leading-snug"
-                    style={{
-                      color: isOpen
-                        ? "var(--cs-text-primary)"
-                        : "var(--cs-text-secondary)",
-                    }}
+                  <motion.button
+                    type="button"
+                    onClick={() => toggle(i)}
+                    aria-expanded={isOpen}
+                    whileTap={reduce ? undefined : { scale: 0.995 }}
+                    transition={SPRING.snappy}
+                    className="flex w-full cursor-pointer items-center justify-between gap-4 rounded-2xl px-5 py-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                   >
-                    {qa.question}
-                  </span>
-
-                  <motion.span
-                    animate={{ rotate: isOpen ? 45 : 0 }}
-                    transition={{ duration: 0.3, ease: EASE }}
-                    className="grid h-7 w-7 shrink-0 place-items-center rounded-full"
-                    style={{ border: "1px solid var(--cs-border-default)" }}
-                  >
-                    <PlusIcon
-                      size={12}
-                      weight="bold"
-                      style={{ color: "var(--cs-text-secondary)" }}
-                    />
-                  </motion.span>
-                </button>
-
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <motion.div
-                      key="body"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.34, ease: EASE }}
-                      className="overflow-hidden"
+                    <span
+                      className="type-subheading"
+                      style={{
+                        color: isOpen
+                          ? "var(--cs-text-primary)"
+                          : "var(--cs-text-secondary)",
+                      }}
                     >
-                      <p
-                        className="px-5 pb-5 text-sm leading-[1.75]"
-                        style={{ color: "var(--cs-text-secondary)" }}
+                      {qa.question}
+                    </span>
+
+                    {/* The plus rotates into a cross and back along the same
+                        45°, so opening and closing trace one path. */}
+                    <motion.span
+                      animate={{
+                        rotate: isOpen ? 45 : 0,
+                        backgroundColor: isOpen
+                          ? "var(--primary)"
+                          : "transparent",
+                      }}
+                      transition={SPRING.default}
+                      className="grid h-7 w-7 shrink-0 place-items-center rounded-full"
+                      style={{ border: "1px solid var(--cs-border-default)" }}
+                    >
+                      <PlusIcon
+                        size={12}
+                        weight="bold"
+                        style={{
+                          color: isOpen
+                            ? "var(--primary-foreground)"
+                            : "var(--cs-text-secondary)",
+                        }}
+                      />
+                    </motion.span>
+                  </motion.button>
+
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        key="body"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={reduce ? { duration: 0.15 } : SPRING.sheet}
+                        className="overflow-hidden"
                       >
-                        {qa.answer}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+                        <p
+                          className="type-caption px-5 pb-5"
+                          style={{ color: "var(--cs-text-secondary)" }}
+                        >
+                          {qa.answer}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </Reveal>
             );
           })}
         </div>

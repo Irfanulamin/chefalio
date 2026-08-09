@@ -2,60 +2,162 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
+import {
+  ArrowLeftIcon,
+  CheckCircleIcon,
+  StarIcon,
+} from "@phosphor-icons/react/dist/ssr";
 
 interface AuthLayoutProps {
-  imageSrc: string;
-  imageAlt: string;
+  /** Page heading. Say what this screen does, plainly. */
+  title: string;
+  subtitle?: React.ReactNode;
+  /** Small mark above the title, matching the section eyebrows on the landing page. */
+  icon?: React.ElementType;
+  /** The form itself. Sits inside the card. */
   children: React.ReactNode;
+  /** Small print under the card — the way out to the other auth screen. */
+  footer?: React.ReactNode;
+  imageSrc?: string;
+  imageAlt?: string;
+  /** Wider card for longer forms (register). */
+  wide?: boolean;
 }
 
+const DEFAULT_IMAGE =
+  "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530582/login_wcwztq.png";
+
+const ASIDE_POINTS = [
+  "Thousands of chef-tested recipes",
+  "Cookbooks you own, not rent",
+  "Publish and sell your own work",
+];
+
+/**
+ * The shell every auth screen sits in.
+ *
+ * Auth used to be a bare form on a flat white page next to a photo with a
+ * dark scrim — a different product from the one the visitor just came from.
+ * It now carries the landing page's language: the same light field, the same
+ * translucent card material, the same type scale and the same press
+ * feedback, so signing in reads as the next step rather than a handoff.
+ */
 export default function AuthLayout({
-  imageSrc,
-  imageAlt,
+  title,
+  subtitle,
+  icon: Icon,
   children,
+  footer,
+  imageSrc = DEFAULT_IMAGE,
+  imageAlt = "Chefalio",
+  wide = false,
 }: AuthLayoutProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
+  const reduce = useReducedMotion();
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left — Form (60%) */}
-      <div className="flex-1 flex flex-col">
-        {/* Top bar with logo */}
-        <div
-          className="px-8 h-16 flex items-center shrink-0"
-          style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
-        >
+    <div className="flex min-h-svh">
+      {/* Form side */}
+      <div className="auth-field relative flex flex-1 flex-col">
+        <header className="flex shrink-0 items-center justify-between px-5 py-5 md:px-8">
           <Link
             href="/"
-            className="text-xl font-extrabold tracking-tight"
-            style={{ color: "var(--cs-accent)" }}
+            className="select-none text-xl font-extrabold"
+            style={{
+              color: "var(--cs-accent-text)",
+              letterSpacing: "-0.03em",
+            }}
           >
             Chefalio
           </Link>
-        </div>
 
-        {/* Form area */}
-        <div className="flex-1 flex items-center justify-center px-6 py-12">
-          <div className="w-full max-w-md space-y-6">{children}</div>
-        </div>
+          <motion.div
+            whileTap={reduce ? undefined : { scale: 0.96 }}
+            transition={{ type: "spring", bounce: 0, duration: 0.26 }}
+          >
+            <Link
+              href="/"
+              className="type-caption inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors duration-150"
+              style={{ color: "var(--cs-text-secondary)" }}
+            >
+              <ArrowLeftIcon size={13} weight="bold" />
+              Back to site
+            </Link>
+          </motion.div>
+        </header>
+
+        <main className="flex flex-1 items-center justify-center px-5 pb-14 pt-4 md:px-8">
+          <motion.div
+            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={
+              reduce
+                ? { duration: 0.2 }
+                : { type: "spring", bounce: 0, duration: 0.5 }
+            }
+            className={`w-full ${wide ? "max-w-lg" : "max-w-md"}`}
+          >
+            {Icon && (
+              <span
+                className="mb-5 grid h-11 w-11 place-items-center rounded-2xl"
+                style={{
+                  background:
+                    "linear-gradient(145deg, color-mix(in oklab, var(--primary) 92%, white), color-mix(in oklab, var(--secondary) 55%, var(--primary)))",
+                  boxShadow:
+                    "inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 16px -8px color-mix(in oklab, var(--primary) 90%, transparent)",
+                }}
+              >
+                <Icon size={20} weight="fill" style={{ color: "#12200a" }} />
+              </span>
+            )}
+
+            <h1
+              className="type-heading"
+              style={{ color: "var(--cs-text-primary)" }}
+            >
+              {title}
+            </h1>
+
+            {subtitle && (
+              <div
+                className="type-body mt-2"
+                style={{ color: "var(--cs-text-secondary)" }}
+              >
+                {subtitle}
+              </div>
+            )}
+
+            {/* The card is a material: the light field passes underneath it,
+                which is what keeps the form attached to the page. */}
+            <div className="material mt-7 rounded-3xl p-6 md:p-8">
+              {children}
+            </div>
+
+            {footer && (
+              <div
+                className="type-caption mt-6 text-center"
+                style={{ color: "var(--cs-text-secondary)" }}
+              >
+                {footer}
+              </div>
+            )}
+          </motion.div>
+        </main>
       </div>
 
-      {/* Right — Brand Panel (40%), hidden on mobile */}
-      <div
-        className="hidden md:flex w-[40%] max-w-lg flex-col items-center justify-center relative overflow-hidden"
-        style={{
-          backgroundColor: "var(--cs-surface-3)",
-          borderLeft: "1px solid var(--cs-border-subtle)",
-        }}
+      {/* Brand side */}
+      <aside
+        className="relative hidden w-[42%] max-w-2xl shrink-0 overflow-hidden lg:block"
+        style={{ backgroundColor: "var(--cs-surface-3)" }}
       >
-        {/* Background image */}
         {!imgLoaded && (
           <div
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(135deg, var(--cs-accent-muted), var(--cs-surface-3))",
+                "linear-gradient(135deg, color-mix(in oklab, var(--primary) 55%, transparent), var(--cs-surface-3))",
             }}
           />
         )}
@@ -64,6 +166,7 @@ export default function AuthLayout({
           alt={imageAlt}
           fill
           priority
+          sizes="42vw"
           className={`object-cover transition-opacity duration-500 ${
             imgLoaded ? "opacity-100" : "opacity-0"
           }`}
@@ -71,26 +174,63 @@ export default function AuthLayout({
           onError={() => setImgLoaded(true)}
         />
 
-        {/* Overlay with brand text */}
+        {/* Brand-tinted scrim rather than flat black, so the panel belongs to
+            Chefalio and not to a stock photo. */}
         <div
-          className="relative z-10 flex flex-col items-center text-center px-8 py-12"
+          aria-hidden
+          className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)",
-            position: "absolute",
-            inset: 0,
+              "linear-gradient(to top, rgba(18,32,10,0.88) 0%, rgba(18,32,10,0.45) 45%, color-mix(in oklab, var(--primary) 18%, transparent) 100%)",
           }}
-        >
-          <div className="mt-auto">
-            <h2 className="text-2xl font-bold text-white mb-2">
-              Welcome to Chefalio
-            </h2>
-            <p className="text-sm text-white/70 max-w-xs">
-              Discover thousands of recipes, cookbooks, and talented chefs.
-            </p>
+        />
+
+        <div className="absolute inset-0 flex flex-col justify-end p-10">
+          <div className="flex items-center gap-1 pb-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <StarIcon
+                key={i}
+                size={14}
+                weight="fill"
+                style={{ color: "var(--primary)" }}
+              />
+            ))}
+            <span
+              className="type-caption ml-2"
+              style={{ color: "rgba(255,255,255,0.85)" }}
+            >
+              4.8 / 5 from home cooks in 40 countries
+            </span>
           </div>
+
+          <h2
+            className="text-3xl font-bold text-white"
+            style={{ letterSpacing: "-0.03em", lineHeight: 1.12 }}
+          >
+            Cook from the pros.
+            <br />
+            Sell what you cook.
+          </h2>
+
+          <ul className="mt-6 space-y-2.5">
+            {ASIDE_POINTS.map((point) => (
+              <li key={point} className="flex items-center gap-2.5">
+                <CheckCircleIcon
+                  size={16}
+                  weight="fill"
+                  style={{ color: "var(--primary)" }}
+                />
+                <span
+                  className="type-caption"
+                  style={{ color: "rgba(255,255,255,0.88)" }}
+                >
+                  {point}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
+      </aside>
     </div>
   );
 }
