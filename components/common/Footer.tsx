@@ -1,17 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import {
-  ArrowUpRightIcon,
-  InstagramLogoIcon,
-  XLogoIcon,
-  YoutubeLogoIcon,
-} from "@phosphor-icons/react/dist/ssr";
+import { ArrowUpRightIcon } from "@phosphor-icons/react/dist/ssr";
 
+/**
+ * Every href here resolves: either a real route, or an id that exists on the
+ * landing page (`#personas`, `#features`, `#how-it-works`, `#testimonials`,
+ * `#pricing`, `#about`, `#faq`).
+ *
+ * The social row that used to sit under the brand blurb pointed at
+ * instagram.com, youtube.com and x.com — the sites' front doors, not
+ * Chefalio's accounts, because there are none. Three icons that go nowhere
+ * cost more trust than they buy, so they're gone until there is something
+ * real to link to.
+ */
 const COLUMNS: {
   heading: string;
-  links: { label: string; href: string; external?: boolean }[];
+  links: { label: string; href: string }[];
 }[] = [
   {
     heading: "Explore",
@@ -22,10 +27,18 @@ const COLUMNS: {
     ],
   },
   {
+    heading: "Product",
+    links: [
+      { label: "Who it's for", href: "/#personas" },
+      { label: "Features", href: "/#features" },
+      { label: "How it works", href: "/#how-it-works" },
+      { label: "Reviews", href: "/#testimonials" },
+    ],
+  },
+  {
     heading: "For chefs",
     links: [
       { label: "Apply as a chef", href: "/apply-chef" },
-      { label: "How it works", href: "/#how-it-works" },
       { label: "Pricing", href: "/#pricing" },
     ],
   },
@@ -38,12 +51,6 @@ const COLUMNS: {
       { label: "Terms of Service", href: "/terms" },
     ],
   },
-];
-
-const SOCIALS = [
-  { label: "Instagram", href: "https://instagram.com", icon: InstagramLogoIcon },
-  { label: "YouTube", href: "https://youtube.com", icon: YoutubeLogoIcon },
-  { label: "X", href: "https://x.com", icon: XLogoIcon },
 ];
 
 export const Footer = () => {
@@ -88,35 +95,10 @@ export const Footer = () => {
               who actually cook them for a living.
             </p>
 
-            <div className="mt-6 flex items-center gap-2">
-              {SOCIALS.map((s) => {
-                const Icon = s.icon;
-                return (
-                  <motion.a
-                    key={s.label}
-                    href={s.href}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    aria-label={s.label}
-                    whileTap={{ scale: 0.92 }}
-                    whileHover={{ y: -2 }}
-                    transition={{ type: "spring", bounce: 0, duration: 0.26 }}
-                    className="grid h-9 w-9 place-items-center rounded-full"
-                    style={{
-                      backgroundColor: "var(--cs-surface-1)",
-                      border: "1px solid var(--cs-border-subtle)",
-                      color: "var(--cs-text-secondary)",
-                    }}
-                  >
-                    <Icon size={16} weight="fill" />
-                  </motion.a>
-                );
-              })}
-            </div>
           </div>
 
           {/* Links */}
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             {COLUMNS.map((col) => (
               <div key={col.heading}>
                 <h3
@@ -163,16 +145,25 @@ export const Footer = () => {
           >
             © {new Date().getFullYear()} Chefalio. All rights reserved.
           </p>
-          <p
-            className="type-caption flex items-center gap-2"
-            style={{ color: "var(--cs-text-tertiary)" }}
-          >
-            <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ backgroundColor: "#34d399" }}
-            />
-            All systems operational
-          </p>
+          {/* A green dot reading "All systems operational" was wired to
+              nothing — it reported health it had no way of knowing. The two
+              links people actually look for down here take its place. */}
+          <nav className="flex items-center gap-5">
+            <Link
+              href="/privacy"
+              className="type-caption transition-opacity duration-150 hover:opacity-70"
+              style={{ color: "var(--cs-text-tertiary)" }}
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              className="type-caption transition-opacity duration-150 hover:opacity-70"
+              style={{ color: "var(--cs-text-tertiary)" }}
+            >
+              Terms
+            </Link>
+          </nav>
         </div>
       </div>
     </footer>

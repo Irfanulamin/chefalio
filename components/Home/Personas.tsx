@@ -1,15 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  animate,
-  motion,
-  useMotionValue,
-  useReducedMotion,
-  useTransform,
-  type AnimationPlaybackControls,
-  type MotionValue,
-} from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRightIcon,
@@ -18,7 +10,6 @@ import {
   ChefHatIcon,
   ClockIcon,
   CurrencyDollarIcon,
-  HandSwipeRightIcon,
   MagnifyingGlassIcon,
   ShieldCheckIcon,
   StarIcon,
@@ -26,16 +17,32 @@ import {
   UsersThreeIcon,
   XIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { project, rubberband, SPRING } from "./motion";
+import { SPRING } from "./motion";
+import { cld, COOKBOOKS, DISHES } from "./imagery";
 import { Reveal } from "./shared/Reveal";
 import { SectionHeading } from "./shared/SectionHeading";
+
+/**
+ * "Who it's for" used to be a swipeable tab carousel: three panels on a
+ * draggable track, one visible at a time, auto-advancing every 3.5 seconds
+ * unless you hovered it, with velocity projection and rubberbanding at the
+ * ends. Several hundred lines of gesture machinery.
+ *
+ * It answered the wrong question. A visitor reading this section is asking
+ * "which of these is me?" — and that is a comparison, so hiding two thirds
+ * of the answer behind a control is the one thing the layout must not do.
+ * Worse, the autoplay meant the panel could change while it was being read.
+ *
+ * All three are now on the page at once, side by side, which is both the
+ * simpler component and the better answer. The gesture code is gone rather
+ * than hidden behind a breakpoint.
+ */
 
 type PersonaId = "cooks" | "chefs" | "admins";
 
 const PERSONAS: {
   id: PersonaId;
   tab: string;
-  blurb: string;
   icon: React.ElementType;
   headline: string;
   body: string;
@@ -45,7 +52,6 @@ const PERSONAS: {
   {
     id: "cooks",
     tab: "Home cooks",
-    blurb: "Find dinner, fast",
     icon: MagnifyingGlassIcon,
     headline: "Find the dish, not a wall of blog posts",
     body: "Filter by what is actually in your kitchen and how much time you have. Save what works, buy the cookbooks worth owning.",
@@ -59,7 +65,6 @@ const PERSONAS: {
   {
     id: "chefs",
     tab: "Chefs",
-    blurb: "Publish and get paid",
     icon: ChefHatIcon,
     headline: "Publish your work and get paid for it",
     body: "Upload recipes, group them into cookbooks, and sell straight to the people cooking them. You keep the audience.",
@@ -73,7 +78,6 @@ const PERSONAS: {
   {
     id: "admins",
     tab: "Admins",
-    blurb: "Run the platform",
     icon: ShieldCheckIcon,
     headline: "See the whole platform in one view",
     body: "Review chef applications, watch revenue and engagement move, and keep the catalogue healthy without guesswork.",
@@ -85,14 +89,6 @@ const PERSONAS: {
     cta: { label: "See the platform", href: "/chefs" },
   },
 ];
-
-/** Movement required before we commit to "this is a drag". */
-const HYSTERESIS = 10;
-/** Only the tail of the pointer history matters for release velocity. */
-const VELOCITY_WINDOW_MS = 100;
-
-const clamp = (n: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, n));
 
 const CARD: React.CSSProperties = {
   backgroundColor: "var(--cs-surface-1)",
@@ -110,7 +106,7 @@ function CooksVisual() {
       >
         <MagnifyingGlassIcon size={15} style={{ color: "var(--cs-accent-text)" }} />
         <span className="type-caption" style={{ color: "var(--cs-text-primary)" }}>
-          chickpeas · 30 min · no oven
+          chicken · under 40 min
         </span>
         <span
           className="type-micro ml-auto rounded-full px-2 py-0.5 font-bold"
@@ -123,19 +119,20 @@ function CooksVisual() {
         </span>
       </div>
 
-      {[
-        { name: "Charred corn orzo", time: "26 min", rating: "4.9", saved: true },
-        { name: "Miso butter beans", time: "18 min", rating: "4.8", saved: false },
-        { name: "Green shakshuka", time: "24 min", rating: "4.7", saved: false },
-      ].map((r) => (
+      {DISHES.slice(0, 3).map((r, i) => (
         <div key={r.name} className="flex items-center gap-3 rounded-2xl p-2.5" style={CARD}>
           <div
-            className="h-12 w-12 shrink-0 rounded-xl"
-            style={{
-              background:
-                "linear-gradient(135deg, color-mix(in oklab, var(--primary) 55%, transparent), color-mix(in oklab, var(--accent) 88%, transparent))",
-            }}
-          />
+            className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl"
+            style={{ backgroundColor: "var(--cs-surface-3)" }}
+          >
+            <Image
+              src={cld(r.id, { w: 96, h: 96 })}
+              alt=""
+              fill
+              sizes="48px"
+              className="object-cover"
+            />
+          </div>
           <div className="min-w-0 flex-1">
             <p
               className="type-caption truncate font-semibold"
@@ -162,17 +159,20 @@ function CooksVisual() {
           <span
             className="grid h-8 w-8 shrink-0 place-items-center rounded-full"
             style={{
-              backgroundColor: r.saved ? "var(--primary)" : "var(--cs-surface-2)",
-              border: r.saved ? "none" : "1px solid var(--cs-border-subtle)",
+              backgroundColor:
+                i === 0 ? "var(--cs-accent-muted)" : "var(--cs-surface-2)",
+              border:
+                i === 0
+                  ? "1px solid color-mix(in oklab, var(--primary) 40%, transparent)"
+                  : "1px solid var(--cs-border-subtle)",
             }}
           >
             <BookmarkSimpleIcon
               size={13}
-              weight={r.saved ? "fill" : "regular"}
+              weight={i === 0 ? "fill" : "regular"}
               style={{
-                color: r.saved
-                  ? "var(--primary-foreground)"
-                  : "var(--cs-text-tertiary)",
+                color:
+                  i === 0 ? "var(--cs-accent-text)" : "var(--cs-text-tertiary)",
               }}
             />
           </span>
@@ -211,49 +211,61 @@ function ChefsVisual() {
         </p>
       </div>
 
-      {[
-        { label: "Weeknight Italian", meta: "12 recipes", price: "$24", sold: 78 },
-        { label: "Fermentation Basics", meta: "9 recipes", price: "$32", sold: 54 },
-        { label: "Knife Skills Vol. 2", meta: "6 recipes", price: "Draft", sold: 0 },
-      ].map((row) => (
-        <div key={row.label} className="rounded-2xl px-3.5 py-3" style={CARD}>
-          <div className="flex items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <p
-                className="type-caption truncate font-semibold"
-                style={{ color: "var(--cs-text-primary)" }}
+      {COOKBOOKS.map((row, i) => {
+        const sold = [78, 54, 0][i];
+        const price = sold === 0 ? "Draft" : row.price;
+        return (
+          <div key={row.title} className="rounded-2xl px-3.5 py-3" style={CARD}>
+            <div className="flex items-center gap-3">
+              <div
+                className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg"
+                style={{ backgroundColor: "var(--cs-surface-3)" }}
               >
-                {row.label}
-              </p>
-              <p className="type-micro" style={{ color: "var(--cs-text-tertiary)" }}>
-                {row.meta}
-              </p>
+                <Image
+                  src={cld(row.cover, { w: 72, h: 72 })}
+                  alt=""
+                  fill
+                  sizes="36px"
+                  className="object-cover"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p
+                  className="type-caption truncate font-semibold"
+                  style={{ color: "var(--cs-text-primary)" }}
+                >
+                  {row.title}
+                </p>
+                <p className="type-micro" style={{ color: "var(--cs-text-tertiary)" }}>
+                  {row.recipes}
+                </p>
+              </div>
+              <span
+                className="type-caption shrink-0 font-bold tabular-nums"
+                style={{
+                  color: sold
+                    ? "var(--cs-accent-text)"
+                    : "var(--cs-text-tertiary)",
+                }}
+              >
+                {price}
+              </span>
             </div>
-            <span
-              className="type-caption shrink-0 font-bold tabular-nums"
-              style={{
-                color: row.sold
-                  ? "var(--cs-accent-text)"
-                  : "var(--cs-text-tertiary)",
-              }}
-            >
-              {row.price}
-            </span>
-          </div>
-          <div
-            className="mt-2.5 h-1.5 overflow-hidden rounded-full"
-            style={{ backgroundColor: "var(--cs-surface-3)" }}
-          >
             <div
-              className="h-full rounded-full"
-              style={{
-                width: `${row.sold}%`,
-                backgroundColor: "var(--primary)",
-              }}
-            />
+              className="mt-2.5 h-1.5 overflow-hidden rounded-full"
+              style={{ backgroundColor: "var(--cs-surface-3)" }}
+            >
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${sold}%`,
+                  backgroundColor: "var(--primary)",
+                }}
+              />
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -267,7 +279,7 @@ function AdminsVisual() {
       ].map((a) => (
         <div key={a.name} className="flex items-center gap-3 rounded-2xl px-3.5 py-3" style={CARD}>
           <span
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full type-caption font-bold"
+            className="type-caption grid h-9 w-9 shrink-0 place-items-center rounded-full font-bold"
             style={{
               backgroundColor: "var(--cs-accent-muted)",
               color: "var(--cs-accent-text)",
@@ -297,12 +309,15 @@ function AdminsVisual() {
           </span>
           <span
             className="grid h-7 w-7 shrink-0 place-items-center rounded-full"
-            style={{ backgroundColor: "var(--primary)" }}
+            style={{
+              backgroundColor: "var(--cs-check-fill)",
+              border: "1px solid var(--cs-check-edge)",
+            }}
           >
             <CheckIcon
               size={11}
               weight="bold"
-              style={{ color: "var(--primary-foreground)" }}
+              style={{ color: "var(--cs-check-mark)" }}
             />
           </span>
         </div>
@@ -373,352 +388,105 @@ const VISUALS: Record<PersonaId, () => React.JSX.Element> = {
   admins: AdminsVisual,
 };
 
-// ─── Tab ─────────────────────────────────────────────────────────────────────
-
-/**
- * The highlight behind a tab is driven by the drag position, not by the
- * selected index — so while a finger is mid-swipe the rail cross-fades
- * continuously with it instead of snapping once the gesture ends. Feedback
- * belongs *during* the interaction, not only at the end of it.
- */
-function PersonaTab({
-  persona,
-  index,
-  progress,
-  isActive,
-  onSelect,
-  onKeyDown,
-}: {
-  persona: (typeof PERSONAS)[number];
-  index: number;
-  progress: MotionValue<number>;
-  isActive: boolean;
-  onSelect: () => void;
-  onKeyDown: (e: React.KeyboardEvent) => void;
-}) {
-  const Icon = persona.icon;
-  const highlight = useTransform(
-    progress,
-    [index - 1, index, index + 1],
-    [0, 1, 0],
-    { clamp: true },
-  );
-
-  return (
-    <motion.button
-      type="button"
-      role="tab"
-      aria-selected={isActive}
-      tabIndex={isActive ? 0 : -1}
-      onClick={onSelect}
-      onKeyDown={onKeyDown}
-      whileTap={{ scale: 0.98 }}
-      transition={SPRING.snappy}
-      className="relative w-full shrink-0 cursor-pointer rounded-2xl p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-      style={{
-        // All three read as cards; the highlight above only says which one
-        // is selected. Without a resting surface the unselected two look
-        // like text floating on the page.
-        backgroundColor: "var(--cs-surface-2)",
-        border: "1px solid var(--cs-border-subtle)",
-      }}
-    >
-      <motion.span
-        aria-hidden
-        className="absolute inset-0 rounded-2xl"
-        style={{
-          opacity: highlight,
-          backgroundColor: "var(--cs-surface-1)",
-          border: "1px solid var(--cs-border-default)",
-          boxShadow: "var(--cs-shadow-card)",
-        }}
-      />
-
-      <span className="relative z-10 flex items-start gap-3">
-        <motion.span
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-xl"
-          initial={false}
-          animate={{
-            backgroundColor: isActive
-              ? "var(--primary)"
-              : "var(--cs-accent-muted)",
-          }}
-          transition={SPRING.default}
-        >
-          <Icon
-            size={17}
-            weight="fill"
-            style={{
-              color: isActive
-                ? "var(--primary-foreground)"
-                : "var(--cs-accent-text)",
-            }}
-          />
-        </motion.span>
-
-        <span className="min-w-0">
-          <span
-            className="type-subheading block whitespace-nowrap"
-            style={{
-              color: isActive
-                ? "var(--cs-text-primary)"
-                : "var(--cs-text-secondary)",
-            }}
-          >
-            {persona.tab}
-          </span>
-          <span
-            className="type-micro block whitespace-nowrap"
-            style={{ color: "var(--cs-text-tertiary)" }}
-          >
-            {persona.blurb}
-          </span>
-        </span>
-      </span>
-    </motion.button>
-  );
-}
-
 // ─── Section ─────────────────────────────────────────────────────────────────
 
 export const Personas = () => {
-  const [active, setActive] = useState(0);
-  const [width, setWidth] = useState(0);
   const reduce = useReducedMotion();
 
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const running = useRef<AnimationPlaybackControls | null>(null);
-
-  // Pointer bookkeeping for the drag.
-  const dragging = useRef(false);
-  const origin = useRef({ x: 0, y: 0, value: 0 });
-  const samples = useRef<{ t: number; x: number }[]>([]);
-  const committed = useRef(false);
-
-  /** Which panel the track is currently sitting on, as a float. */
-  const progress = useTransform(x, (v) => (width > 0 ? -v / width : 0));
-
-  useEffect(() => {
-    const el = viewportRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  // A resize is a layout change, not an interaction — re-seat without motion.
-  useEffect(() => {
-    running.current?.stop();
-    x.set(-active * width);
-    // Only on width changes; `active` moves through goTo, which animates.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [width]);
-
-  /**
-   * Settle onto a panel. Velocity is handed to the spring so the animation
-   * picks up exactly where the finger left off — no seam between the drag and
-   * the motion that follows it. Bounce only comes along when a gesture
-   * actually carried momentum; a tab click gets the critically damped
-   * default, because nothing was thrown.
-   */
-  const goTo = useCallback(
-    (index: number, velocity = 0) => {
-      const next = clamp(index, 0, PERSONAS.length - 1);
-      setActive(next);
-      running.current?.stop();
-
-      if (reduce) {
-        x.set(-next * width);
-        return;
-      }
-
-      running.current = animate(x, -next * width, {
-        ...(velocity !== 0 ? SPRING.momentum : SPRING.default),
-        velocity,
-      });
-    },
-    [reduce, width, x],
-  );
-
-  const onPointerDown = (e: React.PointerEvent) => {
-    if (e.pointerType === "mouse" && e.button !== 0) return;
-    // Grab the in-flight animation rather than waiting it out. Because the
-    // spring animates the motion value itself, stopping mid-flight leaves x
-    // exactly where it is on screen.
-    running.current?.stop();
-    dragging.current = true;
-    committed.current = false;
-    origin.current = { x: e.clientX, y: e.clientY, value: x.get() };
-    samples.current = [{ t: performance.now(), x: e.clientX }];
-  };
-
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragging.current || width === 0) return;
-
-    samples.current.push({ t: performance.now(), x: e.clientX });
-    if (samples.current.length > 12) samples.current.shift();
-
-    const dx = e.clientX - origin.current.x;
-    const dy = e.clientY - origin.current.y;
-
-    if (!committed.current) {
-      if (Math.abs(dx) < HYSTERESIS && Math.abs(dy) < HYSTERESIS) return;
-      // Vertical intent belongs to the page. `touch-action: pan-y` lets the
-      // browser take those; this covers the mouse case.
-      if (Math.abs(dy) > Math.abs(dx)) {
-        dragging.current = false;
-        return;
-      }
-      committed.current = true;
-      e.currentTarget.setPointerCapture(e.pointerId);
-    }
-
-    // Track the finger 1:1 from where it was grabbed, resisting past the ends
-    // instead of stopping dead — a hard stop reads as frozen.
-    const min = -(PERSONAS.length - 1) * width;
-    let next = origin.current.value + dx;
-    if (next > 0) next = rubberband(next, width);
-    else if (next < min) next = min - rubberband(min - next, width);
-
-    x.set(next);
-  };
-
-  const endDrag = (clientX: number) => {
-    if (!dragging.current) return;
-    dragging.current = false;
-
-    if (!committed.current || width === 0) return;
-    committed.current = false;
-
-    // Velocity from the tail of the pointer history, not the last event — a
-    // single frame's delta is noise.
-    const now = performance.now();
-    const recent = samples.current.filter((s) => now - s.t <= VELOCITY_WINDOW_MS);
-    const first = recent[0] ?? samples.current[0];
-    const elapsed = (now - first.t) / 1000;
-    const velocity = elapsed > 0 ? (clientX - first.x) / elapsed : 0;
-
-    // Snap to where the flick is *going*, not to where the finger stopped.
-    const projected = x.get() + project(velocity);
-    goTo(Math.round(-projected / width), velocity);
-  };
-
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowRight") {
-      e.preventDefault();
-      goTo(active + 1);
-    } else if (e.key === "ArrowLeft") {
-      e.preventDefault();
-      goTo(active - 1);
-    }
-  };
-
   return (
-    <section id="personas" className="surface-base relative py-24 md:py-32">
+    <section id="personas" className="surface-raised py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
         <SectionHeading
           eyebrow="Who it's for"
           title="One platform, three jobs to do"
-          lede="Chefalio is the same product seen from three sides. Pick a side — or swipe through them."
+          lede="Chefalio is the same product seen from three sides. All three are below — find yours."
         />
 
-        {/* Rail. Horizontal on every size: three cards read as a choice,
-            where a vertical list reads as navigation. */}
-        <Reveal distance={16} className="mt-12">
-          <div
-            className="grid gap-2.5 sm:grid-cols-3"
-            role="tablist"
-            aria-label="Who Chefalio is for"
-          >
-            {PERSONAS.map((p, i) => (
-              <PersonaTab
-                key={p.id}
-                persona={p}
-                index={i}
-                progress={progress}
-                isActive={i === active}
-                onSelect={() => goTo(i)}
-                onKeyDown={onKeyDown}
-              />
-            ))}
-          </div>
-        </Reveal>
+        {/* One band per audience rather than three columns.
 
-        {/* Viewport. Every panel stays mounted so a swipe reveals real content
-            underneath the finger, and so an in-flight settle can be grabbed
-            and thrown back the other way. */}
-        <div
-          ref={viewportRef}
-          className="mt-8 overflow-hidden"
-          style={{ touchAction: "pan-y" }}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={(e) => endDrag(e.clientX)}
-          onPointerCancel={(e) => endDrag(e.clientX)}
-        >
-          <motion.div
-            className="flex cursor-grab items-stretch active:cursor-grabbing"
-            style={{ x, willChange: "transform" }}
-          >
-            {PERSONAS.map((persona, i) => {
-              const Visual = VISUALS[persona.id];
-              return (
+            As columns, the three cards were the same height but their
+            contents were not — the visuals run three rows, four rows and six
+            blocks — so each card carried a different slab of dead space above
+            its button and the row read as broken. Height is only a problem
+            when things are forced to share it; given a band each, the three
+            size themselves and the visuals get roughly half the page instead
+            of a third of it. */}
+        <div className="mt-14 flex flex-col">
+          {PERSONAS.map((persona, i) => {
+            const Icon = persona.icon;
+            const Visual = VISUALS[persona.id];
+            const flipped = i % 2 === 1;
+
+            return (
+              <Reveal key={persona.id} distance={22}>
                 <div
-                  key={persona.id}
-                  role="tabpanel"
-                  aria-hidden={i !== active}
-                  className="w-full shrink-0 grow-0 basis-full"
+                  className="grid items-center gap-10 py-12 lg:grid-cols-2 lg:gap-16 lg:py-16"
+                  style={
+                    i === 0
+                      ? undefined
+                      : { borderTop: "1px solid var(--cs-border-subtle)" }
+                  }
                 >
-                  <div
-                    className="grid gap-8 rounded-3xl p-6 md:grid-cols-2 md:items-center md:gap-12 md:p-10"
-                    style={{
-                      backgroundColor: "var(--cs-surface-2)",
-                      border: "1px solid var(--cs-border-subtle)",
-                    }}
-                  >
-                    <div>
-                      <h3
-                        className="type-heading"
-                        style={{ color: "var(--cs-text-primary)" }}
+                  <div className={flipped ? "lg:order-2" : undefined}>
+                    <div className="flex items-center gap-3">
+                      <span className="brand-tile grid h-10 w-10 shrink-0 place-items-center rounded-2xl">
+                        <Icon size={19} weight="fill" />
+                      </span>
+                      <span
+                        className="type-label"
+                        style={{ color: "var(--cs-accent-text)" }}
                       >
-                        {persona.headline}
-                      </h3>
-                      <p
-                        className="type-body mt-3"
-                        style={{ color: "var(--cs-text-secondary)" }}
-                      >
-                        {persona.body}
-                      </p>
+                        {persona.tab}
+                      </span>
+                    </div>
 
-                      <ul className="mt-6 space-y-3">
-                        {persona.points.map((point) => (
-                          <li key={point} className="flex gap-2.5">
-                            <span
-                              className="mt-1 grid h-4 w-4 shrink-0 place-items-center rounded-full"
-                              style={{ backgroundColor: "var(--primary)" }}
-                            >
-                              <CheckIcon
-                                size={9}
-                                weight="bold"
-                                style={{ color: "var(--primary-foreground)" }}
-                              />
-                            </span>
-                            <span
-                              className="type-caption"
-                              style={{ color: "var(--cs-text-secondary)" }}
-                            >
-                              {point}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
+                    <h3
+                      className="type-heading mt-5"
+                      style={{ color: "var(--cs-text-primary)" }}
+                    >
+                      {persona.headline}
+                    </h3>
+                    <p
+                      className="type-body mt-3 max-w-md"
+                      style={{ color: "var(--cs-text-secondary)" }}
+                    >
+                      {persona.body}
+                    </p>
 
+                    <ul className="mt-7 space-y-3">
+                      {persona.points.map((point) => (
+                        <li key={point} className="flex gap-2.5">
+                          <span
+                            className="mt-1 grid h-4 w-4 shrink-0 place-items-center rounded-full"
+                            style={{
+                              backgroundColor: "var(--cs-check-fill)",
+                              border: "1px solid var(--cs-check-edge)",
+                            }}
+                          >
+                            <CheckIcon
+                              size={9}
+                              weight="bold"
+                              style={{ color: "var(--cs-check-mark)" }}
+                            />
+                          </span>
+                          <span
+                            className="type-caption"
+                            style={{ color: "var(--cs-text-secondary)" }}
+                          >
+                            {point}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <motion.div
+                      whileTap={reduce ? undefined : { scale: 0.97 }}
+                      transition={SPRING.snappy}
+                      className="mt-8 w-fit"
+                    >
                       <Link
                         href={persona.cta.href}
-                        tabIndex={i === active ? 0 : -1}
-                        draggable={false}
-                        className="type-subheading group mt-8 inline-flex h-11 items-center gap-2 rounded-full px-5"
+                        className="type-subheading group inline-flex h-11 items-center gap-2 rounded-full px-5"
                         style={{
                           backgroundColor: "var(--primary)",
                           color: "var(--primary-foreground)",
@@ -731,51 +499,29 @@ export const Personas = () => {
                           className="transition-transform duration-200 ease-out group-hover:translate-x-0.5"
                         />
                       </Link>
-                    </div>
-
-                    <div
-                      className="rounded-3xl p-4"
-                      style={{
-                        backgroundColor: "var(--cs-surface-3)",
-                        border: "1px solid var(--cs-border-subtle)",
-                      }}
-                    >
-                      <Visual />
-                    </div>
+                    </motion.div>
                   </div>
-                </div>
-              );
-            })}
-          </motion.div>
-        </div>
 
-        {/* Where am I, how much is left — and a nudge that this is draggable. */}
-        <div className="mt-6 flex items-center justify-center gap-3">
-          <div className="flex items-center gap-1.5">
-            {PERSONAS.map((p, i) => (
-              <motion.button
-                key={p.id}
-                type="button"
-                aria-label={`Show ${p.tab}`}
-                onClick={() => goTo(i)}
-                className="h-1.5 cursor-pointer rounded-full"
-                initial={false}
-                animate={{
-                  width: i === active ? 26 : 6,
-                  backgroundColor:
-                    i === active ? "var(--primary)" : "var(--cs-border-default)",
-                }}
-                transition={SPRING.default}
-              />
-            ))}
-          </div>
-          <span
-            className="type-micro inline-flex items-center gap-1.5"
-            style={{ color: "var(--cs-text-tertiary)" }}
-          >
-            <HandSwipeRightIcon size={13} />
-            Drag to compare
-          </span>
+                  {/* The visual sits on a recessed ground so it reads as a
+                      piece of the product rather than more page. */}
+                  <motion.div
+                    whileHover={reduce ? undefined : { y: -4 }}
+                    transition={SPRING.snappy}
+                    className={`rounded-3xl p-4 md:p-5 ${
+                      flipped ? "lg:order-1" : ""
+                    }`}
+                    style={{
+                      backgroundColor: "var(--cs-surface-3)",
+                      border: "1px solid var(--cs-border-subtle)",
+                      boxShadow: "var(--cs-shadow-card)",
+                    }}
+                  >
+                    <Visual />
+                  </motion.div>
+                </div>
+              </Reveal>
+            );
+          })}
         </div>
       </div>
     </section>

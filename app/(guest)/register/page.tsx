@@ -1,5 +1,6 @@
 "use client";
 
+import { AUTH_PANELS } from "@/components/Home/imagery";
 import AuthLayout from "@/components/common/AuthLayout";
 import {
   AuthDivider,
@@ -18,8 +19,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import {
   ArrowClockwiseIcon,
-  EnvelopeSimpleIcon,
-  UserPlusIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
 export default function RegisterPage() {
@@ -77,11 +76,9 @@ export default function RegisterPage() {
   if (registeredEmail) {
     return (
       <AuthLayout
-        icon={EnvelopeSimpleIcon}
+        panel={AUTH_PANELS.register}
         title="One more step"
         subtitle="Your account exists — it just needs verifying before you can sign in."
-        imageSrc="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530581/register_eu7mjh.png"
-        imageAlt="Chefalio Register"
         footer={
           <>
             Already verified? <AuthLink href="/login">Sign in</AuthLink>
@@ -89,7 +86,6 @@ export default function RegisterPage() {
         }
       >
         <AuthResult
-          icon={EnvelopeSimpleIcon}
           title="Check your email"
           actions={
             <>
@@ -129,12 +125,10 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
+      panel={AUTH_PANELS.register}
       wide
-      icon={UserPlusIcon}
       title="Create your account"
       subtitle="Free to browse, free to save. You only pay for cookbooks you want to keep."
-      imageSrc="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530581/register_eu7mjh.png"
-      imageAlt="Chefalio Register"
       footer={
         <>
           Already have an account? <AuthLink href="/login">Sign in</AuthLink>

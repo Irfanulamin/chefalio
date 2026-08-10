@@ -17,38 +17,30 @@
  * No client hooks, so this renders on the server.
  */
 
-const BEAMS = [
-  { left: "6%", width: 200, rotate: -15, opacity: 0.42 },
-  { left: "26%", width: 120, rotate: -8, opacity: 0.3 },
-  { left: "45%", width: 260, rotate: -2, opacity: 0.5 },
-  { left: "66%", width: 140, rotate: 7, opacity: 0.34 },
-  { left: "82%", width: 210, rotate: 13, opacity: 0.4 },
-];
-
 export function Beams() {
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 overflow-hidden"
     >
-      {/* Shafts, anchored above the viewport and fanning down */}
-      <div className="absolute inset-x-0 -top-1/3 h-[150%]">
-        {BEAMS.map((beam) => (
-          <span
-            key={beam.left}
-            className="absolute top-0 h-full origin-top"
-            style={{
-              left: beam.left,
-              width: beam.width,
-              opacity: beam.opacity,
-              transform: `rotate(${beam.rotate}deg)`,
-              background:
-                "linear-gradient(to bottom, color-mix(in oklab, var(--primary) 52%, transparent), transparent 70%)",
-              filter: "blur(48px)",
-            }}
-          />
-        ))}
-      </div>
+      {/* Shafts.
+          These were five rotated elements each carrying `filter: blur(48px)`
+          across 150% of the viewport — five large layers the compositor had
+          to blur on every paint, which is the most expensive thing that was
+          on this page and the first thing to stutter on a weak GPU.
+          A 48px-blurred gradient is, visually, just a wider gradient, so the
+          whole fan is now one element painting three radial stops: same
+          light, no filter, no extra layers. */}
+      <div
+        className="absolute inset-x-0 -top-1/3 h-[150%]"
+        style={{
+          background: [
+            "radial-gradient(ellipse 26% 55% at 14% 8%, color-mix(in oklab, var(--primary) 26%, transparent), transparent 70%)",
+            "radial-gradient(ellipse 34% 62% at 48% 0%, color-mix(in oklab, var(--primary) 30%, transparent), transparent 72%)",
+            "radial-gradient(ellipse 28% 55% at 84% 6%, color-mix(in oklab, var(--primary) 24%, transparent), transparent 70%)",
+          ].join(","),
+        }}
+      />
 
       {/* Grid, masked out toward the edges so it never reads as a border */}
       <div

@@ -1,5 +1,6 @@
 "use client";
 
+import { AUTH_PANELS } from "@/components/Home/imagery";
 import AuthLayout from "@/components/common/AuthLayout";
 import {
   AuthLink,
@@ -12,7 +13,6 @@ import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { useAuth } from "@/hooks/useAuth";
-import { LockKeyIcon, WarningCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
@@ -61,14 +61,13 @@ function ResetPasswordForm() {
   if (!resetToken) {
     return (
       <AuthLayout
-        icon={WarningCircleIcon}
+        panel={AUTH_PANELS.recover}
         title="That link didn't work"
         subtitle="Reset links expire, and each one can only be used once."
         footer={<AuthLink href="/login">Back to sign in</AuthLink>}
       >
         <AuthResult
           tone="error"
-          icon={WarningCircleIcon}
           title="Invalid reset link"
           actions={
             <AuthLink href="/forgot-password">Request a new link</AuthLink>
@@ -83,7 +82,7 @@ function ResetPasswordForm() {
 
   return (
     <AuthLayout
-      icon={LockKeyIcon}
+      panel={AUTH_PANELS.recover}
       title="Set a new password"
       subtitle="Choose something at least 6 characters long that you haven't used here before."
       footer={

@@ -6,34 +6,31 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 import {
   ArrowLeftIcon,
-  CheckCircleIcon,
+  ClockIcon,
   StarIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import {
+  AUTH_PANELS,
+  cld,
+  type AuthPanel,
+} from "@/components/Home/imagery";
 
 interface AuthLayoutProps {
   /** Page heading. Say what this screen does, plainly. */
   title: string;
   subtitle?: React.ReactNode;
-  /** Small mark above the title, matching the section eyebrows on the landing page. */
-  icon?: React.ElementType;
   /** The form itself. Sits inside the card. */
   children: React.ReactNode;
   /** Small print under the card — the way out to the other auth screen. */
   footer?: React.ReactNode;
-  imageSrc?: string;
-  imageAlt?: string;
+  /**
+   * The brand panel. One object rather than a src and a caption that can
+   * disagree — see `AUTH_PANELS`.
+   */
+  panel?: AuthPanel;
   /** Wider card for longer forms (register). */
   wide?: boolean;
 }
-
-const DEFAULT_IMAGE =
-  "https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530582/login_wcwztq.png";
-
-const ASIDE_POINTS = [
-  "Thousands of chef-tested recipes",
-  "Cookbooks you own, not rent",
-  "Publish and sell your own work",
-];
 
 /**
  * The shell every auth screen sits in.
@@ -47,11 +44,9 @@ const ASIDE_POINTS = [
 export default function AuthLayout({
   title,
   subtitle,
-  icon: Icon,
   children,
   footer,
-  imageSrc = DEFAULT_IMAGE,
-  imageAlt = "Chefalio",
+  panel = AUTH_PANELS.login,
   wide = false,
 }: AuthLayoutProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -99,20 +94,6 @@ export default function AuthLayout({
             }
             className={`w-full ${wide ? "max-w-lg" : "max-w-md"}`}
           >
-            {Icon && (
-              <span
-                className="mb-5 grid h-11 w-11 place-items-center rounded-2xl"
-                style={{
-                  background:
-                    "linear-gradient(145deg, color-mix(in oklab, var(--primary) 92%, white), color-mix(in oklab, var(--secondary) 55%, var(--primary)))",
-                  boxShadow:
-                    "inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 16px -8px color-mix(in oklab, var(--primary) 90%, transparent)",
-                }}
-              >
-                <Icon size={20} weight="fill" style={{ color: "#12200a" }} />
-              </span>
-            )}
-
             <h1
               className="type-heading"
               style={{ color: "var(--cs-text-primary)" }}
@@ -162,8 +143,8 @@ export default function AuthLayout({
           />
         )}
         <Image
-          src={imageSrc}
-          alt={imageAlt}
+          src={cld(panel.id, { w: 1200, h: 1600 })}
+          alt={panel.alt}
           fill
           priority
           sizes="42vw"
@@ -185,50 +166,69 @@ export default function AuthLayout({
           }}
         />
 
-        <div className="absolute inset-0 flex flex-col justify-end p-10">
-          <div className="flex items-center gap-1 pb-4">
-            {Array.from({ length: 5 }).map((_, i) => (
+        {/* A row of five decorative stars and three adjectives ("Thousands of
+            chef-tested recipes") is the stock half of every split-screen auth
+            page, and none of it was checkable. The panel now credits the
+            photograph instead: this is a real recipe on the platform, by a
+            named chef, and saying so is worth more than the claim was. */}
+        <div className="absolute inset-0 flex flex-col justify-between p-10">
+          <div
+            className="type-caption inline-flex w-fit items-center gap-2.5 rounded-full px-3.5 py-2"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.14)",
+              border: "1px solid rgba(255,255,255,0.22)",
+              backdropFilter: "blur(10px) saturate(140%)",
+              WebkitBackdropFilter: "blur(10px) saturate(140%)",
+              color: "#ffffff",
+            }}
+          >
+            <span className="font-semibold">{panel.name}</span>
+            <span style={{ color: "rgba(255,255,255,0.5)" }}>·</span>
+            <span
+              className="inline-flex items-center gap-1"
+              style={{ color: "rgba(255,255,255,0.82)" }}
+            >
+              <ClockIcon size={12} weight="bold" />
+              {panel.time}
+            </span>
+            <span
+              className="inline-flex items-center gap-1"
+              style={{ color: "rgba(255,255,255,0.82)" }}
+            >
               <StarIcon
-                key={i}
-                size={14}
+                size={12}
                 weight="fill"
                 style={{ color: "var(--primary)" }}
               />
-            ))}
-            <span
-              className="type-caption ml-2"
-              style={{ color: "rgba(255,255,255,0.85)" }}
-            >
-              4.8 / 5 from home cooks in 40 countries
+              {panel.rating}
             </span>
           </div>
 
-          <h2
-            className="text-3xl font-bold text-white"
-            style={{ letterSpacing: "-0.03em", lineHeight: 1.12 }}
-          >
-            Cook from the pros.
-            <br />
-            Sell what you cook.
-          </h2>
+          <div>
+            <h2
+              className="text-3xl font-bold text-white"
+              style={{ letterSpacing: "-0.03em", lineHeight: 1.12 }}
+            >
+              Cook from the pros.
+              <br />
+              Sell what you cook.
+            </h2>
 
-          <ul className="mt-6 space-y-2.5">
-            {ASIDE_POINTS.map((point) => (
-              <li key={point} className="flex items-center gap-2.5">
-                <CheckCircleIcon
-                  size={16}
-                  weight="fill"
-                  style={{ color: "var(--primary)" }}
-                />
-                <span
-                  className="type-caption"
-                  style={{ color: "rgba(255,255,255,0.88)" }}
-                >
-                  {point}
-                </span>
-              </li>
-            ))}
-          </ul>
+            <p
+              className="type-body mt-4 max-w-sm"
+              style={{ color: "rgba(255,255,255,0.82)" }}
+            >
+              Browsing is free. Cookbooks are a one-off price set by the chef
+              who wrote them, and they stay in your library for good.
+            </p>
+
+            <p
+              className="type-micro mt-6"
+              style={{ color: "rgba(255,255,255,0.62)" }}
+            >
+              Pictured: {panel.name}, by {panel.chef}
+            </p>
+          </div>
         </div>
       </aside>
     </div>

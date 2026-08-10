@@ -19,7 +19,6 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import {
   ArrowClockwiseIcon,
-  SignInIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
 function LoginForm() {
@@ -100,11 +99,8 @@ function LoginForm() {
 
   return (
     <AuthLayout
-      icon={SignInIcon}
       title="Welcome back"
       subtitle="Sign in to get to your library, your saved recipes, and your dashboard."
-      imageSrc="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530582/login_wcwztq.png"
-      imageAlt="Chefalio Login"
       footer={
         <>
           Don&apos;t have an account? <AuthLink href="/register">Sign up</AuthLink>

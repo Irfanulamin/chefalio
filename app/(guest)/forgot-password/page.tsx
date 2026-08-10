@@ -1,5 +1,6 @@
 "use client";
 
+import { AUTH_PANELS } from "@/components/Home/imagery";
 import AuthLayout from "@/components/common/AuthLayout";
 import {
   AuthLink,
@@ -12,10 +13,6 @@ import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  EnvelopeSimpleIcon,
-  PaperPlaneTiltIcon,
-} from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
 
 export default function ForgotPasswordPage() {
@@ -50,12 +47,12 @@ export default function ForgotPasswordPage() {
   if (onSuccess) {
     return (
       <AuthLayout
-        icon={PaperPlaneTiltIcon}
+        panel={AUTH_PANELS.recover}
         title="Link sent"
         subtitle="If that email is registered, the reset link is on its way."
         footer={<AuthLink href="/login">Back to sign in</AuthLink>}
       >
-        <AuthResult icon={EnvelopeSimpleIcon} title="Check your email">
+        <AuthResult label="Email sent" title="Check your email">
           If an account exists for that address, a password reset link has been
           sent. Check your spam folder if you don&apos;t see it.
         </AuthResult>
@@ -65,7 +62,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout
-      icon={EnvelopeSimpleIcon}
+      panel={AUTH_PANELS.recover}
       title="Forgot your password?"
       subtitle="Enter your email and we'll send you a link to set a new one."
       footer={

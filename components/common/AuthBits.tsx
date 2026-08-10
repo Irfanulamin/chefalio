@@ -211,15 +211,25 @@ export function AuthLink({
  * The terminal state screens (check your email, verified, link expired) all
  * have the same shape: a mark, a headline, a sentence, then what to do next.
  */
+/**
+ * A terminal state: mail sent, address verified, link expired.
+ *
+ * The big rounded icon tile that used to sit on top is gone. Tone still has
+ * to survive its removal, though — an expired link and a confirmed address
+ * cannot look identical — so it moves onto a short worded label above the
+ * title. That was the more accessible carrier anyway: colour and glyph alone
+ * never told a screen reader which of the two had happened.
+ */
 export function AuthResult({
   tone = "success",
-  icon: Icon,
+  label,
   title,
   children,
   actions,
 }: {
   tone?: "success" | "error";
-  icon: React.ElementType;
+  /** Overrides the default wording for the state. */
+  label?: string;
   title: string;
   children?: React.ReactNode;
   actions?: React.ReactNode;
@@ -229,36 +239,24 @@ export function AuthResult({
 
   return (
     <div className="flex flex-col items-center gap-5 py-2 text-center">
-      <motion.span
-        initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
+      <motion.div
+        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={
           reduce
             ? { duration: 0.2 }
-            : { type: "spring", bounce: 0.3, duration: 0.5 }
+            : { type: "spring", bounce: 0, duration: 0.45 }
         }
-        className="grid h-16 w-16 place-items-center rounded-3xl"
-        style={{
-          backgroundColor: success
-            ? "var(--cs-accent-muted)"
-            : "rgba(239,68,68,0.1)",
-          border: `1px solid ${
-            success
-              ? "color-mix(in oklab, var(--primary) 40%, transparent)"
-              : "rgba(239,68,68,0.3)"
-          }`,
-        }}
       >
-        <Icon
-          size={30}
-          weight="fill"
+        <span
+          className="type-label"
           style={{ color: success ? "var(--cs-accent-text)" : "#dc2626" }}
-        />
-      </motion.span>
+        >
+          {label ?? (success ? "Done" : "Something went wrong")}
+        </span>
 
-      <div>
         <h2
-          className="type-heading"
+          className="type-heading mt-2"
           style={{ color: "var(--cs-text-primary)" }}
         >
           {title}
@@ -271,7 +269,7 @@ export function AuthResult({
             {children}
           </div>
         )}
-      </div>
+      </motion.div>
 
       {actions && <div className="w-full space-y-3 pt-1">{actions}</div>}
     </div>

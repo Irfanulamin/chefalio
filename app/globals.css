@@ -93,6 +93,16 @@ body {
      so light mode uses a deepened olive and dark mode brightens it. */
   --cs-accent-text: #4d6b16;
 
+  /* Completion ticks — a step checked off, a filter that landed.
+     Light mode fills the dot with brand lime and knocks the check out in
+     black. Dark mode inverts it: a solid lime dot is a loud blob on a
+     near-black card, and a black check on it disappears into the surface
+     behind. There the dot becomes a muted lime chip and the check carries
+     the colour itself. */
+  --cs-check-fill: var(--primary);
+  --cs-check-mark: #000;
+  --cs-check-edge: rgba(0, 0, 0, 0);
+
   /* ── Materials ────────────────────────────────────────────────────────
      Translucent layers that float above content rather than consuming a
      strip of it. Weight encodes hierarchy: thin for chips and controls,
@@ -101,7 +111,7 @@ body {
   --cs-material-regular: rgba(255, 255, 255, 0.68);
   --cs-material-thick: rgba(255, 255, 255, 0.86);
   --cs-material-edge: rgba(255, 255, 255, 0.7);
-  --cs-material-blur: 20px;
+  --cs-material-blur: 14px;
   --cs-scrim: rgba(17, 17, 16, 0.28);
 
   /* Bigger surfaces read as thicker: more blur, deeper shadow. */
@@ -146,6 +156,10 @@ body {
   --cs-accent-muted: rgba(167, 209, 41, 0.12);
   --cs-accent-text: #B8DE4A;
 
+  --cs-check-fill: rgba(167, 209, 41, 0.16);
+  --cs-check-mark: var(--primary);
+  --cs-check-edge: rgba(167, 209, 41, 0.45);
+
   /* Materials — dark overrides. Dark materials lean on luminance rather
      than white veil, and keep a bright top edge so the surface still
      reads as glass catching light. */
@@ -153,7 +167,7 @@ body {
   --cs-material-regular: rgba(22, 22, 20, 0.66);
   --cs-material-thick: rgba(16, 16, 15, 0.86);
   --cs-material-edge: rgba(255, 255, 255, 0.08);
-  --cs-material-blur: 22px;
+  --cs-material-blur: 14px;
   --cs-scrim: rgba(0, 0, 0, 0.5);
 
   --cs-shadow-chip: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -431,11 +445,15 @@ body {
    A floating layer with content passing underneath. The bright top edge
    is the light catching the material; the shadow is what separates it. */
 
+/* `saturate(180%)` on top of the blur meant every material surface asked
+   for two backdrop passes instead of one, and the radii were larger than
+   the effect needed to read. Trimmed to a single cheaper pass — on a weak
+   GPU the header alone was costing frames on every scroll. */
 .material,
 .material-thin,
 .material-thick {
-  -webkit-backdrop-filter: blur(var(--cs-material-blur)) saturate(180%);
-  backdrop-filter: blur(var(--cs-material-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--cs-material-blur)) saturate(140%);
+  backdrop-filter: blur(var(--cs-material-blur)) saturate(140%);
   border: 1px solid var(--cs-material-edge);
 }
 
@@ -452,8 +470,48 @@ body {
 
 .material-thick {
   background-color: var(--cs-material-thick);
-  --cs-material-blur: 30px;
+  --cs-material-blur: 18px;
   box-shadow: var(--cs-shadow-float);
+}
+
+/* ── Brand tile ────────────────────────────────────────────────────────
+   The chip an icon sits on, above a section heading or an auth title.
+
+   It used to be a bright lime tile with a near-black glyph. Repeated above
+   every heading in a bento grid that turns into a row of traffic lights:
+   the loudest thing in each cell is the decoration, and a black glyph on
+   saturated lime is a hard, muddy pairing at 19px. The tile is furniture —
+   it gives the glyph a defined edge and a consistent optical weight — so it
+   now recedes into the card and the accent lives in the glyph instead.
+
+   Both modes follow the same rule (quiet surface, accent glyph, hairline
+   edge); only the surface flips. #4d6b16 on white clears 5.6:1, and the
+   dark lime clears far more. */
+
+.brand-tile {
+  background: linear-gradient(
+    145deg,
+    var(--cs-surface-1),
+    var(--cs-surface-2)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(17, 17, 16, 0.05);
+  border: 1px solid var(--cs-border-subtle);
+  color: var(--cs-accent-text);
+}
+
+.dark .brand-tile {
+  background: linear-gradient(
+    145deg,
+    color-mix(in oklab, var(--primary) 16%, var(--cs-surface-3)),
+    var(--cs-surface-2)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 6px 16px -10px rgba(0, 0, 0, 0.7);
+  border: 1px solid color-mix(in oklab, var(--primary) 26%, transparent);
+  color: var(--primary);
 }
 
 /* Vibrancy: text over a translucent, shifting backdrop needs more weight

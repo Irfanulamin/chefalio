@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   BookmarkSimpleIcon,
@@ -17,6 +18,7 @@ import {
   TrendUpIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { SPRING } from "./motion";
+import { cld, DISHES } from "./imagery";
 
 /**
  * The hero's product shot.
@@ -49,14 +51,12 @@ const FILTERS = [
   { label: "Beginner", on: false },
 ];
 
-const RECIPES = [
-  { name: "Charred corn orzo", chef: "Marco Rivera", time: "26 min", rating: "4.9", saved: true },
-  { name: "Miso butter beans", chef: "Amara Osei", time: "18 min", rating: "4.8", saved: false },
-  { name: "Green shakshuka", chef: "Yuki Tanaka", time: "24 min", rating: "4.7", saved: false },
-  { name: "Pantry puttanesca", chef: "Lina Ferrari", time: "22 min", rating: "4.9", saved: true },
-  { name: "Smoky baba ganoush", chef: "Amara Osei", time: "28 min", rating: "4.6", saved: false },
-  { name: "Cacio e pepe", chef: "Marco Rivera", time: "15 min", rating: "5.0", saved: false },
-];
+/** Six real dishes, saved-state hand-set so the grid isn't uniform. */
+const SAVED = new Set([0, 3]);
+const RECIPES = DISHES.slice(0, 6).map((d, i) => ({
+  ...d,
+  saved: SAVED.has(i),
+}));
 
 export function HeroVisual() {
   const reduce = useReducedMotion();
@@ -207,7 +207,7 @@ export function HeroVisual() {
                   className="truncate text-[11px]"
                   style={{ color: "var(--cs-text-primary)" }}
                 >
-                  chickpeas, 30 minutes, no oven
+                  chicken, under 40 minutes
                 </span>
                 <span
                   className="ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold"
@@ -271,11 +271,16 @@ export function HeroVisual() {
                 >
                   <div
                     className="relative h-16"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, color-mix(in oklab, var(--primary) 58%, transparent), color-mix(in oklab, var(--accent) 88%, transparent))",
-                    }}
+                    style={{ backgroundColor: "var(--cs-surface-3)" }}
                   >
+                    <Image
+                      src={cld(r.id, { w: 320, h: 200 })}
+                      alt=""
+                      fill
+                      sizes="180px"
+                      className="object-cover"
+                      priority={i < 3}
+                    />
                     <span
                       className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full"
                       style={{
@@ -354,7 +359,7 @@ export function HeroVisual() {
             className="text-[10px]"
             style={{ color: "var(--cs-text-tertiary)" }}
           >
-            Charred corn orzo
+            {RECIPES[0].name}
           </p>
         </div>
       </motion.div>

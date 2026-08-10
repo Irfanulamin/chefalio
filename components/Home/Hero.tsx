@@ -202,15 +202,19 @@ export const Hero = () => {
               here, so the two never fight over the same transform. */}
           <motion.div
             className="h-full"
+            /* This used to animate `filter: blur(14px) → 0` across the
+               largest surface on the page. Blur is not compositor-cheap:
+               every frame re-blurs the whole subtree, which on a low-end GPU
+               turns the one animation the visitor is guaranteed to see into
+               the one that drops frames. Opacity and transform get the same
+               "resolving into place" read for free. */
             initial={
               reduce
                 ? { opacity: 0 }
-                : { opacity: 0, y: 48, scale: 0.97, filter: "blur(14px)" }
+                : { opacity: 0, y: 48, scale: 0.97 }
             }
             animate={
-              reduce
-                ? { opacity: 1 }
-                : { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
+              reduce ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }
             }
             transition={reduce ? { duration: 0.2 } : { ...SPRING.soft, delay: 0.22 }}
             style={{ transformOrigin: "top center" }}

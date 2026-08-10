@@ -1,5 +1,6 @@
 "use client";
 
+import { AUTH_PANELS } from "@/components/Home/imagery";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,9 +16,6 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowClockwiseIcon,
-  CheckCircleIcon,
-  SealCheckIcon,
-  XCircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
 function VerifyEmailContent() {
@@ -95,11 +93,9 @@ function VerifyEmailContent() {
 
   return (
     <AuthLayout
-      icon={SealCheckIcon}
+      panel={AUTH_PANELS.verify}
       title={copy.title}
       subtitle={copy.subtitle}
-      imageSrc="https://res.cloudinary.com/djgwnvlrb/image/upload/v1776530581/register_eu7mjh.png"
-      imageAlt="Chefalio Verify Email"
       footer={<AuthLink href="/login">Back to sign in</AuthLink>}
     >
       {status === "loading" && (
@@ -124,7 +120,6 @@ function VerifyEmailContent() {
 
       {status === "success" && (
         <AuthResult
-          icon={CheckCircleIcon}
           title="Email verified"
           actions={
             <Link href="/recipes" className="block">
@@ -140,7 +135,6 @@ function VerifyEmailContent() {
       {status === "error" && (
         <AuthResult
           tone="error"
-          icon={XCircleIcon}
           title="Verification failed"
           actions={
             resendSent ? (

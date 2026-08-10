@@ -43,6 +43,25 @@ export const EASE = cubicBezier(0.22, 1, 0.36, 1);
 export const EASE_REVERSE = cubicBezier(0.64, 0, 0.78, 0);
 export const EASE_ARRAY = [0.22, 1, 0.36, 1] as const;
 
+/**
+ * The one-frame pop something makes when it completes — a step ticking off, a
+ * filter landing on a chip.
+ *
+ * It has to be a tween. A spring solves for a single target and can only
+ * interpolate two keyframes, so handing it `[1, 1.18, 1]` throws; out and back
+ * in one gesture is a shape, not a destination. Apply it per-value so the
+ * colours animating alongside it keep their spring:
+ *
+ *     transition={{ ...SPRING.snappy, scale: POP_TRANSITION }}
+ */
+export const POP = [1, 1.18, 1];
+
+export const POP_TRANSITION: Transition = {
+  duration: 0.3,
+  times: [0, 0.42, 1],
+  ease: EASE,
+};
+
 /* ── Reveal variants ─────────────────────────────────────────────────────
    Entrances are spring-driven and short-travel. Nothing here overshoots:
    an element that simply arrived on screen was not thrown by anyone, and
@@ -69,15 +88,21 @@ export const scaleIn = {
 };
 
 /**
- * Glass arrives as a material, not as a fading rectangle: blur and scale
- * resolve together so the surface reads as condensing into place.
+ * Glass arrives as a material, not as a fading rectangle: it resolves into
+ * place rather than switching on.
+ *
+ * This used to animate `filter: blur(12px) → 0` as well. Every element in
+ * the hero uses this variant, so a first paint ran five simultaneous blur
+ * animations — each one re-rasterising its subtree every frame — at the
+ * exact moment the browser is busiest. Opacity, scale and a short rise are
+ * compositor-only, read the same, and cost nothing.
  */
 export const materialize = {
-  hidden: { opacity: 0, scale: 0.97, filter: "blur(12px)" },
+  hidden: { opacity: 0, scale: 0.97, y: 8 },
   visible: {
     opacity: 1,
     scale: 1,
-    filter: "blur(0px)",
+    y: 0,
     transition: SPRING.soft,
   },
 };

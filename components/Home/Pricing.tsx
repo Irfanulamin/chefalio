@@ -82,14 +82,18 @@ export const Pricing = () => {
           align="center"
         />
 
-        <div className="mt-14 grid gap-5 lg:grid-cols-3 lg:items-start">
+        {/* `items-start` sized every column to its own content, so three
+            cards with four bullets each came out short and uneven. They
+            stretch to a common height now, with a floor under them so the
+            price has room to breathe above the list. */}
+        <div className="mt-14 grid gap-5 lg:grid-cols-3">
           {PLANS.map((plan, i) => (
-            <Reveal key={plan.id} delay={i * 0.06} distance={22}>
+            <Reveal key={plan.id} delay={i * 0.06} distance={22} className="h-full">
               <motion.div
                 whileHover={reduce ? undefined : { y: -4 }}
                 transition={SPRING.snappy}
-                className={`relative flex h-full flex-col rounded-3xl p-7 ${
-                  plan.featured ? "lg:-mt-4 lg:pb-9 lg:pt-9" : ""
+                className={`relative flex h-full flex-col rounded-3xl p-8 lg:min-h-[33rem] ${
+                  plan.featured ? "lg:-mt-4 lg:pb-10 lg:pt-10" : ""
                 }`}
                 style={
                   plan.featured
@@ -154,7 +158,7 @@ export const Pricing = () => {
                   {plan.tagline}
                 </p>
 
-                <ul className="mt-7 flex-1 space-y-3">
+                <ul className="mt-8 flex-1 space-y-4">
                   {plan.points.map((point) => (
                     <li key={point} className="flex gap-2.5">
                       <span
