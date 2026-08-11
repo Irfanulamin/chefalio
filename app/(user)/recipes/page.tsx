@@ -7,19 +7,9 @@ import { useCallback, useEffect, useRef } from "react";
 import { useDebounce } from "use-debounce";
 import { RecipeGrid } from "@/components/User/Recipe/RecipeGrid";
 import { RecipeFilters } from "@/components/User/Recipe/RecipeFilters";
-import { Loader2 } from "lucide-react";
-
-const DIFFICULTIES = ["beginner", "intermediate", "advance"] as const;
-type Difficulty = (typeof DIFFICULTIES)[number];
-
-const DIFFICULTY_STYLES: Record<Difficulty, string> = {
-  beginner:
-    "border-emerald-500 text-emerald-600 data-[active=true]:bg-emerald-500 data-[active=true]:text-white",
-  intermediate:
-    "border-amber-500 text-amber-600 data-[active=true]:bg-amber-500 data-[active=true]:text-white",
-  advance:
-    "border-rose-500 text-rose-600 data-[active=true]:bg-rose-500 data-[active=true]:text-white",
-};
+import { PageHeader } from "@/components/User/shared/PageHeader";
+import { LoadMoreSentinel } from "@/components/User/shared/LoadMoreSentinel";
+import { DIFFICULTIES, type Difficulty } from "@/lib/recipe-display";
 
 export const POPULAR_TAGS = [
   "vegetarian",
@@ -120,65 +110,53 @@ export default function RecipesPage() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <div className="page-root">
-      <title>Chefalio - Recipes</title>
+    <div className="app-root">
+      <title>Chefalio — Recipes</title>
 
-      {/* Page header */}
-      <div className="page-content pb-0">
-        <div className="pb-6" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--cs-text-primary)" }}>
-            Recipes
-          </h1>
-          <p className="text-sm mt-1 max-w-xl" style={{ color: "var(--cs-text-secondary)" }}>
-            Discover delicious recipes tailored to your taste. Filter by difficulty, tags, or author to find your next favourite dish.
-          </p>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="page-content py-4">
-        <RecipeFilters
-          DIFFICULTIES={DIFFICULTIES}
-          DIFFICULTY_STYLES={DIFFICULTY_STYLES}
-          POPULAR_TAGS={POPULAR_TAGS}
-          difficulty={difficulty}
-          selectedTags={selectedTags}
-          author={author}
-          toggleTag={toggleTag}
-          toggleDifficulty={toggleDifficulty}
-          setAuthor={(value) => updateParams({ author: value || null })}
-          handleSearchChange={handleSearchChange}
-          isFetching={isFetching}
-          debouncedAuthor={debouncedAuthor}
-          hasActiveFilters={hasActiveFilters}
-          clearAllFilters={clearAllFilters}
-          setDifficulty={(d) => updateParams({ difficulty: d || null })}
-          search={search}
+      <div className="page-content">
+        <PageHeader
+          title="Recipes"
+          lede="Everything the chefs have published. Filter by level, tag or chef to narrow it down."
+          meta={
+            !isLoading && data.length > 0
+              ? `Showing ${data.length} of ${total} recipe${total !== 1 ? "s" : ""}`
+              : undefined
+          }
         />
-      </div>
 
-      {/* Content */}
-      <div className="page-content pt-0">
-        {!isLoading && data.length > 0 && (
-          <p className="text-sm mb-4" style={{ color: "var(--cs-text-secondary)" }}>
-            {total === 0
-              ? "No recipes found"
-              : `Showing ${data.length} of ${total} recipe${total !== 1 ? "s" : ""}`}
-          </p>
-        )}
+        <div className="mb-6">
+          <RecipeFilters
+            DIFFICULTIES={DIFFICULTIES}
+            POPULAR_TAGS={POPULAR_TAGS}
+            difficulty={difficulty}
+            selectedTags={selectedTags}
+            author={author}
+            toggleTag={toggleTag}
+            toggleDifficulty={toggleDifficulty}
+            setAuthor={(value) => updateParams({ author: value || null })}
+            handleSearchChange={handleSearchChange}
+            isFetching={isFetching}
+            debouncedAuthor={debouncedAuthor}
+            hasActiveFilters={hasActiveFilters}
+            clearAllFilters={clearAllFilters}
+            search={search}
+          />
+        </div>
 
         <RecipeGrid
           handleRecipeLoading={handleRecipeLoading}
           isFetching={isFetching && !isFetchingNextPage}
           data={data}
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={clearAllFilters}
         />
 
-        <div ref={sentinelRef} className="h-4 mt-4" />
-        {isFetchingNextPage && (
-          <div className="flex justify-center py-4">
-            <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--cs-text-tertiary)" }} />
-          </div>
-        )}
+        <LoadMoreSentinel
+          ref={sentinelRef}
+          loading={isFetchingNextPage}
+          done={!hasNextPage && data.length > 0}
+          label="recipes"
+        />
       </div>
     </div>
   );

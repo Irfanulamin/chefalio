@@ -10,6 +10,8 @@ import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import z, { email } from "zod";
 import { CreditCardIcon } from "@phosphor-icons/react/dist/ssr";
+import { EmptyState } from "@/components/common/EmptyState";
+import { cookbookPrice } from "@/lib/recipe-display";
 import { use } from "react";
 
 const paymentSchema = z.object({
@@ -70,28 +72,29 @@ export default function PurchaseCookbookPage({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col-reverse lg:flex-row justify-center lg:justify-between gap-6 px-4 py-5 mx-auto max-w-7xl">
-        <div className="flex-1 w-full lg:max-w-2xl space-y-5">
-          <div className="space-y-1">
-            <Skeleton className="h-8 w-36" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="space-y-1.5">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-10 w-full rounded-lg" />
+      <div className="app-root">
+        <div className="page-content flex flex-col-reverse justify-center gap-8 lg:flex-row lg:justify-between">
+          <div className="w-full flex-1 space-y-5 lg:max-w-2xl">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-36" />
+              <Skeleton className="h-4 w-64" />
             </div>
-          ))}
-          <Skeleton className="h-11 w-full lg:w-32 rounded-lg ml-auto" />
-        </div>
-        <div className="w-full flex-1 lg:shrink-0">
-          <div className="rounded-2xl border border-border/40 overflow-hidden">
-            <Skeleton className="aspect-square w-full" />
-            <div className="p-5 space-y-3">
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-              <Skeleton className="h-8 w-24 mt-2" />
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="space-y-1.5">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+              </div>
+            ))}
+            <Skeleton className="ml-auto h-11 w-full rounded-lg lg:w-32" />
+          </div>
+          <div className="w-full lg:max-w-sm lg:shrink-0">
+            <div className="ui-card overflow-hidden">
+              <Skeleton className="w-full rounded-none" style={{ aspectRatio: "3/4" }} />
+              <div className="space-y-3 p-5">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+              </div>
             </div>
           </div>
         </div>
@@ -101,16 +104,20 @@ export default function PurchaseCookbookPage({
 
   if (error || !cookbook) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6 text-center">
-        <div>
-          <p className="text-base font-medium">Something went wrong</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Unable to load this cookbook.
-          </p>
+      <div className="app-root">
+        <div className="page-content">
+          <EmptyState
+            icon={<CreditCardIcon size={24} />}
+            title="Couldn't open checkout"
+            description="We couldn't load this cookbook, so there's nothing to charge you for. Nothing has been taken from your card."
+            action={{ label: "Back to cookbooks", href: "/cookbooks" }}
+          />
         </div>
       </div>
     );
   }
+
+  const price = cookbookPrice(cookbook.price, cookbook.discount ?? 0);
 
   const fieldDefinitions = [
     {
@@ -158,47 +165,64 @@ export default function PurchaseCookbookPage({
   ];
 
   return (
-    <div className="min-h-screen flex flex-col-reverse lg:flex-row justify-center lg:justify-between gap-6 bg-background px-4 py-5 mx-auto max-w-7xl">
-      {/* FORM */}
-      <form
-        className="flex-1 w-full lg:max-w-2xl space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-      >
-        <div>
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            Checkout{" "}
-            <CreditCardIcon className="h-6 w-6 text-primary" weight="fill" />
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Please fill in your details to complete the purchase.
-          </p>
-        </div>
-
-        <FieldGroup>
-          {fieldDefinitions.map((fieldDef) => (
-            <FormField key={fieldDef.name} form={form} {...fieldDef} />
-          ))}
-        </FieldGroup>
-
-        <div className="flex justify-end">
-          <Button
-            type="submit"
-            className="w-full lg:w-auto rounded-lg py-5"
-            disabled={isPaying}
+    <>
+      <title>{`Checkout — ${cookbook.title}`}</title>
+      <div className="app-root">
+        {/* Summary first in the DOM on mobile (`flex-col-reverse` puts the
+            form on top visually) so the thing being bought is the first
+            thing read, not seven address fields. */}
+        <div className="page-content flex flex-col-reverse justify-center gap-8 lg:flex-row lg:justify-between lg:items-start">
+          <form
+            className="w-full flex-1 space-y-5 lg:max-w-2xl"
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
           >
-            {isPaying ? "Paying..." : "Pay Now"}
-          </Button>
-        </div>
-      </form>
+            <div>
+              <h1
+                className="ui-title flex items-center gap-2"
+                style={{ color: "var(--cs-text-primary)" }}
+              >
+                Checkout
+                <CreditCardIcon
+                  className="h-6 w-6"
+                  weight="fill"
+                  style={{ color: "var(--cs-accent-text)" }}
+                  aria-hidden
+                />
+              </h1>
+              <p className="ui-body mt-1" style={{ color: "var(--cs-text-secondary)" }}>
+                Your billing details. Card details are entered on the next screen,
+                on Stripe — we never see them.
+              </p>
+            </div>
 
-      {/* SUMMARY */}
-      <div className="w-full flex-1 lg:shrink-0 mx-auto lg:mx-0">
-        <SummaryCard cookbook={cookbook} />
+            <FieldGroup>
+              {fieldDefinitions.map((fieldDef) => (
+                <FormField key={fieldDef.name} form={form} {...fieldDef} />
+              ))}
+            </FieldGroup>
+
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                className="w-full rounded-lg py-5 lg:w-auto"
+                disabled={isPaying}
+              >
+                {isPaying ? "Redirecting…" : `Pay ${price.current}`}
+              </Button>
+            </div>
+          </form>
+
+          {/* Stays in view while the form is filled in, so the price never
+              scrolls out of sight during checkout. */}
+          <div className="w-full lg:sticky lg:top-24 lg:max-w-sm lg:shrink-0">
+            <SummaryCard cookbook={cookbook} />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

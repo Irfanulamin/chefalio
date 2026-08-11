@@ -120,6 +120,46 @@ body {
     0 10px 28px -14px rgba(17, 17, 16, 0.14);
   --cs-shadow-float: 0 2px 6px rgba(17, 17, 16, 0.06),
     0 28px 68px -28px rgba(17, 17, 16, 0.3);
+
+  /* ── Interaction states ───────────────────────────────────────────────
+     The authenticated app has far more interactive surface than the
+     landing page, so the states it can be in are named once here rather
+     than re-picked per component. Every product control draws its
+     hover / active / selected / focus appearance from these four, which
+     is what makes a button in Settings and a chip in Recipes feel like
+     the same control family. */
+  --cs-hover: rgba(17, 17, 16, 0.04);
+  --cs-active: rgba(17, 17, 16, 0.07);
+  --cs-selected: var(--cs-accent-muted);
+  --cs-focus-ring: color-mix(in oklab, var(--primary) 55%, transparent);
+
+  /* ── Status ───────────────────────────────────────────────────────────
+     Difficulty pills, order states and validation used to be hardcoded
+     Tailwind pastels (#dcfce7 on #15803d and friends). Those are light-
+     mode literals: in dark mode a mint chip stayed mint, glowing off a
+     near-black card. Each status is a triplet — a muted fill, a legible
+     foreground, a hairline edge — and dark mode restates all three
+     rather than inheriting a colour designed for white. */
+  --cs-success-bg: #e7f6ec;
+  --cs-success-fg: #1a7f42;
+  --cs-success-edge: rgba(26, 127, 66, 0.22);
+
+  --cs-warning-bg: #fbf2dd;
+  --cs-warning-fg: #8a6212;
+  --cs-warning-edge: rgba(138, 98, 18, 0.22);
+
+  --cs-danger-bg: #fbeaea;
+  --cs-danger-fg: #b0342f;
+  --cs-danger-edge: rgba(176, 52, 47, 0.22);
+
+  --cs-info-bg: #e9eef7;
+  --cs-info-fg: #395a91;
+  --cs-info-edge: rgba(57, 90, 145, 0.22);
+
+  /* "Loved" is affection, not an error — it gets its own hue so it never
+     reads as the danger state sitting next to it. */
+  --cs-love: #d9455f;
+  --cs-love-bg: rgba(217, 69, 95, 0.1);
 }
 
 /* DARK MODE */
@@ -175,6 +215,34 @@ body {
     0 10px 28px -14px rgba(0, 0, 0, 0.6);
   --cs-shadow-float: 0 2px 6px rgba(0, 0, 0, 0.4),
     0 28px 68px -28px rgba(0, 0, 0, 0.8);
+
+  /* Interaction states — dark lifts with light rather than darkening. */
+  --cs-hover: rgba(255, 255, 255, 0.05);
+  --cs-active: rgba(255, 255, 255, 0.09);
+  --cs-selected: var(--cs-accent-muted);
+  --cs-focus-ring: color-mix(in oklab, var(--primary) 60%, transparent);
+
+  /* Status — dark mode drops the fill to a low-alpha wash of its own hue
+     and brightens the foreground, so a pill reads as a tinted piece of
+     the card rather than a light sticker pasted onto it. */
+  --cs-success-bg: rgba(58, 176, 106, 0.16);
+  --cs-success-fg: #6ed99b;
+  --cs-success-edge: rgba(110, 217, 155, 0.28);
+
+  --cs-warning-bg: rgba(214, 160, 46, 0.16);
+  --cs-warning-fg: #e6be62;
+  --cs-warning-edge: rgba(230, 190, 98, 0.28);
+
+  --cs-danger-bg: rgba(224, 88, 82, 0.16);
+  --cs-danger-fg: #f08d88;
+  --cs-danger-edge: rgba(240, 141, 136, 0.28);
+
+  --cs-info-bg: rgba(110, 150, 214, 0.16);
+  --cs-info-fg: #9fbcec;
+  --cs-info-edge: rgba(159, 188, 236, 0.28);
+
+  --cs-love: #f2687f;
+  --cs-love-bg: rgba(242, 104, 127, 0.14);
 }
 
 @layer base {
@@ -541,6 +609,411 @@ body {
   mask-image: linear-gradient(to bottom, #000, transparent);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   Product foundations
+   The authenticated app. It shares the landing page's materials, colour
+   and motion vocabulary — the point is that signing in shouldn't feel
+   like changing products — but it is deliberately *not* the same type
+   scale, and it does not inherit the landing page's entrance
+   choreography.
+
+   Two reasons. Marketing type is fluid (`clamp`) because it is read once
+   at whatever width the visitor happens to have; product type is read
+   all day at a fixed DPI, and a heading that shrinks because a filter
+   panel opened is a bug, not responsiveness. So this scale is fixed rem
+   with a tighter ratio (~1.15), because the app has many more type roles
+   per screen than a landing section and exaggerated contrast between
+   them just makes noise.
+
+   And scroll-triggered reveals belong to a page someone is *browsing*.
+   Someone opening Recipes is mid-task and wants the list, not to watch
+   it arrive. Motion in here reports state — a filter landing, a tab
+   moving, a press being felt — and nothing else.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Type ──────────────────────────────────────────────────────────────
+   Same discipline as the landing scale: tracking is size-specific and
+   tightens as size grows, leading moves inversely. Only the values
+   differ. */
+
+.ui-title {
+  font-size: 1.5rem;
+  line-height: 1.22;
+  letter-spacing: -0.022em;
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+.ui-heading {
+  font-size: 1.125rem;
+  line-height: 1.3;
+  letter-spacing: -0.016em;
+  font-weight: 650;
+  text-wrap: balance;
+}
+
+.ui-subheading {
+  font-size: 0.9375rem;
+  line-height: 1.38;
+  letter-spacing: -0.009em;
+  font-weight: 600;
+}
+
+.ui-body {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  letter-spacing: -0.002em;
+  text-wrap: pretty;
+}
+
+.ui-caption {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  letter-spacing: 0.003em;
+}
+
+.ui-micro {
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+/* Uppercase eyebrow. Slightly tighter than the landing's `type-label` —
+   product labels sit in tighter quarters and rarely span a full line. */
+.ui-label {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Counts, prices, durations. Proportional digits make a column of
+   numbers wobble as it updates — a live "1,204 saves" ticking to
+   "1,205" shifts every digit beside it without this. */
+.ui-numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* ── App surface ───────────────────────────────────────────────────────
+   The landing page's light field, turned right down. The same warm
+   pools in the same brand hue, at roughly a third of the strength and
+   fixed to the viewport rather than the document, so it reads as the
+   room the app sits in instead of scenery scrolling past. It is what
+   carries the visual link to the landing page without putting marketing
+   glow behind a data table. */
+
+.app-root {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background-color: var(--cs-surface-1);
+  color: var(--cs-text-primary);
+}
+
+.app-root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(
+      ellipse 60% 40% at 0% 0%,
+      color-mix(in oklab, var(--primary) 5%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 55% 40% at 100% 8%,
+      color-mix(in oklab, var(--secondary) 4%, transparent),
+      transparent 62%
+    );
+}
+
+/* ── Focus ─────────────────────────────────────────────────────────────
+   One focus treatment for the whole app. `:focus-visible` only, so a
+   pointer user never sees it and a keyboard user always does. The
+   offset ring sits outside the control's own border rather than
+   replacing it, which keeps the control's shape readable while focused.
+   Applied via a class instead of a blanket `*:focus-visible` so
+   third-party widgets keep their own handling. */
+
+.focus-ring:focus-visible,
+.ui-card-interactive:focus-visible,
+.ui-chip:focus-visible,
+.ui-field:focus-within {
+  outline: 2px solid var(--cs-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-field:focus-within {
+  outline-offset: 1px;
+  border-color: color-mix(in oklab, var(--primary) 45%, var(--cs-border-default));
+}
+
+/* ── Card ──────────────────────────────────────────────────────────────
+   Every content tile in the app — recipe, cookbook, chef, order, stat.
+   Cards used to each carry their own `hover:-translate-y-1
+   hover:shadow-lg`, which is a big, slow lift that suits a marketing
+   card you're admiring and oversells a grid tile you're scanning past
+   forty of. The interactive variant lifts 2px and brightens its edge
+   instead, in the 180ms the product register asks for. */
+
+.ui-card {
+  background-color: var(--cs-surface-2);
+  border: 1px solid var(--cs-border-subtle);
+  border-radius: var(--radius-xl);
+}
+
+.ui-card-interactive {
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms ease;
+  will-change: transform;
+}
+
+@media (hover: hover) {
+  .ui-card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--cs-shadow-card);
+    border-color: var(--cs-border-default);
+  }
+}
+
+/* Contact, not hover. The press reads on pointer-down and settles back
+   from wherever it currently sits. */
+.ui-card-interactive:active {
+  transform: translateY(0) scale(0.995);
+  transition-duration: 90ms;
+}
+
+/* A card's primary link covers the whole card, so the target is the tile
+   rather than the 15px of title text. Controls that do something *else* —
+   the author link, save and love — lift above it instead of being nested
+   inside it, which would be invalid and would make the whole card
+   un-clickable in a screen reader. */
+.stretched-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.above-stretched-link {
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Chip ──────────────────────────────────────────────────────────────
+   Filters, tags, difficulty, status. An unselected filter is *not* an
+   announcement: it used to be a saturated emerald / amber / rose
+   outline, so a row of three unselected difficulties read like a
+   traffic light and the one you'd actually chosen had nothing left to
+   distinguish it. Inactive is neutral; selection is the only thing
+   allowed to carry colour. */
+
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3125rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid var(--cs-border-subtle);
+  background-color: var(--cs-surface-2);
+  color: var(--cs-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease;
+}
+
+@media (hover: hover) {
+  .ui-chip:hover {
+    background-color: var(--cs-surface-3);
+    color: var(--cs-text-primary);
+    border-color: var(--cs-border-default);
+  }
+}
+
+.ui-chip[data-active="true"] {
+  background-color: var(--cs-accent-muted);
+  border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+  color: var(--cs-accent-text);
+  font-weight: 600;
+}
+
+.ui-chip[disabled],
+.ui-chip[data-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Row ───────────────────────────────────────────────────────────────
+   A line in a list panel — a saved recipe, an order. The separator lives
+   on the row rather than on a `divide-y` parent so the last row can drop
+   it without the parent needing to know how many children it has. */
+
+.ui-row {
+  border-bottom: 1px solid var(--cs-border-subtle);
+  background-color: var(--cs-surface-2);
+  transition: background-color 150ms ease;
+}
+
+.ui-row:last-child {
+  border-bottom: 0;
+}
+
+@media (hover: hover) {
+  .ui-row:hover {
+    background-color: var(--cs-surface-3);
+  }
+}
+
+.ui-row:active {
+  background-color: var(--cs-active);
+}
+
+/* ── Field ─────────────────────────────────────────────────────────────
+   Search and text inputs. One shape across the app: the three list
+   pages had each grown their own search box (different radius, border,
+   icon size, placeholder colour). */
+
+.ui-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid var(--cs-border-default);
+  background-color: var(--cs-surface-1);
+  color: var(--cs-text-primary);
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+
+.ui-field input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-size: 0.875rem;
+  color: inherit;
+}
+
+.ui-field input::placeholder {
+  color: var(--cs-text-tertiary);
+}
+
+/* ── Scrollable panel ──────────────────────────────────────────────────
+   A list inside floating chrome — the notification tray, a popover.
+
+   The default desktop scrollbar is a chunky opaque channel drawn by the
+   OS with no idea it's sitting inside a 320px rounded panel: it squares
+   off the corner it lands in and is the loudest thing in the tray. This
+   is the overlay treatment instead — a thin rounded thumb inset from the
+   edge by a transparent border, visible enough to grab, quiet enough to
+   ignore. It's the platform's own scrollbar restyled, not a JavaScript
+   replacement for one, so it keeps native wheel, trackpad and keyboard
+   behaviour.
+
+   `overscroll-behavior: contain` is the other half: without it, reaching
+   the end of the tray hands the scroll to the page underneath, so the
+   whole app lurches while you're reading a notification. */
+
+.scroll-panel {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cs-border-default) transparent;
+}
+
+.scroll-panel::-webkit-scrollbar {
+  width: 10px;
+}
+
+.scroll-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-panel::-webkit-scrollbar-thumb {
+  background-color: var(--cs-border-default);
+  border-radius: 9999px;
+  /* Transparent border + content-box clip is what insets the thumb from
+     the panel edge instead of letting it ride the corner radius. */
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.scroll-panel:hover::-webkit-scrollbar-thumb {
+  background-color: var(--cs-text-tertiary);
+}
+
+/* ── Status pill ───────────────────────────────────────────────────────
+   Difficulty, order state, validation. Reads from the status triplets,
+   so it is correct in both themes by construction. */
+
+.ui-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+}
+
+.ui-status[data-tone="success"] {
+  background-color: var(--cs-success-bg);
+  color: var(--cs-success-fg);
+  border-color: var(--cs-success-edge);
+}
+
+.ui-status[data-tone="warning"] {
+  background-color: var(--cs-warning-bg);
+  color: var(--cs-warning-fg);
+  border-color: var(--cs-warning-edge);
+}
+
+.ui-status[data-tone="danger"] {
+  background-color: var(--cs-danger-bg);
+  color: var(--cs-danger-fg);
+  border-color: var(--cs-danger-edge);
+}
+
+.ui-status[data-tone="info"] {
+  background-color: var(--cs-info-bg);
+  color: var(--cs-info-fg);
+  border-color: var(--cs-info-edge);
+}
+
+.ui-status[data-tone="neutral"] {
+  background-color: var(--cs-surface-3);
+  color: var(--cs-text-secondary);
+  border-color: var(--cs-border-subtle);
+}
+
+/* A status pill laid over a photo can't rely on the card's surface for
+   contrast, so it carries its own material. */
+.ui-status[data-over-media="true"] {
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
 /* ── Accessibility fallbacks ───────────────────────────────────────────
    Reduced transparency means frostier and solid, not blur-lite.
    Increased contrast means near-solid with a defined border. */
@@ -569,6 +1042,34 @@ body {
     background-color: var(--cs-surface-1);
     border-color: var(--cs-text-secondary);
   }
+
+  /* Product controls lean on subtle fills to show state. At this setting
+     the fill alone is not enough, so selection and card edges gain a
+     defined border instead. */
+  .ui-card,
+  .ui-chip,
+  .ui-field {
+    border-color: var(--cs-text-secondary);
+  }
+
+  .ui-chip[data-active="true"] {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    border-color: var(--cs-text-primary);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .ui-status[data-over-media="true"] {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* The ambient field is decorative; without transparency it is just a
+     muddier background. */
+  .app-root::before {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -579,5 +1080,14 @@ body {
     transition: opacity 200ms ease !important;
     transform: none !important;
     animation: none !important;
+  }
+
+  /* Cards keep their hover feedback, minus the travel — the setting asks
+     us to drop movement, not to stop telling the user what's hoverable. */
+  .ui-card-interactive,
+  .ui-card-interactive:hover,
+  .ui-card-interactive:active {
+    transform: none !important;
+    transition: box-shadow 150ms ease, border-color 150ms ease;
   }
 }

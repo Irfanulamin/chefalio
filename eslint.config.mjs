@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored agent skill packs — third-party example code, not ours to
+    // lint. They also ship .mjs/.js helpers that skew language stats,
+    // which is why they're gitignored too.
+    ".agents/**",
+    ".claude/**",
   ]),
   {
     rules: {

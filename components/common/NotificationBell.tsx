@@ -6,10 +6,13 @@ import {
   ForkKnifeIcon,
   BookOpenIcon,
   TagIcon,
+  ImageSquareIcon,
 } from "@phosphor-icons/react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useNotifications } from "@/hooks/useNotifications";
 import type { AppNotification } from "@/types/notification.type";
-import Image from "next/image";
+import { SafeImage } from "./SafeImage";
+import { SPRING } from "@/lib/motion";
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -21,154 +24,214 @@ function timeAgo(dateStr: string) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
+/**
+ * The type glyph doubles as the avatar fallback, so a notification with
+ * no actor picture and one whose picture is dead look the same. It used
+ * to be amber / blue / emerald chips — three hues that appear nowhere
+ * else in the product — so the tray was the most colourful surface in
+ * the app while carrying the least important information.
+ */
 function NotificationIcon({ type }: { type: AppNotification["type"] }) {
-  if (type === "new_recipe")
-    return (
-      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 shrink-0">
-        <ForkKnifeIcon size={15} weight="fill" className="text-amber-600 dark:text-amber-400" />
-      </span>
-    );
-  if (type === "new_cookbook")
-    return (
-      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 shrink-0">
-        <BookOpenIcon size={15} weight="fill" className="text-blue-600 dark:text-blue-400" />
-      </span>
-    );
+  const Icon =
+    type === "new_recipe"
+      ? ForkKnifeIcon
+      : type === "new_cookbook"
+        ? BookOpenIcon
+        : TagIcon;
+
   return (
-    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 shrink-0">
-      <TagIcon size={15} weight="fill" className="text-emerald-600 dark:text-emerald-400" />
+    <span
+      aria-hidden
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+      style={{
+        backgroundColor: "var(--cs-accent-muted)",
+        color: "var(--cs-accent-text)",
+      }}
+    >
+      <Icon size={15} weight="fill" />
     </span>
   );
 }
 
 export function NotificationBell() {
-  const { notifications, unreadCount, isLoading, markAllRead } =
-    useNotifications();
+  const { notifications, unreadCount, isLoading, markAllRead } = useNotifications();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
 
-  // Close panel when clicking outside
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     }
-    if (open) document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
+    // A panel you can open with the keyboard has to be closable with it.
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+
+    if (open) {
+      document.addEventListener("mousedown", handleOutside);
+      document.addEventListener("keydown", handleKey);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("keydown", handleKey);
+    };
   }, [open]);
 
   function handleOpen() {
     setOpen((prev) => !prev);
-    if (!open && unreadCount > 0) {
-      markAllRead();
-    }
+    if (!open && unreadCount > 0) markAllRead();
   }
 
   return (
     <div ref={containerRef} className="relative">
-      {/* Bell button */}
       <button
         onClick={handleOpen}
-        aria-label="Notifications"
-        className="relative p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        aria-label={
+          unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"
+        }
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        className="focus-ring relative rounded-md p-1.5 transition-colors"
+        style={{ color: open ? "var(--cs-text-primary)" : "var(--cs-text-secondary)" }}
       >
         <BellIcon size={20} weight={open ? "fill" : "regular"} />
         {unreadCount > 0 && (
-          <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-red-500 ring-1 ring-background" />
+          <span
+            className="absolute right-0.5 top-0.5 h-2 w-2 rounded-full"
+            style={{
+              backgroundColor: "var(--cs-danger-fg)",
+              boxShadow: "0 0 0 1.5px var(--cs-surface-1)",
+            }}
+          />
         )}
       </button>
 
-      {/* Dropdown panel */}
-      {open && (
-        <div
-          className="absolute right-0 mt-2 w-80 rounded-xl shadow-xl z-50 overflow-hidden"
-          style={{
-            backgroundColor: "var(--cs-surface-1)",
-            border: "1px solid var(--cs-border-subtle)",
-          }}
-        >
-          {/* Header */}
-          <div
-            className="flex items-center justify-between px-4 py-3"
-            style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
+      <AnimatePresence>
+        {open && (
+          /* Scales from its top-right corner — the button it came from —
+             rather than out of its own middle, so the panel reads as
+             belonging to the bell. */
+          <motion.div
+            role="dialog"
+            aria-label="Notifications"
+            className="material-thick absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl"
+            style={{ transformOrigin: "top right" }}
+            initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.94, y: -6 }}
+            animate={reduce ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -4 }}
+            transition={SPRING.snappy}
           >
-            <span className="text-sm font-semibold text-foreground">
-              Notifications
-            </span>
-            {notifications.length > 0 && (
-              <span className="text-xs text-zinc-400">
-                {notifications.length} total
+            <div
+              className="flex items-center justify-between px-4 py-3"
+              style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
+            >
+              <span className="ui-subheading" style={{ color: "var(--cs-text-primary)" }}>
+                Notifications
               </span>
-            )}
-          </div>
-
-          {/* List */}
-          <div
-            className="max-h-96 overflow-y-auto"
-            style={{ borderTop: "none" }}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center h-24 text-xs text-zinc-400">
-                Loading…
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-32 gap-2 text-zinc-400">
-                <BellIcon size={22} />
-                <p className="text-xs">No notifications yet</p>
-              </div>
-            ) : (
-              notifications.map((n) => (
-                <div
-                  key={n._id}
-                  className="flex items-start gap-3 px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+              {notifications.length > 0 && (
+                <span
+                  className="ui-micro ui-numeric"
+                  style={{ color: "var(--cs-text-tertiary)" }}
                 >
-                  {/* Actor avatar or type icon */}
-                  {n.actorAvatar ? (
-                    <Image
-                      src={n.actorAvatar}
-                      alt={n.actorName ?? ""}
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 rounded-full object-cover shrink-0"
-                    />
-                  ) : (
-                    <NotificationIcon type={n.type} />
-                  )}
+                  {notifications.length} total
+                </span>
+              )}
+            </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-foreground leading-snug">
-                      {n.title}
-                    </p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed line-clamp-2">
-                      {n.message}
-                    </p>
-                    <p className="text-[10px] text-zinc-400 mt-1">
-                      {timeAgo(n.createdAt)}
-                    </p>
-                  </div>
-
-                  {/* Thumbnail */}
-                  {n.thumbnail && (
-                    <div className="relative w-10 h-10 rounded-md overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
-                      <Image
-                        src={n.thumbnail}
-                        alt=""
-                        fill
-                        className="object-cover"
-                        sizes="40px"
-                      />
-                    </div>
-                  )}
+            <div className="scroll-panel max-h-96">
+              {isLoading ? (
+                <div
+                  className="ui-caption flex h-24 items-center justify-center"
+                  style={{ color: "var(--cs-text-tertiary)" }}
+                >
+                  Loading…
                 </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
+              ) : notifications.length === 0 ? (
+                <div
+                  className="flex h-32 flex-col items-center justify-center gap-2"
+                  style={{ color: "var(--cs-text-tertiary)" }}
+                >
+                  <BellIcon size={22} aria-hidden />
+                  <p className="ui-caption">Nothing yet</p>
+                  <p className="ui-micro max-w-[15rem] text-center">
+                    New recipes and cookbooks from chefs you follow land here.
+                  </p>
+                </div>
+              ) : (
+                <ul>
+                  {notifications.map((n) => (
+                    <li
+                      key={n._id}
+                      className="ui-row flex items-start gap-3 px-4 py-3"
+                    >
+                      <SafeImage
+                        src={n.actorAvatar}
+                        alt=""
+                        width={32}
+                        height={32}
+                        className="h-8 w-8 shrink-0 rounded-full object-cover"
+                        fallback={<NotificationIcon type={n.type} />}
+                      />
+
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className="ui-micro font-semibold leading-snug"
+                          style={{ color: "var(--cs-text-primary)" }}
+                        >
+                          {n.title}
+                        </p>
+                        <p
+                          className="ui-micro mt-0.5 line-clamp-2 leading-relaxed"
+                          style={{ color: "var(--cs-text-secondary)" }}
+                        >
+                          {n.message}
+                        </p>
+                        <p
+                          className="ui-micro mt-1"
+                          style={{ color: "var(--cs-text-tertiary)" }}
+                        >
+                          {timeAgo(n.createdAt)}
+                        </p>
+                      </div>
+
+                      {/* The slot is always drawn once a notification has
+                          any thumbnail intent, so a dead URL doesn't
+                          collapse the row's layout to a different shape
+                          from its neighbours. */}
+                      {n.thumbnail && (
+                        <div
+                          className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md"
+                          style={{ backgroundColor: "var(--cs-surface-3)" }}
+                        >
+                          <SafeImage
+                            src={n.thumbnail}
+                            alt=""
+                            fill
+                            sizes="40px"
+                            className="object-cover"
+                            fallback={
+                              <span
+                                aria-hidden
+                                className="flex h-full w-full items-center justify-center"
+                                style={{ color: "var(--cs-text-tertiary)" }}
+                              >
+                                <ImageSquareIcon size={16} />
+                              </span>
+                            }
+                          />
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useEffect, useId, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import {
   useMyChefApplication,
   useSubmitChefApplication,
@@ -12,31 +11,30 @@ import {
 } from "@/hooks/useChefApplication";
 import type { KycType } from "@/types/chef-application.type";
 import {
-  CheckCircleIcon,
+  CheckIcon,
   ClockIcon,
   XCircleIcon,
   WarningCircleIcon,
-  UploadSimpleIcon,
   ImageIcon,
   XIcon,
-  ChefHatIcon,
-  LinkIcon,
   YoutubeLogo,
   InstagramLogo,
   FacebookLogo,
   TwitterLogoIcon,
   IdentificationCardIcon,
   GlobeIcon,
-  TrophyIcon,
   PlusIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
   PaperPlaneTiltIcon,
+  CircleNotchIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import { motion, useReducedMotion } from "framer-motion";
 import { useProfile } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
+import { PageHeader } from "@/components/User/shared/PageHeader";
+import { StatusPill } from "@/components/User/shared/StatusPill";
+import { EASE, SPRING } from "@/lib/motion";
 
 interface FormValues {
   fullName: string;
@@ -70,70 +68,130 @@ const EMPTY_FORM: FormValues = {
 
 const KYC_LABELS: Record<KycType, string> = {
   passport: "Passport",
-  nid: "National ID (NID)",
-  driving_license: "Driving License",
+  nid: "National ID",
+  driving_license: "Driving licence",
 };
 
-const STEPS = ["Personal Info", "Identity (KYC)", "Online Presence"] as const;
+const STEPS = ["About you", "Identity", "Online presence"] as const;
 
-// ── Step indicator ────────────────────────────────────────────────────────────
+/* ── Step indicator ───────────────────────────────────────────────────
+   The connector fills rather than switching colour, so progress is
+   something that visibly *advances* rather than three lights changing
+   state. It's the one piece of choreography on the page and it earns its
+   place: this is a three-step form and "how much is left" is the
+   question people ask at every step. */
 
 function StepIndicator({ current }: { current: number }) {
+  const reduce = useReducedMotion();
+
   return (
-    <div className="flex items-center gap-0 mb-8">
+    <ol className="mb-8 flex items-start" aria-label="Application progress">
       {STEPS.map((label, i) => {
         const step = i + 1;
         const done = step < current;
         const active = step === current;
+
         return (
-          <div key={label} className="flex items-center flex-1 last:flex-none">
-            <div className="flex flex-col items-center">
-              <div
-                className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold border-2 transition-all",
-                  done
-                    ? "bg-primary border-primary text-white"
+          <li
+            key={label}
+            className="flex flex-1 items-center last:flex-none"
+            aria-current={active ? "step" : undefined}
+          >
+            <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
+              <motion.span
+                className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
+                animate={
+                  reduce ? undefined : { scale: active || done ? [1, 1.12, 1] : 1 }
+                }
+                transition={{ duration: 0.28, times: [0, 0.45, 1], ease: EASE }}
+                style={{
+                  backgroundColor: done
+                    ? "var(--cs-check-fill)"
                     : active
-                      ? "border-primary text-primary bg-primary/10"
-                      : "border-[var(--cs-border-default)] text-[var(--cs-text-tertiary)]",
-                )}
+                      ? "var(--cs-accent-muted)"
+                      : "var(--cs-surface-3)",
+                  color: done
+                    ? "var(--cs-check-mark)"
+                    : active
+                      ? "var(--cs-accent-text)"
+                      : "var(--cs-text-tertiary)",
+                  border: `1px solid ${
+                    done
+                      ? "var(--cs-check-edge)"
+                      : active
+                        ? "color-mix(in oklab, var(--primary) 45%, transparent)"
+                        : "var(--cs-border-subtle)"
+                  }`,
+                }}
               >
-                {done ? <CheckCircleIcon size={16} weight="fill" /> : step}
-              </div>
+                {done ? <CheckIcon size={15} weight="bold" /> : step}
+              </motion.span>
               <span
-                className={cn(
-                  "mt-1 text-[10px] font-medium hidden sm:block whitespace-nowrap",
-                  active ? "text-primary" : "text-[var(--cs-text-tertiary)]",
-                )}
+                className="ui-micro hidden text-center font-medium sm:block"
+                style={{
+                  color: active
+                    ? "var(--cs-text-primary)"
+                    : "var(--cs-text-tertiary)",
+                }}
               >
                 {label}
               </span>
             </div>
+
             {i < STEPS.length - 1 && (
               <div
-                className={cn(
-                  "flex-1 h-0.5 mb-4 mx-1 transition-all",
-                  done ? "bg-primary" : "bg-[var(--cs-border-subtle)]",
-                )}
-              />
+                className="mx-1 mb-5 h-0.5 flex-1 overflow-hidden rounded-full"
+                style={{ backgroundColor: "var(--cs-border-subtle)" }}
+              >
+                <motion.div
+                  className="h-full rounded-full"
+                  /* Scales from the left, so progress fills forwards
+                     rather than growing out of its own middle. */
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    transformOrigin: "left",
+                  }}
+                  initial={false}
+                  animate={{ scaleX: done ? 1 : 0 }}
+                  transition={reduce ? { duration: 0 } : SPRING.default}
+                />
+              </div>
             )}
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ol>
   );
 }
 
-// ── KYC dropzone ──────────────────────────────────────────────────────────────
+/* ── KYC dropzone ─────────────────────────────────────────────────── */
 
 function KycDropzone({
   file,
   onChange,
+  describedBy,
 }: {
   file: File | null;
   onChange: (f: File | null) => void;
+  describedBy?: string;
 }) {
-  const preview = file ? URL.createObjectURL(file) : null;
+  /* `URL.createObjectURL` used to run inline in the render body, so every
+     re-render minted a fresh blob URL and none of them were ever revoked
+     — the page leaked a copy of the document for each keystroke that
+     re-rendered it.
+
+     Derived with `useMemo` rather than stored in state: the url is a
+     pure function of the file, so the only thing an effect is needed for
+     is releasing the previous one. */
+  const preview = useMemo(
+    () => (file ? URL.createObjectURL(file) : null),
+    [file],
+  );
+
+  useEffect(() => {
+    if (!preview) return;
+    return () => URL.revokeObjectURL(preview);
+  }, [preview]);
 
   const onDrop = useCallback(
     (accepted: File[]) => {
@@ -149,8 +207,8 @@ function KycDropzone({
     maxSize: 5 * 1024 * 1024,
     onDropRejected: (rejected) => {
       const err = rejected[0]?.errors[0];
-      if (err?.code === "file-too-large") toast.error("File must be under 5MB");
-      else toast.error("Only JPG/PNG images are accepted");
+      if (err?.code === "file-too-large") toast.error("File must be under 5 MB");
+      else toast.error("Only JPG or PNG images are accepted");
     },
   });
 
@@ -158,26 +216,29 @@ function KycDropzone({
     <div className="space-y-2">
       <div
         {...getRootProps()}
-        className={cn(
-          "relative flex h-52 w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed cursor-pointer transition-all overflow-hidden",
-          isDragActive
-            ? "border-sky-400 bg-sky-50/60"
+        aria-describedby={describedBy}
+        className="focus-ring relative flex h-52 w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl transition-colors duration-150"
+        style={{
+          border: `2px dashed ${
+            isDragActive
+              ? "var(--primary)"
+              : file
+                ? "var(--cs-border-default)"
+                : "var(--cs-border-default)"
+          }`,
+          backgroundColor: isDragActive
+            ? "var(--cs-accent-muted)"
             : file
-              ? "border-[var(--cs-border-default)]"
-              : "border-[var(--cs-border-default)] bg-[var(--cs-surface-3)] hover:border-[var(--cs-accent)]",
-        )}
+              ? "var(--cs-surface-1)"
+              : "var(--cs-surface-3)",
+        }}
       >
         <input {...getInputProps()} />
         {preview ? (
           <>
-            <Image
-              src={preview}
-              alt="KYC document"
-              fill
-              className="object-contain p-2"
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/50 transition-colors group">
-              <span className="text-xs font-medium text-white opacity-0 group-hover:opacity-100 transition-opacity">
+            <Image src={preview} alt="Your uploaded document" fill className="object-contain p-2" unoptimized />
+            <div className="group absolute inset-0 flex items-center justify-center transition-colors hover:bg-black/50">
+              <span className="text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
                 Click to replace
               </span>
             </div>
@@ -187,30 +248,42 @@ function KycDropzone({
                 e.stopPropagation();
                 onChange(null);
               }}
-              className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+              aria-label="Remove uploaded document"
+              className="material-thick focus-ring absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full"
+              style={{ color: "var(--cs-text-primary)" }}
             >
               <XIcon size={12} weight="bold" />
             </button>
           </>
         ) : (
           <>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-200/80 dark:bg-zinc-800">
-              <ImageIcon size={20} weight="duotone" className="text-zinc-500" />
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-xl"
+              style={{
+                backgroundColor: "var(--cs-surface-2)",
+                color: "var(--cs-text-tertiary)",
+              }}
+            >
+              <ImageIcon size={20} weight="duotone" />
             </div>
-            <div className="text-center px-4">
-              <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+            <div className="px-4 text-center">
+              <p className="ui-subheading" style={{ color: "var(--cs-text-primary)" }}>
                 {isDragActive ? "Drop to upload" : "Upload document photo"}
               </p>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                JPG or PNG · Max 5 MB
+              <p className="ui-micro mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
+                JPG or PNG · max 5 MB
               </p>
             </div>
           </>
         )}
       </div>
+
       {file && (
-        <p className="text-xs text-zinc-500 flex items-center gap-1">
-          <CheckCircleIcon size={13} weight="fill" className="text-green-500" />
+        <p
+          className="ui-micro flex items-center gap-1.5"
+          style={{ color: "var(--cs-success-fg)" }}
+        >
+          <CheckIcon size={13} weight="bold" />
           {file.name}
         </p>
       )}
@@ -218,17 +291,20 @@ function KycDropzone({
   );
 }
 
-// ── Achievement tag input ─────────────────────────────────────────────────────
+/* ── Achievements ─────────────────────────────────────────────────── */
 
 function AchievementInput({
   achievements,
   onChange,
+  id,
+  describedBy,
 }: {
   achievements: string[];
   onChange: (a: string[]) => void;
+  id: string;
+  describedBy?: string;
 }) {
   const [input, setInput] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const add = () => {
     const trimmed = input.trim();
@@ -244,7 +320,8 @@ function AchievementInput({
     <div className="space-y-2">
       <div className="flex gap-2">
         <input
-          ref={inputRef}
+          id={id}
+          aria-describedby={describedBy}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -254,8 +331,8 @@ function AchievementInput({
               add();
             }
           }}
-          placeholder="e.g. Michelin Star 2022"
-          className="flex-1 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 transition"
+          placeholder="e.g. Michelin star, 2022"
+          className="focus-ring flex-1 rounded-xl px-3 py-2 text-sm outline-none"
           style={{
             border: "1px solid var(--cs-border-default)",
             backgroundColor: "var(--cs-surface-1)",
@@ -266,35 +343,43 @@ function AchievementInput({
         <button
           type="button"
           onClick={add}
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors shrink-0"
+          aria-label="Add achievement"
+          className="focus-ring flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors"
+          style={{
+            backgroundColor: "var(--cs-accent-muted)",
+            color: "var(--cs-accent-text)",
+          }}
         >
           <PlusIcon size={16} weight="bold" />
         </button>
       </div>
+
       {achievements.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
+        <ul className="flex flex-wrap gap-1.5">
           {achievements.map((a) => (
-            <span
-              key={a}
-              className="flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-xs font-medium"
-            >
+            <li key={a} className="ui-chip" data-active="true">
               {a}
               <button
                 type="button"
                 onClick={() => onChange(achievements.filter((x) => x !== a))}
-                className="ml-0.5 hover:text-red-500 transition-colors"
+                aria-label={`Remove ${a}`}
+                className="focus-ring ml-0.5 rounded-full"
               >
-                <XIcon size={10} weight="bold" />
+                <XIcon size={11} weight="bold" />
               </button>
-            </span>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
 }
 
-// ── Field wrapper ─────────────────────────────────────────────────────────────
+/* ── Field primitives ─────────────────────────────────────────────────
+   `<label>` was previously a bare element with no `htmlFor`, so none of
+   the fifteen inputs on this form were actually labelled — clicking a
+   label did nothing and a screen reader announced an unnamed textbox.
+   These wire up id / htmlFor / aria-describedby properly. */
 
 function Field({
   label,
@@ -304,17 +389,36 @@ function Field({
 }: {
   label: string;
   required?: boolean;
-  children: React.ReactNode;
+  children: (ids: { id: string; describedBy?: string }) => React.ReactNode;
   hint?: string;
 }) {
+  const id = useId();
+  const hintId = `${id}-hint`;
+
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-foreground">
+      <label
+        htmlFor={id}
+        className="ui-subheading block"
+        style={{ color: "var(--cs-text-primary)" }}
+      >
         {label}
-        {required && <span className="ml-0.5 text-red-500">*</span>}
+        {required && (
+          <span style={{ color: "var(--cs-danger-fg)" }} aria-hidden>
+            {" "}
+            *
+          </span>
+        )}
+        {required && <span className="sr-only"> (required)</span>}
       </label>
-      {children}
-      {hint && <p className="text-xs text-zinc-400">{hint}</p>}
+
+      {children({ id, describedBy: hint ? hintId : undefined })}
+
+      {hint && (
+        <p id={hintId} className="ui-micro" style={{ color: "var(--cs-text-tertiary)" }}>
+          {hint}
+        </p>
+      )}
     </div>
   );
 }
@@ -325,133 +429,99 @@ function TextInput({
   placeholder,
   type = "text",
   icon,
+  id,
+  describedBy,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   type?: string;
   icon?: React.ReactNode;
+  id: string;
+  describedBy?: string;
 }) {
   return (
     <div className="relative">
       {icon && (
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
+        <span
+          aria-hidden
+          className="absolute left-3 top-1/2 -translate-y-1/2"
+          style={{ color: "var(--cs-text-tertiary)" }}
+        >
           {icon}
         </span>
       )}
       <input
+        id={id}
+        aria-describedby={describedBy}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={cn(
-          "w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-2 text-sm text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/40 transition",
-          icon ? "pl-9 pr-3" : "px-3",
-        )}
+        className={`focus-ring w-full rounded-xl py-2 text-sm outline-none ${
+          icon ? "pl-9 pr-3" : "px-3"
+        }`}
+        style={{
+          border: "1px solid var(--cs-border-default)",
+          backgroundColor: "var(--cs-surface-1)",
+          color: "var(--cs-text-primary)",
+        }}
       />
     </div>
   );
 }
 
-// ── Status views ──────────────────────────────────────────────────────────────
+/* ── Status views ─────────────────────────────────────────────────── */
 
-function PendingView() {
-  return (
-    <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-        <ClockIcon size={32} weight="duotone" className="text-amber-500" />
-      </div>
-      <div>
-        <h2 className="text-xl font-bold text-foreground">
-          Application Under Review
-        </h2>
-        <p className="mt-1 text-sm text-zinc-500 max-w-sm">
-          Your chef application has been submitted and is being reviewed by our
-          admin team. We&apos;ll notify you once a decision is made.
-        </p>
-      </div>
-      <div className="mt-2 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-6 py-3 text-sm text-amber-700 dark:text-amber-400 font-medium">
-        Status: Pending Review
-      </div>
-    </div>
-  );
-}
-
-function ApprovedView() {
-  return (
-    <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-        <CheckCircleIcon
-          size={32}
-          weight="fill"
-          className="text-green-500"
-        />
-      </div>
-      <div>
-        <h2 className="text-xl font-bold text-foreground">
-          Congratulations — You&apos;re a Chef!
-        </h2>
-        <p className="mt-1 text-sm text-zinc-500 max-w-sm">
-          Your application has been approved. Your account has been upgraded to
-          Chef status. Please log out and log back in to access your chef
-          dashboard.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function RejectedView({
-  note,
-  onResubmit,
+function StatusView({
+  tone,
+  icon,
+  title,
+  children,
+  footer,
 }: {
-  note?: string;
-  onResubmit: () => void;
+  tone: "warning" | "success" | "danger";
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-4 py-8 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
-        <XCircleIcon size={32} weight="fill" className="text-red-500" />
+    <div className="flex flex-col items-center gap-4 py-10 text-center">
+      <div
+        aria-hidden
+        className="flex h-16 w-16 items-center justify-center rounded-full"
+        style={{
+          backgroundColor: `var(--cs-${tone}-bg)`,
+          color: `var(--cs-${tone}-fg)`,
+        }}
+      >
+        {icon}
       </div>
       <div>
-        <h2 className="text-xl font-bold text-foreground">
-          Application Not Approved
+        <h2 className="ui-title" style={{ color: "var(--cs-text-primary)" }}>
+          {title}
         </h2>
-        <p className="mt-1 text-sm text-zinc-500 max-w-sm">
-          Unfortunately your application was not approved this time. You can
-          address the feedback below and resubmit.
-        </p>
-      </div>
-      {note && (
-        <div className="w-full max-w-md rounded-2xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4 text-left">
-          <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-1 flex items-center gap-1.5">
-            <WarningCircleIcon size={13} weight="fill" /> Admin Feedback
-          </p>
-          <p className="text-sm text-red-700 dark:text-red-300">{note}</p>
+        <div
+          className="ui-body mx-auto mt-1.5 max-w-sm"
+          style={{ color: "var(--cs-text-secondary)" }}
+        >
+          {children}
         </div>
-      )}
-      <button
-        type="button"
-        onClick={onResubmit}
-        className="mt-2 flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 transition-colors"
-      >
-        <PaperPlaneTiltIcon size={16} weight="bold" />
-        Resubmit Application
-      </button>
+      </div>
+      {footer}
     </div>
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
+/* ── Page ─────────────────────────────────────────────────────────── */
 
 export default function ApplyChefPage() {
   const { profile } = useProfile();
   const router = useRouter();
 
   useEffect(() => {
-    if (profile?.role === "chef") {
-      router.replace("/recipes");
-    }
+    if (profile?.role === "chef") router.replace("/recipes");
   }, [profile, router]);
 
   const { application, isLoading } = useMyChefApplication();
@@ -467,38 +537,34 @@ export default function ApplyChefPage() {
 
   const isResubmit = application?.status === "rejected";
 
-  // ── Validation per step ───────────────────────────────────────────────────
-
   const validateStep1 = () => {
     if (!form.fullName.trim()) return "Full name is required";
-    if (form.bio.trim().length < 30)
-      return "Bio must be at least 30 characters";
+    if (form.bio.trim().length < 30) return "Bio must be at least 30 characters";
     if (!form.specialty.trim()) return "Specialty is required";
     const exp = Number(form.yearsOfExperience);
     if (!form.yearsOfExperience || isNaN(exp) || exp < 0)
-      return "Valid years of experience required";
+      return "Enter a valid number of years";
     return null;
   };
 
   const validateStep2 = () => {
-    if (!form.kycType) return "Please select a document type";
-    if (!form.kycDocument && !isResubmit)
-      return "Please upload your document";
+    if (!form.kycType) return "Choose a document type";
+    if (!form.kycDocument && !isResubmit) return "Upload your document";
     return null;
   };
 
   const validateStep3 = () => {
-    if (!form.referenceUrl.trim()) return "Reference website URL is required";
+    if (!form.referenceUrl.trim()) return "A reference website is required";
     try {
       new URL(form.referenceUrl);
     } catch {
-      return "Please enter a valid URL (include https://)";
+      return "Enter a valid URL, including https://";
     }
     if (form.youtubeUrl) {
       try {
         new URL(form.youtubeUrl);
       } catch {
-        return "Please enter a valid YouTube URL";
+        return "Enter a valid YouTube URL";
       }
     }
     return null;
@@ -506,11 +572,7 @@ export default function ApplyChefPage() {
 
   const next = () => {
     const err =
-      step === 1
-        ? validateStep1()
-        : step === 2
-          ? validateStep2()
-          : validateStep3();
+      step === 1 ? validateStep1() : step === 2 ? validateStep2() : validateStep3();
     if (err) {
       toast.error(err);
       return;
@@ -525,7 +587,7 @@ export default function ApplyChefPage() {
       return;
     }
     if (!form.kycDocument && !isResubmit) {
-      toast.error("KYC document is required");
+      toast.error("A KYC document is required");
       return;
     }
 
@@ -544,17 +606,13 @@ export default function ApplyChefPage() {
       twitterUrl: form.twitterUrl || undefined,
     };
 
-    if (isResubmit) {
-      await resubmitMutation.mutateAsync(payload);
-    } else {
-      await submitMutation.mutateAsync(payload);
-    }
+    if (isResubmit) await resubmitMutation.mutateAsync(payload);
+    else await submitMutation.mutateAsync(payload);
+
     setShowForm(false);
   };
 
   const isPending = submitMutation.isPending || resubmitMutation.isPending;
-
-  // ── Pre-fill form from existing application on resubmit ───────────────────
 
   const startResubmit = () => {
     if (application) {
@@ -577,299 +635,458 @@ export default function ApplyChefPage() {
     setShowForm(true);
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  const showStatus = Boolean(application) && !showForm;
+
+  const lede = useMemo(() => {
+    if (showStatus) return "Where your application has got to.";
+    if (isResubmit) return "Update what the reviewer flagged, then send it back.";
+    return "Three short steps. We review every application by hand, usually within 2–5 business days.";
+  }, [showStatus, isResubmit]);
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="app-root">
+        <div className="mx-auto max-w-2xl px-4 py-10">
+          <div
+            className="ui-card flex min-h-[50vh] items-center justify-center"
+            aria-busy="true"
+          >
+            <CircleNotchIcon
+              size={24}
+              className="animate-spin"
+              style={{ color: "var(--cs-text-tertiary)" }}
+            />
+          </div>
+        </div>
       </div>
     );
   }
 
-  const showStatus =
-    application && !showForm;
-
   return (
-    <div className="page-root">
-      <div className="mx-auto max-w-2xl py-10 px-4">
-      {/* Header */}
-      <div className="mb-8 flex items-center gap-3">
-        <div
-          className="flex h-10 w-10 items-center justify-center rounded-xl"
-          style={{ backgroundColor: "var(--cs-accent-muted)" }}
-        >
-          <ChefHatIcon size={22} weight="duotone" style={{ color: "var(--cs-accent)" }} />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: "var(--cs-text-primary)" }}>
-            {isResubmit ? "Resubmit Chef Application" : "Become a Chef"}
-          </h1>
-          <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
-            {showStatus
-              ? "Track your application status"
-              : "Complete the form to apply for chef status"}
-          </p>
-        </div>
-      </div>
+    <div className="app-root">
+      <title>Chefalio — Become a Chef</title>
 
-      <div
-        className="rounded-2xl p-6 shadow-sm"
-        style={{
-          border: "1px solid var(--cs-border-subtle)",
-          backgroundColor: "var(--cs-surface-2)",
-        }}
-      >
-        {/* Status views */}
-        {showStatus && application.status === "pending" && <PendingView />}
-        {showStatus && application.status === "approved" && <ApprovedView />}
-        {showStatus && application.status === "rejected" && (
-          <RejectedView
-            note={application.rejectionNote}
-            onResubmit={startResubmit}
-          />
-        )}
+      <div className="mx-auto max-w-2xl px-4 py-10">
+        <PageHeader
+          title={isResubmit && showForm ? "Resubmit your application" : "Become a chef"}
+          lede={lede}
+          actions={
+            application ? (
+              <StatusPill
+                tone={
+                  application.status === "approved"
+                    ? "success"
+                    : application.status === "rejected"
+                      ? "danger"
+                      : "warning"
+                }
+              >
+                {application.status === "approved"
+                  ? "Approved"
+                  : application.status === "rejected"
+                    ? "Not approved"
+                    : "In review"}
+              </StatusPill>
+            ) : undefined
+          }
+        />
 
-        {/* Form */}
-        {(!application || showForm) && (
-          <>
-            <StepIndicator current={step} />
+        <div className="ui-card p-6">
+          {showStatus && application!.status === "pending" && (
+            <StatusView
+              tone="warning"
+              icon={<ClockIcon size={30} weight="duotone" />}
+              title="We're reviewing your application"
+            >
+              A human reads every application. You&rsquo;ll get a notification the
+              moment there&rsquo;s a decision — there&rsquo;s nothing else you need
+              to do.
+            </StatusView>
+          )}
 
-            {step === 1 && (
-              <div className="space-y-5">
-                <Field label="Full Name" required>
-                  <TextInput
-                    value={form.fullName}
-                    onChange={(v) => set("fullName", v)}
-                    placeholder="Your full name"
-                  />
-                </Field>
+          {showStatus && application!.status === "approved" && (
+            <StatusView
+              tone="success"
+              icon={<CheckIcon size={30} weight="bold" />}
+              title="You're a chef"
+            >
+              Your account has been upgraded. Log out and back in once, and the
+              chef dashboard will be waiting.
+            </StatusView>
+          )}
 
-                <Field
-                  label="Bio"
-                  required
-                  hint="Tell us about your culinary background (min. 30 characters)"
+          {showStatus && application!.status === "rejected" && (
+            <StatusView
+              tone="danger"
+              icon={<XCircleIcon size={30} weight="fill" />}
+              title="Not approved this time"
+              footer={
+                <button
+                  type="button"
+                  onClick={startResubmit}
+                  className="focus-ring mt-2 flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90"
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    color: "var(--primary-foreground)",
+                  }}
                 >
-                  <textarea
-                    value={form.bio}
-                    onChange={(e) => set("bio", e.target.value)}
-                    placeholder="I've been cooking professionally for..."
-                    rows={4}
-                    maxLength={2000}
-                    className="w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition"
-                  />
-                  <p className="text-xs text-zinc-400 text-right">
-                    {form.bio.length}/2000
-                  </p>
-                </Field>
-
-                <Field
-                  label="Culinary Specialty"
-                  required
-                  hint="e.g. Italian cuisine, Pastry, Sushi, BBQ"
+                  <PaperPlaneTiltIcon size={16} weight="bold" />
+                  Edit and resubmit
+                </button>
+              }
+            >
+              <span className="block">
+                Your details are kept, so resubmitting means changing what&rsquo;s
+                below — not starting again.
+              </span>
+              {application!.rejectionNote && (
+                <span
+                  className="mt-4 block rounded-2xl p-4 text-left"
+                  style={{
+                    backgroundColor: "var(--cs-danger-bg)",
+                    border: "1px solid var(--cs-danger-edge)",
+                  }}
                 >
-                  <TextInput
-                    value={form.specialty}
-                    onChange={(v) => set("specialty", v)}
-                    placeholder="Your main specialty"
-                  />
-                </Field>
+                  <span
+                    className="ui-label mb-1 flex items-center gap-1.5"
+                    style={{ color: "var(--cs-danger-fg)" }}
+                  >
+                    <WarningCircleIcon size={13} weight="fill" /> Reviewer note
+                  </span>
+                  <span className="ui-body block" style={{ color: "var(--cs-text-primary)" }}>
+                    {application!.rejectionNote}
+                  </span>
+                </span>
+              )}
+            </StatusView>
+          )}
 
-                <Field label="Years of Experience" required>
-                  <TextInput
-                    type="number"
-                    value={form.yearsOfExperience}
-                    onChange={(v) => set("yearsOfExperience", v)}
-                    placeholder="e.g. 5"
-                  />
-                </Field>
-              </div>
-            )}
+          {(!application || showForm) && (
+            <>
+              <StepIndicator current={step} />
 
-            {step === 2 && (
-              <div className="space-y-5">
-                <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 text-sm text-zinc-500">
-                  <p className="font-medium text-foreground mb-1">
-                    Why do we need this?
-                  </p>
-                  We verify every chef applicant to ensure quality and trust on
-                  the platform. Upload a clear photo of your identity document.
-                </div>
+              {step === 1 && (
+                <div className="space-y-5">
+                  <Field label="Full name" required>
+                    {(ids) => (
+                      <TextInput
+                        {...ids}
+                        value={form.fullName}
+                        onChange={(v) => set("fullName", v)}
+                        placeholder="As it appears on your ID"
+                      />
+                    )}
+                  </Field>
 
-                <Field label="Document Type" required>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(
-                      ["passport", "nid", "driving_license"] as KycType[]
-                    ).map((type) => (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => set("kycType", type)}
-                        className={cn(
-                          "flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 text-center text-xs font-medium transition-all",
-                          form.kycType === type
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-zinc-300 dark:hover:border-zinc-700",
-                        )}
-                      >
-                        <IdentificationCardIcon
-                          size={20}
-                          weight={
-                            form.kycType === type ? "fill" : "regular"
-                          }
+                  <Field
+                    label="Bio"
+                    required
+                    hint="At least 30 characters. Where you've cooked, and what you cook."
+                  >
+                    {(ids) => (
+                      <>
+                        <textarea
+                          id={ids.id}
+                          aria-describedby={ids.describedBy}
+                          value={form.bio}
+                          onChange={(e) => set("bio", e.target.value)}
+                          placeholder="I've been cooking professionally for…"
+                          rows={4}
+                          maxLength={2000}
+                          className="focus-ring w-full resize-none rounded-xl px-3 py-2 text-sm outline-none"
+                          style={{
+                            border: "1px solid var(--cs-border-default)",
+                            backgroundColor: "var(--cs-surface-1)",
+                            color: "var(--cs-text-primary)",
+                          }}
                         />
-                        {KYC_LABELS[type]}
-                      </button>
-                    ))}
-                  </div>
-                </Field>
+                        <p
+                          className="ui-micro ui-numeric text-right"
+                          style={{
+                            color:
+                              form.bio.length > 1900
+                                ? "var(--cs-warning-fg)"
+                                : "var(--cs-text-tertiary)",
+                          }}
+                        >
+                          {form.bio.length}/2000
+                        </p>
+                      </>
+                    )}
+                  </Field>
 
-                <Field
-                  label="Document Photo"
-                  required={!isResubmit}
-                  hint={
-                    isResubmit
-                      ? "Leave empty to keep your previous document"
-                      : "Upload a clear scan or photo of your document"
-                  }
-                >
-                  <KycDropzone
-                    file={form.kycDocument}
-                    onChange={(f) => set("kycDocument", f)}
-                  />
-                </Field>
-              </div>
-            )}
+                  <Field
+                    label="Culinary specialty"
+                    required
+                    hint="e.g. Italian, pastry, sushi, barbecue"
+                  >
+                    {(ids) => (
+                      <TextInput
+                        {...ids}
+                        value={form.specialty}
+                        onChange={(v) => set("specialty", v)}
+                        placeholder="What you're known for"
+                      />
+                    )}
+                  </Field>
 
-            {step === 3 && (
-              <div className="space-y-5">
-                <Field
-                  label="Reference Website"
-                  required
-                  hint="A professional site, portfolio, restaurant page, or any public profile"
-                >
-                  <TextInput
-                    value={form.referenceUrl}
-                    onChange={(v) => set("referenceUrl", v)}
-                    placeholder="https://yourwebsite.com"
-                    icon={<GlobeIcon size={15} />}
-                  />
-                </Field>
-
-                <Field label="YouTube Channel" hint="Optional — show us your cooking videos">
-                  <TextInput
-                    value={form.youtubeUrl}
-                    onChange={(v) => set("youtubeUrl", v)}
-                    placeholder="https://youtube.com/@yourhandle"
-                    icon={<YoutubeLogo size={15} />}
-                  />
-                </Field>
-
-                <Field
-                  label="Achievements"
-                  hint="Awards, certifications, recognitions — press Enter to add"
-                >
-                  <AchievementInput
-                    achievements={form.achievements}
-                    onChange={(a) => set("achievements", a)}
-                  />
-                </Field>
-
-                <div className="space-y-3">
-                  <p className="text-sm font-medium text-foreground">
-                    Social Links{" "}
-                    <span className="text-xs font-normal text-zinc-400">
-                      (optional)
-                    </span>
-                  </p>
-                  <TextInput
-                    value={form.instagramUrl}
-                    onChange={(v) => set("instagramUrl", v)}
-                    placeholder="https://instagram.com/yourhandle"
-                    icon={<InstagramLogo size={15} />}
-                  />
-                  <TextInput
-                    value={form.facebookUrl}
-                    onChange={(v) => set("facebookUrl", v)}
-                    placeholder="https://facebook.com/yourpage"
-                    icon={<FacebookLogo size={15} />}
-                  />
-                  <TextInput
-                    value={form.twitterUrl}
-                    onChange={(v) => set("twitterUrl", v)}
-                    placeholder="https://twitter.com/yourhandle"
-                    icon={<TwitterLogoIcon size={15} />}
-                  />
+                  <Field label="Years of experience" required>
+                    {(ids) => (
+                      <TextInput
+                        {...ids}
+                        type="number"
+                        value={form.yearsOfExperience}
+                        onChange={(v) => set("yearsOfExperience", v)}
+                        placeholder="5"
+                      />
+                    )}
+                  </Field>
                 </div>
+              )}
+
+              {step === 2 && (
+                <div className="space-y-5">
+                  <div
+                    className="ui-body rounded-xl p-4"
+                    style={{
+                      border: "1px solid var(--cs-border-subtle)",
+                      backgroundColor: "var(--cs-surface-3)",
+                      color: "var(--cs-text-secondary)",
+                    }}
+                  >
+                    <p
+                      className="ui-subheading mb-1"
+                      style={{ color: "var(--cs-text-primary)" }}
+                    >
+                      Why we ask for this
+                    </p>
+                    Buyers are paying real money for cookbooks, so we verify every
+                    chef is who they say they are. Your document is used for that
+                    check only, and is never shown on your profile.
+                  </div>
+
+                  <fieldset className="space-y-1.5">
+                    <legend
+                      className="ui-subheading mb-1.5"
+                      style={{ color: "var(--cs-text-primary)" }}
+                    >
+                      Document type
+                      <span style={{ color: "var(--cs-danger-fg)" }} aria-hidden>
+                        {" "}
+                        *
+                      </span>
+                    </legend>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(["passport", "nid", "driving_license"] as KycType[]).map(
+                        (type) => {
+                          const selected = form.kycType === type;
+                          return (
+                            <button
+                              key={type}
+                              type="button"
+                              onClick={() => set("kycType", type)}
+                              aria-pressed={selected}
+                              className="focus-ring flex flex-col items-center gap-1.5 rounded-xl p-3 text-center text-xs font-medium transition-colors duration-150"
+                              style={{
+                                border: `1px solid ${
+                                  selected
+                                    ? "color-mix(in oklab, var(--primary) 55%, transparent)"
+                                    : "var(--cs-border-subtle)"
+                                }`,
+                                backgroundColor: selected
+                                  ? "var(--cs-accent-muted)"
+                                  : "var(--cs-surface-1)",
+                                color: selected
+                                  ? "var(--cs-accent-text)"
+                                  : "var(--cs-text-secondary)",
+                              }}
+                            >
+                              <IdentificationCardIcon
+                                size={20}
+                                weight={selected ? "fill" : "regular"}
+                              />
+                              {KYC_LABELS[type]}
+                            </button>
+                          );
+                        },
+                      )}
+                    </div>
+                  </fieldset>
+
+                  <Field
+                    label="Document photo"
+                    required={!isResubmit}
+                    hint={
+                      isResubmit
+                        ? "Leave this empty to keep the document you already sent."
+                        : "A clear photo or scan. All four corners visible."
+                    }
+                  >
+                    {(ids) => (
+                      <KycDropzone
+                        file={form.kycDocument}
+                        onChange={(f) => set("kycDocument", f)}
+                        describedBy={ids.describedBy}
+                      />
+                    )}
+                  </Field>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="space-y-5">
+                  <Field
+                    label="Reference website"
+                    required
+                    hint="A restaurant page, portfolio, or any public profile that shows your work."
+                  >
+                    {(ids) => (
+                      <TextInput
+                        {...ids}
+                        value={form.referenceUrl}
+                        onChange={(v) => set("referenceUrl", v)}
+                        placeholder="https://yourwebsite.com"
+                        icon={<GlobeIcon size={15} />}
+                      />
+                    )}
+                  </Field>
+
+                  <Field label="YouTube channel" hint="Optional.">
+                    {(ids) => (
+                      <TextInput
+                        {...ids}
+                        value={form.youtubeUrl}
+                        onChange={(v) => set("youtubeUrl", v)}
+                        placeholder="https://youtube.com/@yourhandle"
+                        icon={<YoutubeLogo size={15} />}
+                      />
+                    )}
+                  </Field>
+
+                  <Field
+                    label="Achievements"
+                    hint="Awards, certifications, press. Press Enter after each one."
+                  >
+                    {(ids) => (
+                      <AchievementInput
+                        id={ids.id}
+                        describedBy={ids.describedBy}
+                        achievements={form.achievements}
+                        onChange={(a) => set("achievements", a)}
+                      />
+                    )}
+                  </Field>
+
+                  <fieldset className="space-y-3">
+                    <legend
+                      className="ui-subheading"
+                      style={{ color: "var(--cs-text-primary)" }}
+                    >
+                      Social links{" "}
+                      <span
+                        className="ui-micro font-normal"
+                        style={{ color: "var(--cs-text-tertiary)" }}
+                      >
+                        (optional)
+                      </span>
+                    </legend>
+                    <Field label="Instagram">
+                      {(ids) => (
+                        <TextInput
+                          {...ids}
+                          value={form.instagramUrl}
+                          onChange={(v) => set("instagramUrl", v)}
+                          placeholder="https://instagram.com/yourhandle"
+                          icon={<InstagramLogo size={15} />}
+                        />
+                      )}
+                    </Field>
+                    <Field label="Facebook">
+                      {(ids) => (
+                        <TextInput
+                          {...ids}
+                          value={form.facebookUrl}
+                          onChange={(v) => set("facebookUrl", v)}
+                          placeholder="https://facebook.com/yourpage"
+                          icon={<FacebookLogo size={15} />}
+                        />
+                      )}
+                    </Field>
+                    <Field label="X / Twitter">
+                      {(ids) => (
+                        <TextInput
+                          {...ids}
+                          value={form.twitterUrl}
+                          onChange={(v) => set("twitterUrl", v)}
+                          placeholder="https://x.com/yourhandle"
+                          icon={<TwitterLogoIcon size={15} />}
+                        />
+                      )}
+                    </Field>
+                  </fieldset>
+                </div>
+              )}
+
+              <div
+                className="mt-8 flex items-center justify-between pt-5"
+                style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
+              >
+                {step > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setStep((s) => s - 1)}
+                    className="focus-ring flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-colors"
+                    style={{
+                      border: "1px solid var(--cs-border-default)",
+                      color: "var(--cs-text-secondary)",
+                    }}
+                  >
+                    <ArrowLeftIcon size={14} weight="bold" /> Back
+                  </button>
+                ) : (
+                  <span />
+                )}
+
+                {step < 3 ? (
+                  <button
+                    type="button"
+                    onClick={next}
+                    className="focus-ring flex items-center gap-1.5 rounded-xl px-5 py-2 text-sm font-semibold transition-opacity hover:opacity-90"
+                    style={{
+                      backgroundColor: "var(--primary)",
+                      color: "var(--primary-foreground)",
+                    }}
+                  >
+                    Continue <ArrowRightIcon size={14} weight="bold" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isPending}
+                    className="focus-ring flex items-center gap-1.5 rounded-xl px-6 py-2 text-sm font-semibold transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                    style={{
+                      backgroundColor: "var(--primary)",
+                      color: "var(--primary-foreground)",
+                    }}
+                  >
+                    {isPending ? (
+                      <>
+                        <CircleNotchIcon size={15} className="animate-spin" />
+                        Submitting…
+                      </>
+                    ) : (
+                      <>
+                        <PaperPlaneTiltIcon size={15} weight="bold" />
+                        {isResubmit ? "Resubmit" : "Submit application"}
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
-            )}
-
-            {/* Navigation */}
-            <div className="mt-8 flex items-center justify-between">
-              {step > 1 ? (
-                <button
-                  type="button"
-                  onClick={() => setStep((s) => s - 1)}
-                  className="flex items-center gap-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
-                >
-                  <ArrowLeftIcon size={14} weight="bold" /> Back
-                </button>
-              ) : (
-                <div />
-              )}
-
-              {step < 3 ? (
-                <button
-                  type="button"
-                  onClick={next}
-                  className="flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary/90 transition-colors"
-                >
-                  Continue <ArrowRightIcon size={14} weight="bold" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isPending}
-                  className="flex items-center gap-1.5 rounded-xl bg-primary px-6 py-2 text-sm font-semibold text-white hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isPending ? (
-                    <>
-                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      Submitting…
-                    </>
-                  ) : (
-                    <>
-                      <PaperPlaneTiltIcon size={15} weight="bold" />
-                      {isResubmit
-                        ? "Resubmit Application"
-                        : "Submit Application"}
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Info card at bottom */}
-      {!application && (
-        <div
-          className="mt-4 flex items-start gap-3 rounded-2xl px-4 py-3 text-xs"
-          style={{
-            border: "1px solid var(--cs-border-subtle)",
-            backgroundColor: "var(--cs-surface-3)",
-            color: "var(--cs-text-secondary)",
-          }}
-        >
-          <LinkIcon size={14} className="mt-0.5 shrink-0" style={{ color: "var(--cs-accent)" }} />
-          <p>
-            All submitted information is reviewed by our admin team. We typically
-            respond within 2–5 business days.
-          </p>
+            </>
+          )}
         </div>
-      )}
       </div>
     </div>
   );

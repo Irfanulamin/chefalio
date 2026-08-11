@@ -1,25 +1,69 @@
 "use client";
 
-import type { RecipeStats } from "@/types/recipes.type";
+import type { Recipe, RecipeStats } from "@/types/recipes.type";
 import { useToggleLove, useToggleSave } from "@/hooks/useRecipe";
-import { cn } from "@/lib/utils";
-import { Recipe } from "@/types/recipes.type";
-import {
-  BookmarkSimpleIcon,
-  HeartIcon,
-} from "@phosphor-icons/react/dist/ssr";
-import Image from "next/image";
+import { difficultyDisplay, initialsOf } from "@/lib/recipe-display";
+import { EASE, SPRING } from "@/lib/motion";
+import { StatusPill } from "@/components/User/shared/StatusPill";
+import { BookmarkSimpleIcon, HeartIcon } from "@phosphor-icons/react/dist/ssr";
+import { motion, useReducedMotion } from "framer-motion";
+import { SafeImage } from "@/components/common/SafeImage";
 import Link from "next/link";
 import { memo, useCallback } from "react";
 
-const DIFFICULTY_CONFIG: Record<
-  string,
-  { label: string; bg: string; color: string }
-> = {
-  beginner: { label: "Easy", bg: "#dcfce7", color: "#15803d" },
-  intermediate: { label: "Medium", bg: "#fef9c3", color: "#a16207" },
-  advance: { label: "Hard", bg: "#fee2e2", color: "#b91c1c" },
+/**
+ * The moment a toggle commits. Small enough that a grid of twelve cards
+ * doesn't jump, big enough to confirm the tap landed on the icon you
+ * aimed at.
+ */
+const TOGGLE_POP = [1, 1.22, 1];
+
+type ToggleProps = {
+  active: boolean;
+  count: number;
+  onToggle: (e: React.MouseEvent) => void;
+  label: string;
+  activeColor: string;
+  Icon: React.ElementType;
 };
+
+/**
+ * Love and save are the same control with a different glyph, and both
+ * were previously plain buttons with no pressed state exposed to
+ * assistive tech and no feedback beyond a colour swap.
+ */
+function StatToggle({
+  active,
+  count,
+  onToggle,
+  label,
+  activeColor,
+  Icon,
+}: ToggleProps) {
+  const reduce = useReducedMotion();
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={active}
+      aria-label={label}
+      className="above-stretched-link focus-ring -m-1 flex items-center gap-1.5 rounded-lg p-1 transition-colors duration-150"
+      style={{ color: active ? activeColor : "var(--cs-text-tertiary)" }}
+    >
+      <motion.span
+        className="flex"
+        animate={reduce ? undefined : { scale: active ? TOGGLE_POP : 1 }}
+        transition={{ duration: 0.3, times: [0, 0.42, 1], ease: EASE }}
+      >
+        <Icon weight={active ? "fill" : "regular"} className="h-4 w-4" />
+      </motion.span>
+      <span className="ui-micro ui-numeric font-semibold">
+        {count.toLocaleString()}
+      </span>
+    </button>
+  );
+}
 
 export const RecipeCard = memo(
   ({
@@ -36,6 +80,7 @@ export const RecipeCard = memo(
     const stats = statsFor(recipe._id);
     const { mutate: toggleSave } = useToggleSave();
     const { mutate: toggleLove } = useToggleLove();
+    const reduce = useReducedMotion();
 
     const handleLoveToggle = useCallback(
       (e: React.MouseEvent) => {
@@ -55,161 +100,143 @@ export const RecipeCard = memo(
       [recipe._id, toggleSave],
     );
 
-    const diff =
-      DIFFICULTY_CONFIG[recipe.difficulty] ?? DIFFICULTY_CONFIG.advance;
-    const initials = (recipe.authorId.fullName || "")
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
+    const diff = difficultyDisplay(recipe.difficulty);
+    const initials = initialsOf(recipe.authorId.fullName);
 
     return (
-      <div
-        className="group w-full overflow-hidden rounded-xl flex flex-col transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
-        style={{
-          backgroundColor: "var(--cs-surface-2)",
-          border: "1px solid var(--cs-border-subtle)",
-        }}
+      <motion.article
+        className="ui-card ui-card-interactive group relative flex w-full flex-col overflow-hidden"
+        whileTap={reduce ? undefined : { scale: 0.995 }}
+        transition={SPRING.snappy}
       >
-        {/* 4:3 Image */}
-        <Link
-          href={`${recipePath}/${recipe._id}`}
-          className="relative block w-full overflow-hidden"
+        <div
+          className="relative w-full overflow-hidden"
           style={{ aspectRatio: "4/3", backgroundColor: "var(--cs-surface-3)" }}
         >
-          {recipe.images?.[0] ? (
-            <Image
-              src={recipe.images[0]}
-              alt={recipe.title}
-              fill
-              loading="lazy"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover"
-            />
-          ) : (
-            <div
-              className="absolute inset-0 flex items-center justify-center"
-              style={{
-                background:
-                  "linear-gradient(135deg, var(--cs-accent-muted), var(--cs-surface-3))",
-              }}
-            >
-              <span
-                className="text-3xl font-bold opacity-20"
-                style={{ color: "var(--cs-accent)" }}
+          <SafeImage
+            src={recipe.images?.[0]}
+            alt=""
+            fill
+            loading="lazy"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover"
+            fallback={
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{
+                  background:
+                    "linear-gradient(135deg, var(--cs-accent-muted), var(--cs-surface-3))",
+                }}
               >
-                {recipe.title.charAt(0)}
-              </span>
-            </div>
-          )}
+                <span
+                  className="text-4xl font-bold opacity-40"
+                  style={{ color: "var(--cs-accent-text)" }}
+                >
+                  {recipe.title.charAt(0)}
+                </span>
+              </div>
+            }
+          />
 
-          {/* Difficulty badge — top right */}
-          <span
-            className="absolute right-2.5 top-2.5 inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold"
-            style={{ backgroundColor: diff.bg, color: diff.color }}
-          >
+          <StatusPill tone={diff.tone} overMedia className="absolute right-2.5 top-2.5">
             {diff.label}
-          </span>
-        </Link>
+          </StatusPill>
+        </div>
 
-        {/* Body */}
-        <div className="flex flex-col gap-2 p-4 flex-1">
-          {/* Author */}
+        <div className="flex flex-1 flex-col gap-2 p-4">
+          {/* Sits above the card-wide link so it can navigate somewhere
+              else — a card is one destination, but the chef's name has
+              always been a second one. */}
           <Link
             href={`${chefPath}/${recipe.authorId._id}`}
-            className="flex items-center gap-2 w-fit group/author"
+            className="above-stretched-link focus-ring flex w-fit items-center gap-2 rounded-md"
           >
-            {recipe.authorId.profile_url ? (
-              <Image
-                src={recipe.authorId.profile_url}
-                alt={recipe.authorId.fullName}
-                width={20}
-                height={20}
-                loading="lazy"
-                className="rounded-full w-5 h-5 object-cover"
-              />
-            ) : (
-              <div
-                className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0"
-                style={{ backgroundColor: "var(--cs-accent)" }}
-              >
-                {initials}
-              </div>
-            )}
+            <SafeImage
+              src={recipe.authorId.profile_url}
+              alt=""
+              width={20}
+              height={20}
+              loading="lazy"
+              className="h-5 w-5 rounded-full object-cover"
+              fallback={
+                <span
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold"
+                  style={{
+                    backgroundColor: "var(--cs-accent-muted)",
+                    color: "var(--cs-accent-text)",
+                  }}
+                >
+                  {initials}
+                </span>
+              }
+            />
             <span
-              className="text-xs font-medium capitalize truncate max-w-[120px] transition-colors duration-150"
+              className="ui-micro max-w-[140px] truncate font-medium capitalize transition-colors duration-150 hover:underline"
               style={{ color: "var(--cs-text-secondary)" }}
             >
               {recipe.authorId.fullName}
             </span>
           </Link>
 
-          {/* Title */}
-          <Link href={`${recipePath}/${recipe._id}`}>
-            <h2
-              className="text-[15px] font-semibold leading-snug line-clamp-2 transition-colors duration-150 group-hover:text-[color:var(--cs-accent)]"
+          <h3 className="ui-subheading">
+            <Link
+              href={`${recipePath}/${recipe._id}`}
+              className="stretched-link focus-ring line-clamp-2 rounded-md transition-colors duration-150 group-hover:text-[color:var(--cs-accent-text)]"
               style={{ color: "var(--cs-text-primary)" }}
             >
               {recipe.title}
-            </h2>
-          </Link>
+            </Link>
+          </h3>
 
-          {/* Description */}
           {recipe.description && (
             <p
-              className="text-[13px] line-clamp-3 leading-relaxed"
+              className="ui-caption line-clamp-2"
               style={{ color: "var(--cs-text-secondary)" }}
             >
               {recipe.description}
             </p>
           )}
 
-          {/* Tags as cuisine labels */}
           {recipe.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
+            <ul className="flex flex-wrap gap-1.5">
               {recipe.tags.slice(0, 2).map((tag) => (
-                <span
+                <li
                   key={tag}
-                  className="px-2 py-0.5 text-[11px] rounded-full capitalize"
+                  className="ui-micro rounded-full px-2 py-0.5 capitalize"
                   style={{
-                    backgroundColor: "var(--cs-accent-muted)",
-                    color: "var(--cs-accent)",
+                    backgroundColor: "var(--cs-surface-3)",
+                    color: "var(--cs-text-secondary)",
                   }}
                 >
                   {tag}
-                </span>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
 
-          {/* Footer actions */}
           <div
-            className="mt-auto pt-3 flex items-center gap-3"
+            className="mt-auto flex items-center gap-4 pt-3"
             style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
           >
-            <button
-              onClick={handleLoveToggle}
-              className="flex items-center gap-1 text-xs transition-colors duration-150"
-              style={{ color: stats?.isLoved ? "#f43f5e" : "var(--cs-text-tertiary)" }}
-            >
-              <HeartIcon weight={stats?.isLoved ? "fill" : "bold"} className="h-4 w-4" />
-              <span className="font-medium">{recipe.lovedCount.toLocaleString()}</span>
-            </button>
-
-            <button
-              onClick={handleSaveToggle}
-              className="flex items-center gap-1 text-xs transition-colors duration-150"
-              style={{
-                color: stats?.isSaved ? "var(--cs-text-primary)" : "var(--cs-text-tertiary)",
-              }}
-            >
-              <BookmarkSimpleIcon weight={stats?.isSaved ? "fill" : "bold"} className="h-4 w-4" />
-              <span className="font-medium">{recipe.savedCount.toLocaleString()}</span>
-            </button>
+            <StatToggle
+              active={Boolean(stats?.isLoved)}
+              count={recipe.lovedCount}
+              onToggle={handleLoveToggle}
+              label={stats?.isLoved ? "Remove from favourites" : "Add to favourites"}
+              activeColor="var(--cs-love)"
+              Icon={HeartIcon}
+            />
+            <StatToggle
+              active={Boolean(stats?.isSaved)}
+              count={recipe.savedCount}
+              onToggle={handleSaveToggle}
+              label={stats?.isSaved ? "Remove from saved" : "Save recipe"}
+              activeColor="var(--cs-text-primary)"
+              Icon={BookmarkSimpleIcon}
+            />
           </div>
         </div>
-      </div>
+      </motion.article>
     );
   },
 );

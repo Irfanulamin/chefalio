@@ -1,138 +1,176 @@
+"use client";
+
 import Link from "next/link";
-import Image from "next/image";
-import { Cookbook } from "@/types/cookbook.type";
+import { motion, useReducedMotion } from "framer-motion";
+import { SafeImage } from "@/components/common/SafeImage";
+import type { Cookbook } from "@/types/cookbook.type";
+import { cookbookPrice, initialsOf } from "@/lib/recipe-display";
+import { SPRING } from "@/lib/motion";
+import { StatusPill } from "@/components/User/shared/StatusPill";
 
-function formatPrice(price: number, discount: number): string {
-  if (price === 0) return "Free";
-  if (discount > 0) {
-    const discounted = price - (price * discount) / 100;
-    return `$${discounted.toFixed(2)}`;
-  }
-  return `$${price.toFixed(2)}`;
-}
+type CookbookCardProps = {
+  cookbook: Cookbook;
+  /** Adds the buy action in the footer. Off on browse-only surfaces. */
+  showBuy?: boolean;
+  /** Hidden when the card already sits under that chef's own heading. */
+  showAuthor?: boolean;
+};
 
-export function CookbookCard({ cookbook }: { cookbook: Cookbook }) {
-  const priceLabel = formatPrice(cookbook.price, cookbook.discount);
-  const isFree = cookbook.price === 0;
-  const initials = (cookbook.authorId.fullName || "")
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+/**
+ * One cookbook tile for the whole app.
+ *
+ * There were three of these — this file, an inline copy in the cookbooks
+ * list page, and a third inside the chef profile — with three different
+ * price treatments and two different rounding rules, so the same book
+ * could show a different price in the grid than at checkout.
+ *
+ * The hover "Preview" overlay is gone. It only ever appeared on a mouse,
+ * so on a phone the cover had no affordance at all; and it covered the
+ * artwork, which on a cookbook *is* the product. The whole card is the
+ * link now, which is a bigger target and works on every input.
+ */
+export function CookbookCard({
+  cookbook,
+  showBuy = false,
+  showAuthor = true,
+}: CookbookCardProps) {
+  const reduce = useReducedMotion();
+  const price = cookbookPrice(cookbook.price, cookbook.discount ?? 0);
+  const initials = initialsOf(cookbook.authorId?.fullName ?? "");
 
   return (
-    <Link
-      href={`/cookbooks/${cookbook._id}`}
-      className="group relative flex flex-col overflow-hidden rounded-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
-      style={{
-        backgroundColor: "var(--cs-surface-2)",
-        border: "1px solid var(--cs-border-subtle)",
-      }}
+    <motion.article
+      className="ui-card ui-card-interactive group relative flex flex-col overflow-hidden"
+      whileTap={reduce ? undefined : { scale: 0.995 }}
+      transition={SPRING.snappy}
     >
-      {/* 3:4 Portrait Cover */}
       <div
         className="relative w-full overflow-hidden"
-        style={{
-          aspectRatio: "3/4",
-          backgroundColor: "var(--cs-surface-3)",
-        }}
+        style={{ aspectRatio: "3/4", backgroundColor: "var(--cs-surface-3)" }}
       >
-        {cookbook.cookbook_image ? (
-          <Image
-            src={cookbook.cookbook_image}
-            alt={cookbook.title}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            loading="lazy"
-            className="object-cover"
-          />
-        ) : (
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--cs-accent-muted), var(--cs-surface-3))",
-            }}
-          >
-            <span
-              className="text-5xl font-bold opacity-20"
-              style={{ color: "var(--cs-accent)" }}
+        <SafeImage
+          src={cookbook.cookbook_image}
+          alt=""
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          loading="lazy"
+          className="object-cover"
+          fallback={
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--cs-accent-muted), var(--cs-surface-3))",
+              }}
             >
-              {cookbook.title.charAt(0)}
-            </span>
-          </div>
+              <span
+                className="text-5xl font-bold opacity-40"
+                style={{ color: "var(--cs-accent-text)" }}
+              >
+                {cookbook.title.charAt(0)}
+              </span>
+            </div>
+          }
+        />
+
+        {price.discountPct > 0 && (
+          <StatusPill tone="success" overMedia className="absolute left-2.5 top-2.5">
+            −{price.discountPct}%
+          </StatusPill>
         )}
 
-        {/* Price badge — bottom right */}
+        {/* The price is the one thing that has to survive any cover art,
+            so it carries its own material rather than trusting the
+            photograph underneath it. */}
         <span
-          className="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-md text-xs font-semibold"
-          style={
-            isFree
-              ? {
-                  backgroundColor: "#dcfce7",
-                  color: "#15803d",
-                }
-              : {
-                  backgroundColor: "rgba(0,0,0,0.75)",
-                  color: "#ffffff",
-                }
-          }
-        >
-          {priceLabel}
-        </span>
-
-        {/* Hover "Preview" overlay */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/40">
-          <span className="px-4 py-1.5 rounded-full text-sm font-semibold text-white border border-white/60">
-            Preview
-          </span>
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="p-3 flex flex-col gap-1.5">
-        <h3
-          className="text-sm font-semibold line-clamp-2 leading-snug"
+          className="material-thick ui-numeric absolute bottom-2.5 right-2.5 flex items-baseline gap-1.5 rounded-lg px-2.5 py-1"
           style={{ color: "var(--cs-text-primary)" }}
         >
-          {cookbook.title}
-        </h3>
-
-        <div className="flex items-center gap-1.5">
-          {cookbook.authorId.profile_url ? (
-            <Image
-              src={cookbook.authorId.profile_url}
-              alt={cookbook.authorId.fullName}
-              width={16}
-              height={16}
-              className="rounded-full w-4 h-4 object-cover shrink-0"
-            />
-          ) : (
-            <div
-              className="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold text-white shrink-0"
-              style={{ backgroundColor: "var(--cs-accent)" }}
+          <span className="text-sm font-bold">{price.current}</span>
+          {price.original && (
+            <span
+              className="ui-micro line-through"
+              style={{ color: "var(--cs-text-tertiary)" }}
             >
-              {initials.charAt(0)}
-            </div>
+              {price.original}
+            </span>
           )}
-          <span
-            className="text-xs truncate"
-            style={{ color: "var(--cs-text-secondary)" }}
+        </span>
+      </div>
+
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        {showAuthor && cookbook.authorId && (
+          <Link
+            href={`/chefs/${cookbook.authorId._id}`}
+            className="above-stretched-link focus-ring flex w-fit items-center gap-2 rounded-md"
           >
-            {cookbook.authorId.fullName}
-          </span>
-        </div>
+            <SafeImage
+              src={cookbook.authorId.profile_url}
+              alt=""
+              width={20}
+              height={20}
+              loading="lazy"
+              className="h-5 w-5 shrink-0 rounded-full object-cover"
+              fallback={
+                <span
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold"
+                  style={{
+                    backgroundColor: "var(--cs-accent-muted)",
+                    color: "var(--cs-accent-text)",
+                  }}
+                >
+                  {initials}
+                </span>
+              }
+            />
+            <span
+              className="ui-micro max-w-[140px] truncate font-medium transition-colors hover:underline"
+              style={{ color: "var(--cs-text-secondary)" }}
+            >
+              {cookbook.authorId.fullName}
+            </span>
+          </Link>
+        )}
+
+        <h3 className="ui-subheading">
+          <Link
+            href={`/cookbooks/${cookbook._id}`}
+            className="stretched-link focus-ring line-clamp-2 rounded-md transition-colors duration-150 group-hover:text-[color:var(--cs-accent-text)]"
+            style={{ color: "var(--cs-text-primary)" }}
+          >
+            {cookbook.title}
+          </Link>
+        </h3>
 
         {cookbook.description && (
           <p
-            className="text-xs line-clamp-3 leading-relaxed"
+            className="ui-caption line-clamp-2"
             style={{ color: "var(--cs-text-secondary)" }}
           >
             {cookbook.description}
           </p>
         )}
+
+        {showBuy && (
+          <div
+            className="mt-auto pt-3"
+            style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
+          >
+            <Link
+              href={`/purchase-cookbook/${cookbook._id}`}
+              className="above-stretched-link focus-ring block w-full rounded-xl py-2 text-center text-sm font-semibold transition-colors duration-150"
+              style={{
+                backgroundColor: "var(--primary)",
+                color: "var(--primary-foreground)",
+              }}
+            >
+              {price.isFree ? "Get for free" : "Buy now"}
+            </Link>
+          </div>
+        )}
       </div>
-    </Link>
+    </motion.article>
   );
 }
+
+export default CookbookCard;

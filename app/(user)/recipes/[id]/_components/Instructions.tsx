@@ -1,6 +1,24 @@
+"use client";
+
 import { Recipe } from "@/types/recipes.type";
 import { CheckIcon } from "@phosphor-icons/react/dist/ssr";
+import { motion, useReducedMotion } from "framer-motion";
+import { EASE, POP, POP_TRANSITION, SPRING } from "@/lib/motion";
 
+/**
+ * A step you can tick off while cooking.
+ *
+ * This was a `<div onClick>`, so the one genuinely interactive thing on
+ * the page — the checklist you work through with wet hands, or with a
+ * keyboard because your hands are busy — could not be reached by
+ * anything except a mouse. It's a real button with `aria-pressed` now.
+ *
+ * The completion tick reuses the landing page's `--cs-check-*` tokens
+ * and its one-frame pop, so "this is done" is expressed the same way in
+ * both halves of the product. The colours are status tokens rather than
+ * the previous `#22c55e` / `#f0fdf4` / `#bbf7d0` literals, which were
+ * light-mode greens that stayed mint-on-mint in dark mode.
+ */
 function StepCard({
   step,
   instruction,
@@ -14,86 +32,83 @@ function StepCard({
   total: number;
   onToggle: () => void;
 }) {
+  const reduce = useReducedMotion();
+
   return (
-    <div
+    <button
+      type="button"
       onClick={onToggle}
-      className="relative rounded-xl overflow-hidden select-none cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
-      style={
-        done
-          ? { backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0" }
-          : {
-              backgroundColor: "var(--cs-surface-2)",
-              border: "1px solid var(--cs-border-subtle)",
-            }
-      }
+      aria-pressed={done}
+      className="focus-ring relative w-full select-none overflow-hidden rounded-xl text-left transition-colors duration-200"
+      style={{
+        backgroundColor: done ? "var(--cs-success-bg)" : "var(--cs-surface-2)",
+        border: `1px solid ${done ? "var(--cs-success-edge)" : "var(--cs-border-subtle)"}`,
+      }}
     >
-      {/* Left accent bar */}
-      <div
-        className="absolute left-0 top-0 bottom-0 w-0.5"
-        style={{ backgroundColor: done ? "#22c55e" : "var(--cs-border-default)" }}
+      <span
+        aria-hidden
+        className="absolute bottom-0 left-0 top-0 w-0.5 transition-colors duration-200"
+        style={{
+          backgroundColor: done ? "var(--cs-success-fg)" : "var(--cs-border-default)",
+        }}
       />
 
-      <div className="pl-5 pr-4 py-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2.5">
-            <div
-              className="w-7 h-7 flex items-center justify-center font-bold text-base rounded-full transition-all duration-200 border-2"
-              style={
-                done
-                  ? { backgroundColor: "#22c55e", borderColor: "#22c55e", color: "#fff" }
-                  : {
-                      borderColor: "var(--cs-border-default)",
-                      color: "var(--cs-text-primary)",
-                    }
-              }
+      <span className="block py-4 pl-5 pr-4">
+        <span className="mb-3 flex items-center justify-between">
+          <span className="flex items-center gap-2.5">
+            <motion.span
+              className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold"
+              animate={reduce ? undefined : { scale: done ? POP : 1 }}
+              transition={{ ...SPRING.snappy, scale: POP_TRANSITION }}
+              style={{
+                backgroundColor: done ? "var(--cs-check-fill)" : "transparent",
+                border: `2px solid ${
+                  done ? "var(--cs-check-edge)" : "var(--cs-border-default)"
+                }`,
+                color: done ? "var(--cs-check-mark)" : "var(--cs-text-primary)",
+              }}
             >
-              {done ? (
-                <CheckIcon weight="bold" size={12} />
-              ) : (
-                <span className="text-xs">{step}</span>
-              )}
-            </div>
+              {done ? <CheckIcon weight="bold" size={12} /> : step}
+            </motion.span>
             <span
-              className="font-semibold text-sm uppercase tracking-widest"
-              style={{ color: done ? "#22c55e" : "var(--cs-text-tertiary)" }}
+              className="ui-label"
+              style={{
+                color: done ? "var(--cs-success-fg)" : "var(--cs-text-tertiary)",
+              }}
             >
               Step {step}
             </span>
-          </div>
+          </span>
 
           <span
-            className="text-xs font-medium px-2 py-0.5 rounded-md"
-            style={
-              done
-                ? { backgroundColor: "#dcfce7", color: "#15803d" }
-                : {
-                    backgroundColor: "var(--cs-surface-3)",
-                    color: "var(--cs-text-secondary)",
-                  }
-            }
+            className="ui-micro ui-numeric rounded-md px-2 py-0.5 font-semibold"
+            style={{
+              backgroundColor: done ? "transparent" : "var(--cs-surface-3)",
+              color: done ? "var(--cs-success-fg)" : "var(--cs-text-secondary)",
+            }}
           >
             {step}/{total}
           </span>
-        </div>
+        </span>
 
-        <p
-          className="text-sm leading-relaxed transition-all duration-200"
+        <span
+          className="ui-body block transition-colors duration-200"
           style={{
             color: done ? "var(--cs-text-tertiary)" : "var(--cs-text-primary)",
             textDecoration: done ? "line-through" : "none",
           }}
         >
           {instruction}
-        </p>
+        </span>
 
-        <p
-          className="text-xs font-medium mt-3"
-          style={{ color: done ? "#86efac" : "var(--cs-text-tertiary)" }}
+        <span
+          className="ui-micro mt-3 block font-medium"
+          style={{ color: "var(--cs-text-tertiary)" }}
         >
           {done ? "Tap to undo" : "Tap to complete"}
-        </p>
-      </div>
-    </div>
+        </span>
+      </span>
+    </button>
   );
 }
 
@@ -110,77 +125,96 @@ export function Instructions({
   completedSteps: Set<number>;
   toggleStep: (step: number) => void;
 }) {
+  const reduce = useReducedMotion();
+  const total = recipe.instructions.length;
+
   return (
     <section className="mb-10">
-      <div className="flex items-baseline justify-between mb-4">
-        <h2
-          className="text-lg font-bold tracking-tight"
-          style={{ color: "var(--cs-text-primary)" }}
-        >
+      <div className="mb-4 flex items-baseline justify-between">
+        <h2 className="ui-heading" style={{ color: "var(--cs-text-primary)" }}>
           Instructions
         </h2>
 
         <span
-          className="text-sm font-medium px-2.5 py-1 rounded-lg"
-          style={
-            allDone
-              ? { backgroundColor: "#dcfce7", color: "#15803d", border: "1px solid #bbf7d0" }
-              : {
-                  backgroundColor: "var(--cs-surface-2)",
-                  border: "1px solid var(--cs-border-subtle)",
-                  color: "var(--cs-text-secondary)",
-                }
-          }
+          className="ui-caption ui-numeric rounded-lg px-2.5 py-1 font-semibold"
+          style={{
+            backgroundColor: allDone ? "var(--cs-success-bg)" : "var(--cs-surface-2)",
+            border: `1px solid ${
+              allDone ? "var(--cs-success-edge)" : "var(--cs-border-subtle)"
+            }`,
+            color: allDone ? "var(--cs-success-fg)" : "var(--cs-text-secondary)",
+          }}
         >
-          {completedSteps.size}/{recipe.instructions.length} done
+          {completedSteps.size}/{total} done
         </span>
       </div>
 
-      {/* Progress bar */}
-      <div className="flex items-center gap-3 mb-4">
+      {/* Spring-driven, so ticking several steps quickly retargets from
+          wherever the bar currently is instead of queueing tweens. */}
+      <div
+        className="mb-4 flex items-center gap-3"
+        role="progressbar"
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Cooking progress"
+      >
         <div
-          className="flex-1 h-1.5 rounded-full overflow-hidden"
+          className="h-1.5 flex-1 overflow-hidden rounded-full"
           style={{ backgroundColor: "var(--cs-surface-3)" }}
         >
-          <div
-            className="h-full rounded-full transition-all duration-500"
+          <motion.div
+            className="h-full rounded-full"
             style={{
-              width: `${progress}%`,
-              backgroundColor: "#22c55e",
+              backgroundColor: allDone
+                ? "var(--cs-success-fg)"
+                : "var(--primary)",
+              transformOrigin: "left",
             }}
+            initial={false}
+            animate={{ scaleX: progress / 100 }}
+            transition={reduce ? { duration: 0 } : SPRING.default}
           />
         </div>
         <span
-          className="text-sm font-bold tabular-nums w-9 text-right"
-          style={{ color: allDone ? "#22c55e" : "var(--cs-text-tertiary)" }}
+          className="ui-caption ui-numeric w-9 text-right font-bold"
+          style={{
+            color: allDone ? "var(--cs-success-fg)" : "var(--cs-text-tertiary)",
+          }}
         >
           {progress}%
         </span>
       </div>
 
       {allDone && (
-        <div
-          className="mb-4 px-4 py-3 rounded-xl"
-          style={{ backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0" }}
+        <motion.p
+          className="ui-subheading mb-4 rounded-xl px-4 py-3"
+          initial={reduce ? { opacity: 0 } : { opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.24, ease: EASE }}
+          style={{
+            backgroundColor: "var(--cs-success-bg)",
+            border: "1px solid var(--cs-success-edge)",
+            color: "var(--cs-success-fg)",
+          }}
         >
-          <p className="text-sm font-bold" style={{ color: "#15803d" }}>
-            All done! Enjoy your meal. 🎉
-          </p>
-        </div>
+          Every step done — enjoy your meal.
+        </motion.p>
       )}
 
-      <div className="flex flex-col gap-2.5">
+      <ol className="flex flex-col gap-2.5">
         {recipe.instructions.map(({ step, instruction, _id }) => (
-          <StepCard
-            key={_id}
-            step={step}
-            instruction={instruction}
-            done={completedSteps.has(step)}
-            total={recipe.instructions.length}
-            onToggle={() => toggleStep(step)}
-          />
+          <li key={_id}>
+            <StepCard
+              step={step}
+              instruction={instruction}
+              done={completedSteps.has(step)}
+              total={total}
+              onToggle={() => toggleStep(step)}
+            />
+          </li>
         ))}
-      </div>
+      </ol>
     </section>
   );
 }

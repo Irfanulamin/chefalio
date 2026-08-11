@@ -1,12 +1,9 @@
 "use client";
-import Image from "next/image";
-import { useState, useRef } from "react";
 
-const DIFF: Record<string, { label: string; bg: string; color: string }> = {
-  beginner: { label: "Easy", bg: "#dcfce7", color: "#15803d" },
-  intermediate: { label: "Medium", bg: "#fef9c3", color: "#a16207" },
-  advance: { label: "Hard", bg: "#fee2e2", color: "#b91c1c" },
-};
+import Image from "next/image";
+import { useRef, useState } from "react";
+import { difficultyDisplay } from "@/lib/recipe-display";
+import { StatusPill } from "@/components/User/shared/StatusPill";
 
 export function ImageCarousel({
   images,
@@ -19,7 +16,7 @@ export function ImageCarousel({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const diff = DIFF[difficulty] ?? DIFF.advance;
+  const diff = difficultyDisplay(difficulty);
 
   const scrollToImage = (index: number) => {
     setActiveIndex(index);
@@ -31,14 +28,10 @@ export function ImageCarousel({
 
   return (
     <div className="mb-8">
-      <div
-        className="rounded-2xl overflow-hidden"
-        style={{
-          backgroundColor: "var(--cs-surface-3)",
-          border: "1px solid var(--cs-border-subtle)",
-        }}
-      >
-        {/* Main image area — CSS scroll snap */}
+      <div className="ui-card overflow-hidden">
+        {/* Native scroll-snap rather than a JS carousel: it keeps the
+            platform's own momentum, rubber-banding at the ends and
+            trackpad handling, which no reimplementation gets right. */}
         <div
           ref={scrollRef}
           className="relative flex overflow-x-auto"
@@ -49,8 +42,7 @@ export function ImageCarousel({
           }}
           onScroll={(e) => {
             const el = e.currentTarget;
-            const slideW = el.clientWidth;
-            const idx = Math.round(el.scrollLeft / slideW);
+            const idx = Math.round(el.scrollLeft / el.clientWidth);
             setActiveIndex(idx);
           }}
         >
@@ -58,71 +50,77 @@ export function ImageCarousel({
             images.map((img, i) => (
               <div
                 key={i}
-                className="relative shrink-0 w-full h-full"
+                className="relative h-full w-full shrink-0"
                 style={{ scrollSnapAlign: "start" }}
               >
                 <Image
                   src={img}
-                  alt={`${title} photo ${i + 1}`}
+                  alt={`${title}, photo ${i + 1} of ${images.length}`}
                   fill
                   className="object-cover"
                   priority={i === 0}
+                  sizes="(max-width: 1024px) 100vw, 480px"
                 />
               </div>
             ))
           ) : (
             <div
-              className="w-full h-full flex items-center justify-center"
+              className="flex h-full w-full items-center justify-center"
               style={{ backgroundColor: "var(--cs-surface-3)" }}
             >
               <span
                 className="text-5xl font-bold opacity-20"
-                style={{ color: "var(--cs-accent)" }}
+                style={{ color: "var(--cs-accent-text)" }}
               >
                 {title.charAt(0)}
               </span>
             </div>
           )}
 
-          {/* Difficulty badge */}
-          <span
-            className="absolute top-3 left-3 z-10 text-[11px] font-semibold px-2.5 py-1 rounded-lg"
-            style={{ backgroundColor: diff.bg, color: diff.color }}
-          >
+          <StatusPill tone={diff.tone} overMedia className="absolute left-3 top-3 z-10">
             {diff.label}
-          </span>
+          </StatusPill>
 
-          {/* Image counter */}
           {images.length > 1 && (
-            <span className="absolute top-3 right-3 z-10 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-black/30 text-white backdrop-blur-sm">
+            <span
+              className="material-thick ui-micro ui-numeric absolute right-3 top-3 z-10 rounded-lg px-2.5 py-1 font-bold"
+              style={{ color: "var(--cs-text-primary)" }}
+              aria-hidden
+            >
               {activeIndex + 1} / {images.length}
             </span>
           )}
         </div>
 
-        {/* Thumbnail strip */}
         {images.length > 1 && (
           <div
-            className="flex gap-2 p-3 overflow-x-auto"
-            style={{ scrollbarWidth: "none" }}
+            className="flex gap-2 overflow-x-auto p-3"
+            style={{
+              scrollbarWidth: "none",
+              borderTop: "1px solid var(--cs-border-subtle)",
+            }}
           >
-            {images.map((img, i) => (
-              <button
-                key={i}
-                onClick={() => scrollToImage(i)}
-                className="relative shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-150"
-                style={{
-                  opacity: activeIndex === i ? 1 : 0.5,
-                  outline:
-                    activeIndex === i
-                      ? "2px solid var(--cs-accent)"
+            {images.map((img, i) => {
+              const isActive = activeIndex === i;
+              return (
+                <button
+                  key={i}
+                  onClick={() => scrollToImage(i)}
+                  aria-label={`Show photo ${i + 1}`}
+                  aria-current={isActive}
+                  className="focus-ring relative h-14 w-14 shrink-0 overflow-hidden rounded-lg transition-all duration-150"
+                  style={{
+                    opacity: isActive ? 1 : 0.55,
+                    outline: isActive
+                      ? "2px solid var(--cs-accent-text)"
                       : "2px solid transparent",
-                  outlineOffset: "1px",
-                }}
-              >
-                <Image src={img} alt="" fill className="object-cover" sizes="56px" />
-              </button>
-            ))}
+                    outlineOffset: "1px",
+                  }}
+                >
+                  <Image src={img} alt="" fill className="object-cover" sizes="56px" />
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

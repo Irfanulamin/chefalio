@@ -1,126 +1,124 @@
 import type { Cookbook } from "@/types/cookbook.type";
-import Image from "next/image";
+import { SafeImage } from "@/components/common/SafeImage";
+import { StatusPill } from "@/components/User/shared/StatusPill";
+import { cookbookPrice, initialsOf } from "@/lib/recipe-display";
 
 export const SummaryCard = ({ cookbook }: { cookbook: Cookbook }) => {
   const isLowStock = cookbook.stockCount <= 5;
-  const discountedPrice =
-    (cookbook.discount ?? 0) > 0
-      ? cookbook.price * (1 - cookbook.discount / 100)
-      : null;
-
-  const authorInitials = cookbook.authorId.fullName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const price = cookbookPrice(cookbook.price, cookbook.discount ?? 0);
+  const authorInitials = initialsOf(cookbook.authorId.fullName);
 
   return (
-    <div
-      className="rounded-xl overflow-hidden"
-      style={{
-        border: "1px solid var(--cs-border-subtle)",
-        backgroundColor: "var(--cs-surface-2)",
-      }}
-    >
-      {/* Cover image */}
-      <div className="relative w-full" style={{ aspectRatio: "3/4" }}>
-        {cookbook.cookbook_image && (
-          <Image
-            src={cookbook.cookbook_image}
-            alt={cookbook.title}
-            fill
-            className="object-cover"
-          />
-        )}
+    <div className="ui-card overflow-hidden">
+      <div
+        className="relative w-full"
+        style={{ aspectRatio: "3/4", backgroundColor: "var(--cs-surface-3)" }}
+      >
+        <SafeImage
+          src={cookbook.cookbook_image}
+          alt={`Cover of ${cookbook.title}`}
+          fill
+          sizes="(max-width: 1024px) 100vw, 320px"
+          className="object-cover"
+          fallback={
+            <span
+              className="flex h-full w-full items-center justify-center text-5xl font-bold opacity-20"
+              style={{ color: "var(--cs-accent-text)" }}
+            >
+              {cookbook.title.charAt(0)}
+            </span>
+          }
+        />
+
         <span
-          className="absolute bottom-2.5 right-2.5 text-sm font-bold px-2.5 py-1 rounded-lg z-10"
-          style={{ backgroundColor: "rgba(0,0,0,0.65)", color: "#fff" }}
+          className="material-thick ui-numeric absolute bottom-2.5 right-2.5 z-10 rounded-lg px-2.5 py-1 text-sm font-bold"
+          style={{ color: "var(--cs-text-primary)" }}
         >
-          ${(discountedPrice ?? cookbook.price).toFixed(2)}
+          {price.current}
         </span>
+
         {isLowStock && (
-          <span
-            className="absolute top-2.5 left-2.5 text-[11px] font-bold px-2 py-0.5 rounded-lg z-10"
-            style={{ backgroundColor: "#fee2e2", color: "#b91c1c" }}
-          >
+          <StatusPill tone="warning" overMedia className="absolute left-2.5 top-2.5 z-10">
             Only {cookbook.stockCount} left
-          </span>
+          </StatusPill>
         )}
       </div>
 
-      {/* Details */}
       <div className="p-4">
-        {/* Badge */}
-        <span
-          className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full"
-          style={{
-            backgroundColor: "var(--cs-accent-muted)",
-            color: "var(--cs-accent)",
-          }}
-        >
+        <span className="ui-label" style={{ color: "var(--cs-text-tertiary)" }}>
           Cookbook
         </span>
 
-        <p
-          className="text-base font-semibold leading-snug line-clamp-2 mt-2 mb-2"
+        <h2
+          className="ui-heading mb-2 mt-2 line-clamp-2"
           style={{ color: "var(--cs-text-primary)" }}
         >
           {cookbook.title}
-        </p>
+        </h2>
 
-        <p className="text-sm line-clamp-2 mb-3" style={{ color: "var(--cs-text-secondary)" }}>
+        <p
+          className="ui-body mb-3 line-clamp-2"
+          style={{ color: "var(--cs-text-secondary)" }}
+        >
           {cookbook.description}
         </p>
 
-        {/* Author */}
-        <div className="flex items-center gap-2 mb-4">
-          {cookbook.authorId.profile_url ? (
-            <Image
+        <div className="mb-4 flex items-center gap-2">
+          <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full">
+            <SafeImage
               src={cookbook.authorId.profile_url}
-              alt={cookbook.authorId.fullName}
+              alt=""
               width={24}
               height={24}
-              className="w-6 h-6 rounded-full object-cover"
+              className="h-6 w-6 object-cover"
+              fallback={
+                <span
+                  className="flex h-6 w-6 items-center justify-center text-[10px] font-bold"
+                  style={{
+                    backgroundColor: "var(--cs-accent-muted)",
+                    color: "var(--cs-accent-text)",
+                  }}
+                >
+                  {authorInitials}
+                </span>
+              }
             />
-          ) : (
-            <div
-              className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
-              style={{ backgroundColor: "var(--cs-accent)", color: "#111110" }}
-            >
-              {authorInitials}
-            </div>
-          )}
-          <span className="text-sm truncate" style={{ color: "var(--cs-text-secondary)" }}>
+          </div>
+          <span
+            className="ui-caption truncate"
+            style={{ color: "var(--cs-text-secondary)" }}
+          >
             {cookbook.authorId.fullName} · @{cookbook.authorId.username}
           </span>
         </div>
 
-        {/* Price */}
-        <div
-          className="pt-3 flex items-center justify-between"
+        <dl
+          className="flex items-center justify-between pt-3"
           style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
         >
-          <span className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>Price</span>
-          <div className="flex items-center gap-2">
-            {discountedPrice !== null && (
+          <dt className="ui-body" style={{ color: "var(--cs-text-secondary)" }}>
+            Price
+          </dt>
+          <dd className="flex items-center gap-2">
+            {price.original && (
               <>
-                <span className="text-xs line-through" style={{ color: "var(--cs-text-tertiary)" }}>
-                  ${cookbook.price.toFixed(2)}
-                </span>
                 <span
-                  className="text-xs font-medium px-1.5 py-0.5 rounded-full"
-                  style={{ backgroundColor: "#dcfce7", color: "#15803d" }}
+                  className="ui-micro ui-numeric line-through"
+                  style={{ color: "var(--cs-text-tertiary)" }}
                 >
-                  -{cookbook.discount}%
+                  {price.original}
                 </span>
+                <StatusPill tone="success">−{price.discountPct}%</StatusPill>
               </>
             )}
-            <span className="text-lg font-semibold" style={{ color: "var(--cs-text-primary)" }}>
-              ${(discountedPrice ?? cookbook.price).toFixed(2)}
+            <span
+              className="ui-numeric text-lg font-semibold"
+              style={{ color: "var(--cs-text-primary)" }}
+            >
+              {price.current}
             </span>
-          </div>
-        </div>
+          </dd>
+        </dl>
       </div>
     </div>
   );
