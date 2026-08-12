@@ -1,11 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { toast } from "sonner";
 import { useCreateRecipe } from "@/hooks/useChefs";
-import { ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr";
 import RecipeForm from "@/components/Chef/RecipeForm";
+import { CreatePageShell } from "@/components/Chef/studio/CreatePageShell";
+
+const FORM_ID = "chef-recipe-create-form";
 
 export default function CreateRecipePage() {
   const router = useRouter();
@@ -14,13 +15,11 @@ export default function CreateRecipePage() {
   const handleSubmit = async (values: Parameters<typeof createRecipe>[0]) => {
     try {
       await createRecipe(values);
-      toast.success("Recipe published successfully!", {
-        position: "bottom-right",
-      });
+      toast.success("Recipe published.", { position: "bottom-right" });
       router.push("/chef/recipes");
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to publish recipe. Please try again.",
+        err instanceof Error ? err.message : "Failed to publish recipe.",
         { position: "bottom-right" },
       );
     }
@@ -28,35 +27,24 @@ export default function CreateRecipePage() {
 
   return (
     <>
-      <title>Create Recipe – Chefalio Chef</title>
+      <title>New recipe – Chefalio</title>
 
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Back nav */}
-        <Link
-          href="/chef/recipes"
-          className="inline-flex items-center gap-1.5 text-sm transition-colors duration-150 hover:opacity-70"
-          style={{ color: "var(--cs-text-tertiary)" }}
-        >
-          <ArrowLeftIcon size={14} weight="bold" />
-          Back to My Recipes
-        </Link>
-
-        {/* Header */}
-        <div>
-          <h1 className="text-base font-semibold" style={{ color: "var(--cs-text-primary)" }}>
-            Create Recipe
-          </h1>
-          <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
-            Fill in the details below to publish your recipe.
-          </p>
-        </div>
-
+      <CreatePageShell
+        title="New recipe"
+        description="Publish a dish to your catalogue."
+        backHref="/chef/recipes"
+        backLabel="My recipes"
+        formId={FORM_ID}
+        isSubmitting={isPending}
+        submitLabel="Publish recipe"
+      >
         <RecipeForm
+          formId={FORM_ID}
+          hideSubmit
           onSubmit={handleSubmit}
           isSubmitting={isPending}
-          submitLabel="Publish Recipe"
         />
-      </div>
+      </CreatePageShell>
     </>
   );
 }

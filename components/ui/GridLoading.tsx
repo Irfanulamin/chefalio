@@ -6,21 +6,25 @@ interface GridLoaderProps {
   className?: string;
 }
 
-const DELAYS = [0, 0.1, 0.2, 0.1, 0.2, 0.3, 0.2, 0.3, 0.4];
-
-// Tailwind opacity modifiers — works regardless of how --primary is defined
-const CELL_CLASSES = [
-  "bg-primary",
-  "bg-primary/60",
-  "bg-primary/40",
-  "bg-primary/70",
-  "bg-primary/50",
-  "bg-primary/80",
-  "bg-primary/45",
-  "bg-primary/65",
-  "bg-primary/75",
-];
-
+/**
+ * The app's route-level "waiting" state.
+ *
+ * This was a 3×3 grid of brand-lime squares, each pulsing on its own delay
+ * with a lime glow around it. Three things were wrong with it. Its
+ * `box-shadow` used `hsl(var(--primary) / …)`, but `--primary` is a hex
+ * literal, so the glow never resolved in either theme. It painted saturated
+ * lime blocks on a white page while every other surface in the product is a
+ * quiet neutral — it read as a different product's loading screen. And nine
+ * elements animating `transform`, `opacity` *and* `box-shadow` together is
+ * three simultaneous raster invalidations per cell, at exactly the moment
+ * the browser is busiest doing the thing you're waiting for.
+ *
+ * What replaces it is the least interesting thing that still communicates
+ * "working": one hairline track with a sweep running through it. It uses the
+ * surface ramp, so it belongs to whichever theme is active; the accent
+ * appears once, in the sweep, which is the only part that means anything.
+ * Waiting is not a moment that wants personality.
+ */
 export function GridLoader({
   minHeight = "60vh",
   label,
@@ -31,59 +35,68 @@ export function GridLoader({
       className={className}
       style={{ minHeight }}
       role="status"
+      aria-live="polite"
       aria-label={label ?? "Loading"}
     >
       <div
-        className="flex flex-col items-center justify-center gap-4 h-full"
+        className="flex flex-col items-center justify-center gap-3.5 h-full"
         style={{ minHeight }}
       >
-        <div className="grid grid-cols-3 rounded-xl gap-1 w-13 h-13">
-          {CELL_CLASSES.map((cls, i) => (
-            <span
-              key={i}
-              className={`block ${cls} gl-cell`}
-              style={{ animationDelay: `${DELAYS[i]}s` }}
-            />
-          ))}
+        <div
+          className="sl-track"
+          style={{ backgroundColor: "var(--cs-surface-3)" }}
+          aria-hidden
+        >
+          <span className="sl-sweep" />
         </div>
 
         {label && (
-          <span className="text-xs tracking-widest text-muted-foreground uppercase">
+          <span
+            className="text-xs tracking-[0.01em]"
+            style={{ color: "var(--cs-text-tertiary)" }}
+          >
             {label}
           </span>
         )}
       </div>
 
       <style>{`
-        @keyframes glloader {
-          0%   {
-            opacity: .15;
-            transform: scale(.65);
-            box-shadow: 0 0 0px 0px hsl(var(--primary) / 0);
-          }
-          30%  {
-            opacity: 1;
-            transform: scale(1);
-            box-shadow: 0 0 8px 3px hsl(var(--primary) / 0.55);
-          }
-          65%  {
-            opacity: .45;
-            transform: scale(.85);
-            box-shadow: 0 0 4px 1px hsl(var(--primary) / 0.2);
-          }
-          100% {
-            opacity: .15;
-            transform: scale(.65);
-            box-shadow: 0 0 0px 0px hsl(var(--primary) / 0);
-          }
+        .sl-track {
+          position: relative;
+          width: 132px;
+          height: 2px;
+          border-radius: 999px;
+          overflow: hidden;
         }
-        .gl-cell {
-          animation: glloader 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-          will-change: transform, opacity, box-shadow;
-          border-radius: 2px;
+        .sl-sweep {
+          position: absolute;
+          inset-block: 0;
+          left: 0;
+          width: 42%;
+          border-radius: inherit;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            var(--cs-accent),
+            transparent
+          );
+          animation: sl-sweep 1.15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          will-change: transform;
         }
+        @keyframes sl-sweep {
+          from { transform: translateX(-100%); }
+          to   { transform: translateX(338%); }
+        }
+        /* Reduced motion asks us to drop travel, not feedback. The track
+           holds a steady partial fill so the state is still legible. */
         @media (prefers-reduced-motion: reduce) {
-          .gl-cell { animation: none; opacity: .6; box-shadow: none; }
+          .sl-sweep {
+            animation: none;
+            transform: none;
+            width: 100%;
+            background: var(--cs-accent);
+            opacity: 0.45;
+          }
         }
       `}</style>
     </div>

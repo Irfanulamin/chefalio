@@ -6,6 +6,7 @@ import {
   useChefEarningsAnalytics,
   type RevenuePeriod,
   type SalesGraphPoint,
+  type RecipeEngagement,
 } from "@/hooks/useChefs";
 import {
   AreaChart,
@@ -17,7 +18,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
 } from "recharts";
 import {
   CurrencyDollarIcon,
@@ -25,11 +25,18 @@ import {
   BookmarkSimpleIcon,
   UsersIcon,
   TrendUpIcon,
+  ReceiptIcon,
+  ChartBarIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Panel, PanelHeader, PanelEmpty, PanelSkeleton } from "@/components/Chef/studio/Panel";
+import { StatTile, StatTileSkeleton } from "@/components/Chef/studio/StatTile";
+import { SegmentedControl } from "@/components/common/form/FormKit";
+import { ChartTooltip, AreaGradient, axisProps, gridProps } from "@/components/Chef/studio/ChartBits";
+import { MEASURE, currency, compactCurrency, cursorFill } from "@/components/Chef/studio/viz";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+/* ── Helpers ──────────────────────────────────────────────────────────── */
 
 function buildSalesGraph(
   data: SalesGraphPoint[],
@@ -55,9 +62,12 @@ function buildSalesGraph(
         String(d.getMonth() + 1).padStart(2, "0"),
         String(d.getDate()).padStart(2, "0"),
       ].join("-");
-      const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
       const found = map.get(key);
-      return { date: label, amount: found?.amount ?? 0, orders: found?.orders ?? 0 };
+      return {
+        date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        amount: found?.amount ?? 0,
+        orders: found?.orders ?? 0,
+      };
     });
   }
 
@@ -68,591 +78,637 @@ function buildSalesGraph(
 }
 
 const PERIOD_OPTIONS: { key: RevenuePeriod; label: string; short: string }[] = [
-  { key: "daily",    label: "Daily",    short: "D" },
-  { key: "weekly",   label: "Weekly",   short: "W" },
-  { key: "monthly",  label: "Monthly",  short: "M" },
-  { key: "lifetime", label: "Lifetime", short: "L" },
+  { key: "daily", label: "Today", short: "D" },
+  { key: "weekly", label: "7 days", short: "7D" },
+  { key: "monthly", label: "30 days", short: "30D" },
+  { key: "lifetime", label: "All time", short: "All" },
 ];
 
 const PERIOD_LABEL: Record<RevenuePeriod, string> = {
-  daily:    "today",
-  weekly:   "last 7 days",
-  monthly:  "last 30 days",
+  daily: "today",
+  weekly: "last 7 days",
+  monthly: "last 30 days",
   lifetime: "all time",
 };
 
-const formatCurrency = (val: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(val);
+/* ── Chrome ───────────────────────────────────────────────────────────── */
 
-const CHART_GRID_COLOR = "var(--cs-border-subtle)";
-const TICK_COLOR = "var(--cs-text-tertiary)";
-const TOOLTIP_STYLE = {
-  borderRadius: "8px",
-  border: "1px solid var(--cs-border-subtle)",
-  fontSize: "12px",
-  backgroundColor: "var(--cs-surface-2)",
-  color: "var(--cs-text-primary)",
-};
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function MetricCard({
-  icon: Icon,
-  label,
+/**
+ * The page's headline figure.
+ *
+ * Analytics opened with a title, a sentence of description, and then
+ * sixteen equally-weighted numbers. Nothing on it was the answer — you had
+ * to go find one. The hero states the thing a chef opens this page to know,
+ * at a size nothing else competes with, and every panel below is the
+ * working behind it.
+ *
+ * Tracking goes negative here because the text is large: letters read too
+ * far apart as they grow, so display type tightens where body type doesn't.
+ */
+function HeroFigure({
   value,
-  sub,
+  caption,
+  isLoading,
 }: {
-  icon: React.ElementType;
-  label: string;
-  value: string | number;
-  sub?: string;
+  value: string;
+  caption: string;
+  isLoading: boolean;
 }) {
-  return (
-    <div
-      className="rounded-xl p-5"
-      style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-    >
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-medium" style={{ color: "var(--cs-text-secondary)" }}>{label}</span>
-        <Icon size={14} style={{ color: "var(--cs-text-tertiary)" }} />
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-10 w-44" />
       </div>
-      <p className="text-2xl font-semibold tabular-nums leading-none" style={{ color: "var(--cs-text-primary)" }}>
+    );
+  }
+
+  return (
+    <div>
+      <p
+        className="text-[11px] font-semibold uppercase tracking-[0.06em]"
+        style={{ color: "var(--cs-text-tertiary)" }}
+      >
+        Revenue
+      </p>
+      <p
+        className="text-[2.5rem] leading-[1.05] font-semibold tracking-[-0.028em] mt-1"
+        style={{ color: "var(--cs-text-primary)" }}
+      >
         {value}
       </p>
-      {sub && (
-        <p className="mt-1.5 text-xs" style={{ color: "var(--cs-text-tertiary)" }}>{sub}</p>
-      )}
+      <p className="text-sm mt-1" style={{ color: "var(--cs-text-secondary)" }}>
+        {caption}
+      </p>
     </div>
   );
 }
 
-function SectionDivider({ title }: { title: string }) {
+/**
+ * Time range selector.
+ *
+ * It was solid brand lime on the selected segment — the loudest thing on a
+ * page whose job is to show data. It now uses the same segmented control
+ * the forms use, so a range picker in Analytics and a difficulty picker in
+ * the recipe editor are visibly the same control: raised chip on a recessed
+ * track, indicator sliding between positions rather than cutting.
+ */
+function PeriodTabs({
+  value,
+  onChange,
+}: {
+  value: RevenuePeriod;
+  onChange: (p: RevenuePeriod) => void;
+}) {
   return (
-    <div className="flex items-center gap-3 pt-2">
-      <h2 className="text-sm font-semibold whitespace-nowrap" style={{ color: "var(--cs-text-primary)" }}>
+    <SegmentedControl
+      name="time-range"
+      value={value}
+      onChange={onChange}
+      options={PERIOD_OPTIONS.map(({ key, label }) => ({ value: key, label }))}
+    />
+  );
+}
+
+function SectionHeading({
+  title,
+  icon: Icon,
+}: {
+  title: string;
+  icon: React.ElementType;
+}) {
+  return (
+    <div className="flex items-center gap-2 pt-1">
+      <Icon size={14} style={{ color: "var(--cs-text-tertiary)" }} />
+      <h2
+        className="text-xs font-semibold uppercase tracking-[0.06em]"
+        style={{ color: "var(--cs-text-secondary)" }}
+      >
         {title}
       </h2>
-      <div className="flex-1 h-px" style={{ backgroundColor: "var(--cs-surface-3)" }} />
+      <div className="flex-1 h-px" style={{ backgroundColor: "var(--cs-border-subtle)" }} />
     </div>
   );
 }
 
-function EngagementBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
-  return (
-    <div className="h-1 w-full rounded-full overflow-hidden" style={{ backgroundColor: "var(--cs-surface-3)" }}>
-      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
-    </div>
-  );
-}
-
-function SalesTooltip({
-  active,
-  payload,
-  label,
+/** Ranked horizontal bar with the value direct-labelled, so the row never
+ *  depends on reading a colour or measuring against a gridline. */
+function RankRow({
+  rank,
+  title,
+  thumbnail,
+  value,
+  max,
+  caption,
 }: {
-  active?: boolean;
-  payload?: { value: number }[];
-  label?: string;
+  rank: number;
+  title: string;
+  thumbnail: string;
+  value: number;
+  max: number;
+  caption: string;
 }) {
-  if (!active || !payload?.length) return null;
   return (
-    <div
-      className="rounded-lg shadow-lg px-3 py-2.5 text-xs"
-      style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-    >
-      <p className="font-medium mb-1" style={{ color: "var(--cs-text-primary)" }}>{label}</p>
-      <p className="font-semibold" style={{ color: "var(--cs-accent)" }}>{formatCurrency(payload[0].value)}</p>
-      {payload[1] && (
-        <p className="mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>{payload[1].value} orders</p>
-      )}
-    </div>
-  );
-}
-
-// ─── Skeleton card ────────────────────────────────────────────────────────────
-
-function SkeletonCard() {
-  return (
-    <div
-      className="rounded-xl p-5 space-y-3"
-      style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-    >
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-3 w-20" />
-        <Skeleton className="h-3.5 w-3.5 rounded-sm" />
+    <li className="flex items-center gap-3">
+      <span
+        className="text-xs font-semibold w-3 shrink-0 tabular-nums"
+        style={{ color: "var(--cs-text-tertiary)" }}
+      >
+        {rank}
+      </span>
+      <div
+        className="relative h-9 w-12 rounded-lg overflow-hidden shrink-0"
+        style={{ backgroundColor: "var(--cs-surface-3)" }}
+      >
+        <Image src={thumbnail} alt="" fill className="object-cover" sizes="48px" />
       </div>
-      <Skeleton className="h-7 w-24" />
-      <Skeleton className="h-3 w-32" />
-    </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium truncate" style={{ color: "var(--cs-text-primary)" }}>
+          {title}
+        </p>
+        <div
+          className="h-1 w-full rounded-full overflow-hidden mt-1.5"
+          style={{ backgroundColor: "var(--cs-surface-3)" }}
+        >
+          <div
+            className="h-full rounded-full"
+            style={{
+              width: `${max > 0 ? Math.max(2, (value / max) * 100) : 0}%`,
+              backgroundColor: MEASURE.engagement,
+            }}
+          />
+        </div>
+        <p className="text-[11px] mt-1" style={{ color: "var(--cs-text-tertiary)" }}>
+          {caption}
+        </p>
+      </div>
+      <span
+        className="text-xs font-semibold tabular-nums shrink-0"
+        style={{ color: "var(--cs-text-primary)" }}
+      >
+        {value.toFixed(0)}
+      </span>
+    </li>
   );
 }
 
-function SkeletonPanel({ height = 44 }: { height?: number }) {
+/* ── Sections ─────────────────────────────────────────────────────────── */
+
+function EarningsSection({
+  earnings,
+  isLoading,
+  period,
+}: {
+  earnings:
+    | { totalEarned: number; totalProfit: number; profitRate: string; totalOrders: number; salesGraph: SalesGraphPoint[] }
+    | undefined;
+  isLoading: boolean;
+  period: RevenuePeriod;
+}) {
+  const periodSub = PERIOD_LABEL[period];
+  const salesGraph = buildSalesGraph(earnings?.salesGraph ?? [], period);
+  const hasRevenue = salesGraph.some((d) => d.amount > 0);
+  const hasOrders = salesGraph.some((d) => d.orders > 0);
+
   return (
-    <div
-      className="rounded-xl p-5"
-      style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-    >
-      <Skeleton className="h-4 w-40 mb-2" />
-      <Skeleton className="h-3 w-48 mb-5" />
-      <Skeleton className={`h-[${height}px] w-full rounded-lg`} style={{ height }} />
-    </div>
+    <section className="space-y-4">
+      <SectionHeading title="Earnings" icon={ReceiptIcon} />
+
+      {/* Revenue and order count are the hero's job now, so these three
+          answer the questions the hero raises rather than restating it. */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => <StatTileSkeleton key={i} />)
+        ) : (
+          <>
+            <StatTile
+              label="Your profit"
+              value={currency(earnings?.totalProfit ?? 0)}
+              sub={`At ${earnings?.profitRate ?? "80%"} rate`}
+              icon={CurrencyDollarIcon}
+              accent={MEASURE.revenue}
+            />
+            <StatTile
+              label="Average order"
+              value={
+                earnings?.totalOrders
+                  ? currency((earnings.totalEarned ?? 0) / earnings.totalOrders, true)
+                  : "—"
+              }
+              sub="Per transaction"
+              icon={ChartBarIcon}
+            />
+            <StatTile
+              label="Orders"
+              value={(earnings?.totalOrders ?? 0).toLocaleString()}
+              sub={`Paid, ${periodSub}`}
+              icon={ReceiptIcon}
+              accent={MEASURE.orders}
+              className="col-span-2 lg:col-span-1"
+            />
+          </>
+        )}
+      </div>
+
+      {isLoading ? (
+        <>
+          <PanelSkeleton height={208} />
+          <PanelSkeleton height={152} />
+        </>
+      ) : (
+        <>
+          <Panel>
+            <PanelHeader
+              title="Revenue over time"
+              sub={`${period === "daily" ? "Hourly" : "Daily"} paid sales, ${periodSub}`}
+            />
+            {!hasRevenue ? (
+              <PanelEmpty
+                message="No sales in this range"
+                hint="Revenue plots here once a cookbook sells."
+                height={208}
+              />
+            ) : (
+              <ResponsiveContainer width="100%" height={208}>
+                <AreaChart data={salesGraph} margin={{ left: -12, right: 8, top: 4 }}>
+                  <AreaGradient id="cs-revenue" color={MEASURE.revenue} />
+                  <CartesianGrid {...gridProps} vertical={false} />
+                  <XAxis dataKey="date" {...axisProps} interval="preserveStartEnd" minTickGap={28} />
+                  <YAxis
+                    {...axisProps}
+                    width={46}
+                    tickFormatter={(v: number) => compactCurrency(v)}
+                  />
+                  <Tooltip
+                    content={<ChartTooltip hideName format={(v) => currency(v, true)} />}
+                    cursor={{ stroke: "var(--cv-axis)", strokeWidth: 1 }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="amount"
+                    name="Revenue"
+                    stroke={MEASURE.revenue}
+                    strokeWidth={2}
+                    fill="url(#cs-revenue)"
+                    dot={false}
+                    activeDot={{
+                      r: 3.5,
+                      fill: MEASURE.revenue,
+                      stroke: "var(--cs-surface-2)",
+                      strokeWidth: 2,
+                    }}
+                    isAnimationActive={false}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </Panel>
+
+          <Panel>
+            <PanelHeader
+              title={period === "daily" ? "Orders per hour" : "Orders per day"}
+              sub={`Order volume, ${periodSub}`}
+              value={(earnings?.totalOrders ?? 0).toLocaleString()}
+            />
+            {!hasOrders ? (
+              <PanelEmpty message="No orders in this range" height={152} />
+            ) : (
+              /* Every bar is one colour. The previous version alternated two
+                 shades of indigo by array index, which encodes "this bar is
+                 even" — a fact about the loop, not about the orders. */
+              <ResponsiveContainer width="100%" height={152}>
+                <BarChart data={salesGraph} margin={{ left: -22, right: 8, top: 4 }}>
+                  <CartesianGrid {...gridProps} vertical={false} />
+                  <XAxis dataKey="date" {...axisProps} interval="preserveStartEnd" minTickGap={28} />
+                  <YAxis {...axisProps} allowDecimals={false} width={34} />
+                  <Tooltip
+                    content={<ChartTooltip hideName format={(v) => `${v} order${v === 1 ? "" : "s"}`} />}
+                    cursor={cursorFill}
+                  />
+                  <Bar
+                    dataKey="orders"
+                    name="Orders"
+                    fill={MEASURE.orders}
+                    radius={[3, 3, 0, 0]}
+                    isAnimationActive={false}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </Panel>
+        </>
+      )}
+    </section>
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+function EngagementSection({
+  recipes,
+  isLoading,
+  period,
+}: {
+  recipes: RecipeEngagement[];
+  isLoading: boolean;
+  period: RevenuePeriod;
+}) {
+  const periodSub = PERIOD_LABEL[period];
+
+  const totalLoves = recipes.reduce((a, r) => a + r.lovedCount, 0);
+  const totalSaves = recipes.reduce((a, r) => a + r.savedCount, 0);
+  const totalUniqueUsers = recipes.reduce((a, r) => a + r.uniqueUsersCount, 0);
+  const totalEngagement = recipes.reduce((a, r) => a + r.engagementScore, 0);
+  const maxEngagement = Math.max(...recipes.map((r) => r.engagementScore), 1);
+
+  return (
+    <section className="space-y-4">
+      <SectionHeading title="Recipe engagement" icon={HeartIcon} />
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <StatTileSkeleton key={i} />)
+        ) : (
+          <>
+            <StatTile
+              label="Loves"
+              value={totalLoves.toLocaleString()}
+              sub={`Across recipes, ${periodSub}`}
+              icon={HeartIcon}
+              accent={MEASURE.loves}
+            />
+            <StatTile
+              label="Saves"
+              value={totalSaves.toLocaleString()}
+              sub={`Across recipes, ${periodSub}`}
+              icon={BookmarkSimpleIcon}
+              accent={MEASURE.saves}
+            />
+            <StatTile
+              label="Unique engagers"
+              value={totalUniqueUsers.toLocaleString()}
+              sub={`Distinct users, ${periodSub}`}
+              icon={UsersIcon}
+            />
+            <StatTile
+              label="Engagement score"
+              value={totalEngagement.toLocaleString()}
+              sub="Loves ×2 + saves ×1.5"
+              icon={TrendUpIcon}
+            />
+          </>
+        )}
+      </div>
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <PanelSkeleton height={208} />
+          <PanelSkeleton height={208} />
+        </div>
+      ) : recipes.length === 0 ? (
+        <Panel>
+          <PanelEmpty
+            message="No engagement data"
+            hint={
+              period === "lifetime"
+                ? "Publish recipes to start seeing engagement."
+                : "Nothing recorded in this range."
+            }
+          />
+        </Panel>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Panel>
+              <PanelHeader title="Engagement by recipe" sub="Top 7" />
+              {/* One hue for every bar. Colouring bar 1 dark, bars 2–3 mid and
+                  the rest pale made colour restate the sort order and, worse,
+                  meant a filter that reordered the list repainted every
+                  surviving bar. Rank is already the y-axis. */}
+              <ResponsiveContainer width="100%" height={208}>
+                <BarChart
+                  data={recipes.slice(0, 7).map((r) => ({
+                    name: r.title.length > 20 ? r.title.slice(0, 20) + "…" : r.title,
+                    score: Number(r.engagementScore.toFixed(1)),
+                  }))}
+                  layout="vertical"
+                  margin={{ left: 0, right: 12 }}
+                  barSize={14}
+                >
+                  <CartesianGrid {...gridProps} horizontal={false} />
+                  <XAxis type="number" {...axisProps} />
+                  <YAxis type="category" dataKey="name" {...axisProps} width={104} />
+                  <Tooltip
+                    content={<ChartTooltip hideName format={(v) => `${v} score`} />}
+                    cursor={cursorFill}
+                  />
+                  <Bar
+                    dataKey="score"
+                    name="Engagement"
+                    fill={MEASURE.engagement}
+                    radius={[0, 3, 3, 0]}
+                    isAnimationActive={false}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </Panel>
+
+            <Panel>
+              <PanelHeader title="Top performing" sub="By engagement score" />
+              <ul className="space-y-3.5">
+                {recipes.slice(0, 5).map((recipe, i) => (
+                  <RankRow
+                    key={recipe._id}
+                    rank={i + 1}
+                    title={recipe.title}
+                    thumbnail={recipe.thumbnail}
+                    value={recipe.engagementScore}
+                    max={maxEngagement}
+                    caption={`${recipe.lovedCount} loves · ${recipe.savedCount} saves`}
+                  />
+                ))}
+              </ul>
+            </Panel>
+          </div>
+
+          <Panel flush>
+            <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--cs-text-primary)" }}>
+                All recipe engagement
+              </h3>
+              <p className="text-xs mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
+                {recipes.length} recipe{recipes.length === 1 ? "" : "s"}, {periodSub}
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
+                    <th
+                      className="py-2.5 pl-5 pr-3 text-left text-xs font-medium w-8"
+                      style={{ color: "var(--cs-text-tertiary)" }}
+                    >
+                      #
+                    </th>
+                    <th
+                      className="py-2.5 px-3 text-left text-xs font-medium"
+                      style={{ color: "var(--cs-text-tertiary)" }}
+                    >
+                      Recipe
+                    </th>
+                    {["Loves", "Saves", "Users"].map((h) => (
+                      <th
+                        key={h}
+                        className="py-2.5 px-3 text-right text-xs font-medium"
+                        style={{ color: "var(--cs-text-tertiary)" }}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                    <th
+                      className="py-2.5 pl-3 pr-5 text-right text-xs font-medium"
+                      style={{ color: "var(--cs-text-tertiary)" }}
+                    >
+                      Score
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recipes.map((recipe, i) => (
+                    <tr
+                      key={recipe._id}
+                      className="last:border-0 transition-colors duration-150 hover:bg-[var(--cs-hover)]"
+                      style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
+                    >
+                      <td
+                        className="py-3 pl-5 pr-3 text-xs tabular-nums"
+                        style={{ color: "var(--cs-text-tertiary)" }}
+                      >
+                        {i + 1}
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className="relative h-8 w-11 rounded-md overflow-hidden shrink-0"
+                            style={{ backgroundColor: "var(--cs-surface-3)" }}
+                          >
+                            <Image
+                              src={recipe.thumbnail}
+                              alt=""
+                              fill
+                              className="object-cover"
+                              sizes="44px"
+                            />
+                          </div>
+                          <span
+                            className="text-xs font-medium line-clamp-1 max-w-40"
+                            style={{ color: "var(--cs-text-primary)" }}
+                          >
+                            {recipe.title}
+                          </span>
+                        </div>
+                      </td>
+                      <td
+                        className="py-3 px-3 text-right text-xs tabular-nums"
+                        style={{ color: "var(--cs-text-primary)" }}
+                      >
+                        {recipe.lovedCount}
+                      </td>
+                      <td
+                        className="py-3 px-3 text-right text-xs tabular-nums"
+                        style={{ color: "var(--cs-text-primary)" }}
+                      >
+                        {recipe.savedCount}
+                      </td>
+                      <td
+                        className="py-3 px-3 text-right text-xs tabular-nums"
+                        style={{ color: "var(--cs-text-primary)" }}
+                      >
+                        {recipe.uniqueUsersCount}
+                      </td>
+                      <td className="py-3 pl-3 pr-5 text-right">
+                        <span
+                          className="text-xs font-semibold tabular-nums"
+                          style={{ color: "var(--cs-text-primary)" }}
+                        >
+                          {recipe.engagementScore.toFixed(1)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Panel>
+        </>
+      )}
+    </section>
+  );
+}
+
+/* ── Page ─────────────────────────────────────────────────────────────── */
 
 export default function ChefAnalyticsPage() {
   const [period, setPeriod] = useState<RevenuePeriod>("lifetime");
 
   const { earnings, isLoading: earningsLoading, isFetching: earningsFetching } =
     useChefEarningsAnalytics(period);
-  const { recipes, isLoading: engLoading, isFetching: engFetching } =
+  const { recipes, isLoading: engagementLoading, isFetching: engagementFetching } =
     useChefEngagementAnalytics(period);
 
-  const isInitialLoading = earningsLoading || engLoading;
-  const isFetching = earningsFetching || engFetching;
-
-  const salesGraph = buildSalesGraph(earnings?.salesGraph ?? [], period);
-  const hasOrders = salesGraph.some((d) => d.orders > 0);
-  const hasRevenue = salesGraph.some((d) => d.amount > 0);
-
-  const maxEngagement = Math.max(...recipes.map((r) => r.engagementScore), 1);
-  const maxLoved = Math.max(...recipes.map((r) => r.lovedCount), 1);
-
-  const totalLoves = recipes.reduce((a, r) => a + r.lovedCount, 0);
-  const totalSaves = recipes.reduce((a, r) => a + r.savedCount, 0);
-  const totalUniqueUsers = recipes.reduce((a, r) => a + r.uniqueUsersCount, 0);
-  const totalEngagement = recipes.reduce((a, r) => a + r.engagementScore, 0);
-
-  const periodSub = PERIOD_LABEL[period];
-
-  if (isInitialLoading) {
-    return (
-      <div className="space-y-6 max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="space-y-1.5">
-            <Skeleton className="h-5 w-28" />
-            <Skeleton className="h-3.5 w-72" />
-          </div>
-          <Skeleton className="h-9 w-52 rounded-lg" />
-        </div>
-        <div className="space-y-4">
-          <SectionDivider title="Earnings" />
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
-          <SkeletonPanel height={200} />
-          <SkeletonPanel height={160} />
-        </div>
-        <div className="space-y-4">
-          <SectionDivider title="Recipe Engagement" />
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <SkeletonPanel height={200} />
-            <div
-              className="rounded-xl p-5"
-              style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-            >
-              <Skeleton className="h-4 w-32 mb-4" />
-              <div className="space-y-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <Skeleton className="h-3 w-4" />
-                    <Skeleton className="h-9 w-12 rounded-lg" />
-                    <div className="flex-1 space-y-1.5">
-                      <Skeleton className="h-3 w-32" />
-                      <Skeleton className="h-1.5 w-full rounded-full" />
-                    </div>
-                    <Skeleton className="h-3 w-8" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  /**
+   * Each section owns its loading state.
+   *
+   * Both queries keep their previous data across a period change, so
+   * switching range no longer blanks the page — the old numbers stay
+   * readable while the new ones land. The only signal that a refetch is in
+   * flight is a hairline under the header, which is the smallest thing that
+   * can say "working" without moving anything the reader is looking at.
+   */
+  const isRefetching =
+    (earningsFetching && !earningsLoading) || (engagementFetching && !engagementLoading);
 
   return (
     <>
       <title>Analytics – Chefalio</title>
 
       <div className="space-y-6 max-w-7xl mx-auto">
-
-        {/* ── Header + period selector ── */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-base font-semibold" style={{ color: "var(--cs-text-primary)" }}>Analytics</h1>
-            <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
-              Performance overview across recipes and cookbook sales.
-            </p>
-          </div>
-
-          {/* Period tabs */}
-          <div
-            className="flex rounded-lg overflow-hidden shrink-0"
-            style={{ border: "1px solid var(--cs-border-default)" }}
-          >
-            {PERIOD_OPTIONS.map(({ key, label, short }) => (
-              <button
-                key={key}
-                onClick={() => setPeriod(key)}
-                className="px-3 sm:px-4 py-1.5 text-xs font-medium transition-colors duration-150"
-                style={
-                  period === key
-                    ? { backgroundColor: "var(--cs-accent)", color: "#111110" }
-                    : { backgroundColor: "var(--cs-surface-2)", color: "var(--cs-text-secondary)" }
-                }
-              >
-                <span className="hidden sm:inline">{label}</span>
-                <span className="sm:hidden">{short}</span>
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <HeroFigure
+            value={currency(earnings?.totalEarned ?? 0)}
+            caption={`${(earnings?.totalOrders ?? 0).toLocaleString()} paid order${
+              earnings?.totalOrders === 1 ? "" : "s"
+            } · ${PERIOD_LABEL[period]}`}
+            isLoading={earningsLoading}
+          />
+          <PeriodTabs value={period} onChange={setPeriod} />
         </div>
 
-        {/* Faint shimmer overlay while re-fetching */}
-        <div className={isFetching ? "pointer-events-none opacity-60 transition-opacity duration-150" : "transition-opacity duration-150"}>
- {/* ── Engagement ── */}
-          <div className="space-y-4 mt-6">
-            <SectionDivider title="Recipe Engagement" />
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <MetricCard
-                icon={HeartIcon}
-                label="Loves"
-                value={totalLoves.toLocaleString()}
-                sub={`Across recipes, ${periodSub}`}
-              />
-              <MetricCard
-                icon={BookmarkSimpleIcon}
-                label="Saves"
-                value={totalSaves.toLocaleString()}
-                sub={`Across recipes, ${periodSub}`}
-              />
-              <MetricCard
-                icon={UsersIcon}
-                label="Unique Engagers"
-                value={totalUniqueUsers.toLocaleString()}
-                sub={`Distinct users, ${periodSub}`}
-              />
-              <MetricCard
-                icon={TrendUpIcon}
-                label="Engagement Score"
-                value={totalEngagement.toLocaleString()}
-                sub="Loves×2 + Saves×1.5"
-              />
-            </div>
-
-            {recipes.length === 0 ? (
-              <div
-                className="rounded-xl border-dashed py-16 flex flex-col items-center gap-2 text-center"
-                style={{ border: "1px dashed var(--cs-border-subtle)" }}
-              >
-                <p className="text-sm font-medium" style={{ color: "var(--cs-text-primary)" }}>No engagement data</p>
-                <p className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>
-                  {period === "lifetime"
-                    ? "Publish recipes to start seeing engagement metrics."
-                    : `No engagement recorded for this period.`}
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div
-                    className="rounded-xl p-5"
-                    style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-                  >
-                    <h3 className="text-sm font-semibold mb-5" style={{ color: "var(--cs-text-primary)" }}>
-                      Engagement by Recipe
-                    </h3>
-                    <div className="h-50">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={recipes.slice(0, 7).map((r) => ({
-                            name: r.title.length > 18 ? r.title.slice(0, 18) + "…" : r.title,
-                            score: r.engagementScore,
-                          }))}
-                          layout="vertical"
-                          margin={{ left: 0, right: 8 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} horizontal={false} />
-                          <XAxis type="number" tick={{ fontSize: 10, fill: TICK_COLOR }} tickLine={false} axisLine={false} />
-                          <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: TICK_COLOR }} tickLine={false} axisLine={false} width={100} />
-                          <Tooltip
-                            cursor={{ fill: "var(--cs-surface-3)" }}
-                            contentStyle={TOOLTIP_STYLE}
-                          />
-                          <Bar dataKey="score" radius={[0, 4, 4, 0]} isAnimationActive={false}>
-                            {recipes.slice(0, 7).map((_, i) => (
-                              <Cell key={i} fill={i === 0 ? "#a7d129" : i < 3 ? "#c8e87a" : "#e4f4a8"} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  <div
-                    className="rounded-xl p-5"
-                    style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-                  >
-                    <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--cs-text-primary)" }}>Top Performing</h3>
-                    <div className="space-y-3">
-                      {recipes.slice(0, 5).map((recipe, i) => (
-                        <div key={recipe._id} className="flex items-center gap-3">
-                          <span className="text-xs font-semibold w-4 shrink-0 tabular-nums" style={{ color: "var(--cs-text-tertiary)" }}>
-                            {i + 1}
-                          </span>
-                          <div
-                            className="relative h-9 w-12 rounded-lg overflow-hidden shrink-0"
-                            style={{ backgroundColor: "var(--cs-surface-3)" }}
-                          >
-                            <Image src={recipe.thumbnail} alt={recipe.title} fill className="object-cover" sizes="48px" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium truncate" style={{ color: "var(--cs-text-primary)" }}>{recipe.title}</p>
-                            <EngagementBar value={recipe.engagementScore} max={maxEngagement} color="#a7d129" />
-                            <div className="flex gap-3 mt-0.5">
-                              <span className="text-[11px]" style={{ color: "var(--cs-text-tertiary)" }}>{recipe.lovedCount} loves</span>
-                              <span className="text-[11px]" style={{ color: "var(--cs-text-tertiary)" }}>{recipe.savedCount} saves</span>
-                            </div>
-                          </div>
-                          <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: "var(--cs-accent)" }}>
-                            {recipe.engagementScore.toFixed(0)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Full table */}
-                <div
-                  className="rounded-xl overflow-hidden"
-                  style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-                >
-                  <div
-                    className="px-5 py-4"
-                    style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
-                  >
-                    <h3 className="text-sm font-semibold" style={{ color: "var(--cs-text-primary)" }}>All Recipe Engagement</h3>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
-                          <th className="py-2.5 pl-5 pr-3 text-left text-xs font-medium w-8" style={{ color: "var(--cs-text-tertiary)" }}>#</th>
-                          <th className="py-2.5 px-3 text-left text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Recipe</th>
-                          <th className="py-2.5 px-3 text-right text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Loves</th>
-                          <th className="py-2.5 px-3 text-right text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Saves</th>
-                          <th className="py-2.5 px-3 text-right text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Users</th>
-                          <th className="py-2.5 pl-3 pr-5 text-right text-xs font-medium" style={{ color: "var(--cs-text-tertiary)" }}>Score</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {recipes.map((recipe, i) => (
-                          <tr
-                            key={recipe._id}
-                            className="last:border-0 hover:bg-(--cs-surface-3) transition-colors duration-150"
-                            style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
-                          >
-                            <td className="py-3 pl-5 pr-3 text-xs tabular-nums" style={{ color: "var(--cs-text-tertiary)" }}>{i + 1}</td>
-                            <td className="py-3 px-3">
-                              <div className="flex items-center gap-2.5">
-                                <div
-                                  className="relative h-8 w-11 rounded-md overflow-hidden shrink-0"
-                                  style={{ backgroundColor: "var(--cs-surface-3)" }}
-                                >
-                                  <Image src={recipe.thumbnail} alt={recipe.title} fill className="object-cover" sizes="44px" />
-                                </div>
-                                <span className="text-xs font-medium line-clamp-1 max-w-40" style={{ color: "var(--cs-text-primary)" }}>
-                                  {recipe.title}
-                                </span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-3">
-                              <div className="flex items-center justify-end gap-2">
-                                <EngagementBar value={recipe.lovedCount} max={maxLoved} color="#f87171" />
-                                <span className="text-xs tabular-nums w-8 text-right" style={{ color: "var(--cs-text-primary)" }}>{recipe.lovedCount}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-3 text-right text-xs tabular-nums" style={{ color: "var(--cs-text-primary)" }}>{recipe.savedCount}</td>
-                            <td className="py-3 px-3 text-right text-xs tabular-nums" style={{ color: "var(--cs-text-primary)" }}>{recipe.uniqueUsersCount}</td>
-                            <td className="py-3 pl-3 pr-5 text-right">
-                              <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--cs-accent)" }}>
-                                {recipe.engagementScore.toFixed(1)}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-          {/* ── Earnings ── */}
-          <div className="space-y-4">
-            <SectionDivider title="Earnings" />
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <MetricCard
-                icon={CurrencyDollarIcon}
-                label="Revenue"
-                value={formatCurrency(earnings?.totalEarned ?? 0)}
-                sub={`Cookbook sales, ${periodSub}`}
-              />
-              <MetricCard
-                icon={TrendUpIcon}
-                label="Your Profit"
-                value={formatCurrency(earnings?.totalProfit ?? 0)}
-                sub={`At ${earnings?.profitRate ?? "80%"} rate`}
-              />
-              <MetricCard
-                icon={CurrencyDollarIcon}
-                label="Orders"
-                value={(earnings?.totalOrders ?? 0).toLocaleString()}
-                sub={`Paid orders, ${periodSub}`}
-              />
-              <MetricCard
-                icon={UsersIcon}
-                label="Avg. Order Value"
-                value={
-                  earnings?.totalOrders
-                    ? formatCurrency((earnings.totalEarned ?? 0) / earnings.totalOrders)
-                    : "$0"
-                }
-                sub="Per transaction"
-              />
-            </div>
-
-            {/* Revenue over time */}
-            <div
-              className="rounded-xl p-5"
-              style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-            >
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--cs-text-primary)" }}>Revenue Over Time</h3>
-                  <p className="text-xs mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
-                    {period === "daily" ? "Hourly" : "Daily"} paid sales, {periodSub}
-                  </p>
-                </div>
-                <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--cs-accent)" }}>
-                  {formatCurrency(earnings?.totalEarned ?? 0)}
-                </span>
-              </div>
-
-              <div className="h-50">
-                {!hasRevenue && period === "lifetime" ? (
-                  <div className="flex items-center justify-center h-full text-sm" style={{ color: "var(--cs-text-tertiary)" }}>
-                    No sales data yet
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={salesGraph} margin={{ left: -10, right: 8 }}>
-                      <defs>
-                        <linearGradient id="earningsGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#a7d129" stopOpacity={0.2} />
-                          <stop offset="95%" stopColor="#a7d129" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} vertical={false} />
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 11, fill: TICK_COLOR }}
-                        tickLine={false}
-                        axisLine={false}
-                        interval="preserveStartEnd"
-                      />
-                      <YAxis
-                        tick={{ fontSize: 11, fill: TICK_COLOR }}
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(v) => `$${v}`}
-                      />
-                      <Tooltip content={<SalesTooltip />} />
-                      <Area
-                        type="monotone"
-                        dataKey="amount"
-                        stroke="#a7d129"
-                        strokeWidth={2}
-                        fill="url(#earningsGrad)"
-                        dot={false}
-                        activeDot={{ r: 4, fill: "#a7d129" }}
-                        isAnimationActive={false}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </div>
-
-            {/* Orders volume */}
-            <div
-              className="rounded-xl p-5"
-              style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
-            >
-              <div className="mb-5">
-                <h3 className="text-sm font-semibold" style={{ color: "var(--cs-text-primary)" }}>
-                  {period === "daily" ? "Orders Per Hour" : "Orders Per Day"}
-                </h3>
-                <p className="text-xs mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
-                  {PERIOD_OPTIONS.find((p) => p.key === period)?.label} order volume
-                </p>
-              </div>
-
-              <div className="h-40">
-                {!hasOrders ? (
-                  <div className="flex items-center justify-center h-full text-sm" style={{ color: "var(--cs-text-tertiary)" }}>
-                    No orders in this period
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={salesGraph} margin={{ left: -10, right: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} vertical={false} />
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 11, fill: TICK_COLOR }}
-                        tickLine={false}
-                        axisLine={false}
-                        interval="preserveStartEnd"
-                      />
-                      <YAxis
-                        tick={{ fontSize: 11, fill: TICK_COLOR }}
-                        tickLine={false}
-                        axisLine={false}
-                        allowDecimals={false}
-                      />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Bar dataKey="orders" radius={[4, 4, 0, 0]} isAnimationActive={false}>
-                        {salesGraph.map((_, i) => (
-                          <Cell key={i} fill={i % 2 === 0 ? "#6366f1" : "#a5b4fc"} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </div>
-          </div>
-
-         
-
+        <div className="relative h-px" style={{ backgroundColor: "var(--cs-border-subtle)" }}>
+          {isRefetching && (
+            <span
+              className="absolute inset-y-0 left-0 w-1/3 sl-refetch"
+              style={{ backgroundColor: "var(--cs-accent)" }}
+              aria-hidden
+            />
+          )}
         </div>
+
+        <EarningsSection earnings={earnings} isLoading={earningsLoading} period={period} />
+        <EngagementSection recipes={recipes} isLoading={engagementLoading} period={period} />
       </div>
+
+      <style>{`
+        .sl-refetch {
+          animation: sl-refetch 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          will-change: transform;
+        }
+        @keyframes sl-refetch {
+          from { transform: translateX(-100%); }
+          to   { transform: translateX(300%); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .sl-refetch { animation: none; width: 100%; opacity: 0.4; }
+        }
+      `}</style>
     </>
   );
 }

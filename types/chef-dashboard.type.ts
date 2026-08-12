@@ -169,6 +169,20 @@ export interface UpdateCookbookPayload {
 }
 
 export interface ChefRecipeAnalyticsData {
+  /* Headline totals and the four cards the dashboard renders, both computed
+     server-side. The dashboard used to derive these from the full
+     /recipes/my-recipes payload — every recipe document the chef owns,
+     downloaded to produce three integers and four thumbnails. */
+  totalRecipes: number;
+  totalLoves: number;
+  totalSaves: number;
+  recentRecipes: {
+    _id: string;
+    title: string;
+    image: string;
+    difficulty: string;
+    lovedCount: number;
+  }[];
   myDifficultyBreakdown: { difficulty: string; count: number }[];
   myTopTags: { tag: string; count: number }[];
   uploadTrend: { date: string; count: number }[];
@@ -183,6 +197,9 @@ export interface ChefRecipeAnalyticsData {
 }
 
 export interface ChefDashboardEarningsData {
+  /** Counted server-side, replacing a /cookbooks/my-cookbooks?limit=100
+   *  fetch whose only use was `.length`. */
+  totalCookbooks: number;
   totalRevenue: number;
   totalProfit: number;
   totalOrders: number;

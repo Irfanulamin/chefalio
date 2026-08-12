@@ -2,9 +2,11 @@
 
 import { useState, useMemo } from "react"
 import { useChefOrdersTable } from "@/hooks/swr/use-chef-orders-table"
-import { useUpdateOrderStatus, type PaymentStatus } from "@/hooks/useChefs"
+import { useUpdateOrderStatus } from "@/hooks/useChefs"
 import { DataTable, type FilterConfig } from "@/components/ui/data-table"
-import { createChefOrderColumns } from "./columns"
+import { createChefOrderColumns, OrderStatusPill } from "./columns"
+import Image from "next/image"
+import type { ChefOrder } from "@/types/chef-dashboard.type"
 import { toast } from "sonner"
 import { PackageIcon } from "@phosphor-icons/react/dist/ssr"
 
@@ -19,6 +21,38 @@ const STATUS_FILTER: FilterConfig = {
     { label: "Pending", value: "pending" },
     { label: "Refunded", value: "refunded" },
   ],
+}
+
+/** Phone layout for an order — the status pill stays, because on a card
+ *  the state is the thing you're scanning for. */
+function OrderCard({ order }: { order: ChefOrder }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div
+        className="relative h-14 w-16 rounded-lg overflow-hidden shrink-0"
+        style={{ backgroundColor: "var(--cs-surface-3)" }}
+      >
+        <Image src={order.cookbookImage} alt="" fill className="object-cover" sizes="64px" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium truncate" style={{ color: "var(--cs-text-primary)" }}>
+          {order.cookbookTitle}
+        </p>
+        <p className="text-[11px] truncate mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
+          {order.receiptEmail}
+        </p>
+        <div className="mt-1.5">
+          <OrderStatusPill status={order.paymentStatus} />
+        </div>
+      </div>
+      <span
+        className="text-sm font-semibold tabular-nums shrink-0"
+        style={{ color: "var(--cs-text-primary)" }}
+      >
+        ${order.price.toFixed(2)}
+      </span>
+    </div>
+  )
 }
 
 export default function ChefOrdersPage() {
@@ -81,12 +115,15 @@ export default function ChefOrdersPage() {
       <div className="space-y-5 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-base font-semibold" style={{ color: "var(--cs-text-primary)" }}>Orders</h1>
+            <h1
+              className="text-xl font-semibold tracking-[-0.018em]"
+              style={{ color: "var(--cs-text-primary)" }}
+            >
+              Orders
+            </h1>
             <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
               {orders.length} order{orders.length !== 1 ? "s" : ""} total
-              {isFetching && (
-                <span className="ml-2 text-xs">Refreshing…</span>
-              )}
+              {isFetching && <span className="ml-2 text-xs">Refreshing…</span>}
             </p>
           </div>
         </div>
@@ -96,6 +133,10 @@ export default function ChefOrdersPage() {
           data={filtered}
           isLoading={isLoading}
           isFetching={isFetching}
+          instantSearch
+          /* Orders aren't editable records — there's nothing for a row press
+             to open — so they get the card layout but no row action. */
+          renderCard={(order) => <OrderCard order={order} />}
           emptyIcon={PackageIcon}
           emptyMessage={
             search || filterValues.status

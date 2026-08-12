@@ -88,12 +88,34 @@ function NavLinks({
   );
 }
 
+/**
+ * The admin mark, built exactly like Chef Studio's — a glyph and a two-part
+ * label, with only the glyph and the qualifier differing between the two
+ * consoles. Same construction means moving between them reads as changing
+ * mode, not changing product.
+ *
+ * Untinted, for the same reason the studio mark is: a filled block in the
+ * sidebar header has nothing to distinguish itself from, and reads as a
+ * selected nav row competing with the real selection indicator below it.
+ *
+ * "Admin" uses `--cs-accent-text` rather than raw `--primary`, since raw
+ * brand lime sits around 1.7:1 on a light surface and would leave the word
+ * naming the console as the unreadable half of the mark.
+ */
 function AdminLogo() {
   return (
-    <Link href="/admin/dashboard" className="flex items-center gap-2 min-w-0">
-      <ShieldCheckIcon size={15} weight="duotone" style={{ color: "var(--cs-accent)" }} className="shrink-0" />
-      <span className="text-sm font-semibold tracking-tight truncate" style={{ color: "var(--cs-text-primary)" }}>
-        Chefalio <span style={{ color: "var(--cs-accent)" }}>Admin</span>
+    <Link
+      href="/admin/dashboard"
+      aria-label="Chefalio Admin"
+      className="focus-ring flex items-center gap-2 min-w-0 -ml-1 px-1 py-1 rounded-lg transition-transform duration-150 active:scale-[0.98]"
+    >
+      <ShieldCheckIcon
+        size={15}
+        weight="duotone"
+        className="text-black shrink-0 dark:text-white"
+      />
+      <span className="text-sm font-semibold tracking-tight text-foreground truncate">
+        Chefalio <span style={{ color: "var(--cs-accent-text)" }}>Admin</span>
       </span>
     </Link>
   );
@@ -134,13 +156,19 @@ export default function AdminLayout({
             style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
           >
             {collapsed ? (
+              /* Collapsed, the mark drops its label and keeps its glyph —
+                 same object, less of it. */
               <button
                 onClick={() => setCollapsed(false)}
-                className="mx-auto flex h-7 w-7 items-center justify-center rounded-lg transition-colors duration-150"
-                style={{ color: "var(--cs-accent)" }}
+                className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg transition-[background-color,transform] duration-150 hover:bg-(--cs-hover) active:scale-90"
                 title="Expand sidebar"
+                aria-label="Expand sidebar"
               >
-                <ShieldCheckIcon size={16} weight="duotone" />
+                <ShieldCheckIcon
+                  size={15}
+                  weight="duotone"
+                  className="text-black dark:text-white"
+                />
               </button>
             ) : (
               <>
@@ -209,11 +237,8 @@ export default function AdminLayout({
               >
                 {activeLabel}
               </span>
-              <span
-                className="flex md:hidden text-sm font-semibold"
-                style={{ color: "var(--cs-text-primary)" }}
-              >
-                Chefalio Admin
+              <span className="flex md:hidden min-w-0">
+                <AdminLogo />
               </span>
             </div>
 

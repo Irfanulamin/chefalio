@@ -1,11 +1,29 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { FormField } from "@/components/common/FormField";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import z from "zod";
 import type { Cookbook } from "@/types/cookbook.type";
-import Image from "next/image";
+import { SPRING } from "@/lib/motion";
+import {
+  FormSection,
+  TextInput,
+  TextArea,
+  LabelledField,
+} from "@/components/common/form/FormKit";
+import { ImageDropzone } from "@/components/common/form/ImageDropzone";
+
+/**
+ * Cookbook editor — the same three-card structure as the recipe form, so
+ * the two feel like one editor with different contents rather than two
+ * screens that happen to live in the same product.
+ *
+ * The cover image is the one place this diverges: a cookbook has exactly
+ * one, so the dropzone runs at a single slot and the existing cover appears
+ * *in* that slot rather than as a separate preview block above an empty
+ * upload box. Replacing it is pressing the thing you want to replace.
+ */
 
 interface CookbookFormValues {
   title: string;
@@ -20,6 +38,10 @@ interface CookbookFormProps {
   onSubmit: (values: CookbookFormValues) => Promise<void>;
   isSubmitting: boolean;
   submitLabel?: string;
+  /** Set when hosted in a sheet — the sheet's pinned footer submits this
+   *  form by id rather than the button that ships inside it. */
+  formId?: string;
+  hideSubmit?: boolean;
 }
 
 const schema = z.object({
@@ -30,19 +52,13 @@ const schema = z.object({
   image: z.array(z.instanceof(File)).max(1, "Only one cover image is allowed"),
 });
 
-const sectionHeaderStyle = {
-  fontSize: "11px",
-  fontWeight: 600,
-  letterSpacing: "0.06em",
-  textTransform: "uppercase" as const,
-  color: "var(--cs-text-tertiary)",
-};
-
 export default function CookbookForm({
   initialData,
   onSubmit,
   isSubmitting,
-  submitLabel = "Publish Cookbook",
+  submitLabel = "Publish cookbook",
+  formId,
+  hideSubmit = false,
 }: CookbookFormProps) {
   const form = useForm({
     defaultValues: {
@@ -60,101 +76,170 @@ export default function CookbookForm({
 
   return (
     <form
+      id={formId}
       onSubmit={(e) => {
         e.preventDefault();
         form.handleSubmit();
       }}
-      className="space-y-4"
+      className="space-y-3"
     >
-      {/* Details */}
-      <fieldset
-        className="rounded-xl overflow-hidden"
-        style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+      <FormSection title="The book">
+        <div className="space-y-4">
+          <form.Field name="title">
+            {(field) => (
+              <LabelledField label="Title" htmlFor={field.name}>
+                <TextInput
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="The Art of French Cooking"
+                />
+                <FieldError messages={field.state.meta.errors} />
+              </LabelledField>
+            )}
+          </form.Field>
+
+          <form.Field name="description">
+            {(field) => (
+              <LabelledField
+                label="Description"
+                htmlFor={field.name}
+                hint={`${field.state.value.length} / 2000`}
+              >
+                <TextArea
+                  id={field.name}
+                  name={field.name}
+                  rows={4}
+                  maxLength={2000}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="What will readers come away able to cook?"
+                />
+                <FieldError messages={field.state.meta.errors} />
+              </LabelledField>
+            )}
+          </form.Field>
+        </div>
+      </FormSection>
+
+      <FormSection title="Pricing and stock">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form.Field name="price">
+            {(field) => (
+              <LabelledField label="Price" htmlFor={field.name} hint="In USD">
+                <TextInput
+                  id={field.name}
+                  name={field.name}
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  inputMode="decimal"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(Number(e.target.value))}
+                  placeholder="29.99"
+                  className="tabular-nums"
+                />
+                <FieldError messages={field.state.meta.errors} />
+              </LabelledField>
+            )}
+          </form.Field>
+
+          <form.Field name="stockCount">
+            {(field) => (
+              <LabelledField
+                label="Stock"
+                htmlFor={field.name}
+                hint="Copies available to sell"
+              >
+                <TextInput
+                  id={field.name}
+                  name={field.name}
+                  type="number"
+                  min={1}
+                  step="1"
+                  inputMode="numeric"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(Number(e.target.value))}
+                  placeholder="100"
+                  className="tabular-nums"
+                />
+                <FieldError messages={field.state.meta.errors} />
+              </LabelledField>
+            )}
+          </form.Field>
+        </div>
+      </FormSection>
+
+      <FormSection
+        title="Cover"
+        hint={
+          initialData
+            ? "Press the cover to swap it, then add the replacement."
+            : "The first thing anyone sees in the shop."
+        }
       >
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
-          <p style={sectionHeaderStyle} className="mb-4">Details</p>
-          <div className="space-y-4">
-            <FormField
-              form={form}
-              name="title"
-              label="Title"
-              placeholder="e.g. The Art of French Cooking"
+        <form.Field name="image">
+          {(field) => (
+            <ImageDropzone
+              label="Cover image"
+              slots={1}
+              files={Array.isArray(field.state.value) ? field.state.value : []}
+              onChange={field.handleChange}
+              /* An existing cover is shown in the slot itself. It is never
+                 marked for removal, because a cookbook must always have
+                 one — adding a new file simply supersedes it. */
+              existing={
+                initialData && field.state.value.length === 0
+                  ? [{ url: initialData.cookbook_image, markedForRemoval: false }]
+                  : undefined
+              }
+              onToggleExisting={() => {}}
             />
-            <FormField
-              form={form}
-              name="description"
-              label="Description"
-              type="textarea"
-              placeholder="Describe what makes this cookbook special…"
-              rows={4}
-              maxLength={2000}
-            />
-          </div>
-        </div>
-
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
-          <p style={sectionHeaderStyle} className="mb-4">Pricing & Stock</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField
-              form={form}
-              name="price"
-              label="Price (USD)"
-              type="number"
-              placeholder="e.g. 29.99"
-            />
-            <FormField
-              form={form}
-              name="stockCount"
-              label="Stock Count"
-              type="number"
-              placeholder="e.g. 100"
-            />
-          </div>
-        </div>
-
-        <div className="px-5 py-4">
-          <p style={sectionHeaderStyle} className="mb-1">Cover Image</p>
-          {initialData ? (
-            <p className="text-xs mb-4" style={{ color: "var(--cs-text-tertiary)" }}>
-              Upload a new image to replace the current cover (optional)
-            </p>
-          ) : (
-            <p className="text-xs mb-4" style={{ color: "var(--cs-text-tertiary)" }}>Required</p>
           )}
+        </form.Field>
+      </FormSection>
 
-          {initialData && (
-            <div
-              className="relative h-28 w-44 rounded-lg overflow-hidden mb-4"
-              style={{ border: "1px solid var(--cs-border-subtle)" }}
-            >
-              <Image
-                src={initialData.cookbook_image}
-                alt={initialData.title}
-                className="h-full w-full object-cover"
-                width={300}
-                height={200}
-              />
-            </div>
-          )}
-          <FormField
-            form={form}
-            name="image"
-            label={initialData ? "New Cover Image (optional)" : "Cover Image"}
-            type="dropzone"
-          />
+      {!hideSubmit && (
+        <div className="flex justify-end pb-4">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-5 h-9 text-sm rounded-lg"
+          >
+            {isSubmitting ? "Saving…" : submitLabel}
+          </Button>
         </div>
-      </fieldset>
-
-      {/* Submit */}
-      <div className="flex justify-end pb-4">
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="gap-2 px-5 h-9 text-sm rounded-lg"
-        >
-          {isSubmitting ? "Saving…" : submitLabel}
-        </Button>
-      </div>
+      )}
     </form>
+  );
+}
+
+function FieldError({ messages }: { messages: unknown[] }) {
+  const text = messages
+    .map((m) =>
+      typeof m === "string" ? m : (m as { message?: string } | null)?.message,
+    )
+    .filter(Boolean)[0];
+
+  return (
+    <AnimatePresence initial={false}>
+      {text && (
+        <motion.p
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={SPRING.snappy}
+          className="text-xs overflow-hidden"
+          style={{ color: "var(--cs-danger-fg)" }}
+        >
+          {text}
+        </motion.p>
+      )}
+    </AnimatePresence>
   );
 }

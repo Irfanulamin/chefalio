@@ -1,41 +1,74 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { useForm, useStore } from "@tanstack/react-form";
-import { FormField } from "@/components/common/FormField";
+import { useForm } from "@tanstack/react-form";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import {
-  PlusIcon,
-  TrashIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-  XIcon,
-} from "@phosphor-icons/react/dist/ssr";
+import { ArrowUpIcon, ArrowDownIcon } from "@phosphor-icons/react/dist/ssr";
 import z from "zod";
 import { Recipe } from "@/types/recipes.type";
-import Image from "next/image";
+import { SPRING } from "@/lib/motion";
+import { DIFFICULTY } from "@/components/Chef/studio/viz";
+import {
+  FormSection,
+  AddButton,
+  TextInput,
+  TextArea,
+  LabelledField,
+  SegmentedControl,
+  Chip,
+  SuggestionChip,
+  RemoveButton,
+} from "@/components/common/form/FormKit";
+import { ImageDropzone } from "@/components/common/form/ImageDropzone";
+
+/**
+ * Recipe editor.
+ *
+ * The rebuild is structural, not cosmetic. What was one tall fieldset split
+ * by hairlines — every control styled inline, three different focus
+ * treatments between them — is now five cards, each holding one decision:
+ * what the dish is, what it looks like, what goes in it, how it's filed,
+ * how it's made. Grouping carries the explanation, so most of the helper
+ * text that used to be needed isn't.
+ *
+ * The interaction changes that matter:
+ *
+ * - Instruction steps reorder with a spring and a shared layout, so moving
+ *   a step *shows* it moving. Previously the array reordered and the DOM
+ *   cut to the new arrangement — you had to re-read the list to find out
+ *   what happened.
+ * - Validation is no longer six toasts fired at once on a failed submit.
+ *   Toasts stack over the thing you need to fix and disappear on a timer;
+ *   errors now sit on the section that owns them and stay until resolved.
+ * - Difficulty is a segmented control on the ordinal ramp, not three
+ *   buttons filled green, amber and red. "Advanced" is an achievement, and
+ *   painting it in the danger colour said the opposite.
+ */
 
 const DIFFICULTIES = ["beginner", "intermediate", "advance"] as const;
+type DifficultyKey = (typeof DIFFICULTIES)[number];
 
-type DifficultyKey = "beginner" | "intermediate" | "advance";
-
-const DIFFICULTY_ACTIVE_STYLE: Record<DifficultyKey, { backgroundColor: string; color: string; borderColor: string }> = {
-  beginner: { backgroundColor: "#22c55e", color: "#fff", borderColor: "#22c55e" },
-  intermediate: { backgroundColor: "#f59e0b", color: "#fff", borderColor: "#f59e0b" },
-  advance: { backgroundColor: "#ef4444", color: "#fff", borderColor: "#ef4444" },
-};
+const DIFFICULTY_OPTIONS: { value: DifficultyKey; label: string; dot: string }[] = [
+  { value: "beginner", label: "Beginner", dot: DIFFICULTY.beginner },
+  { value: "intermediate", label: "Intermediate", dot: DIFFICULTY.intermediate },
+  { value: "advance", label: "Advanced", dot: DIFFICULTY.advance },
+];
 
 const POPULAR_TAGS = [
   "vegetarian",
   "dessert",
-  "French",
-  "Italian",
+  "french",
+  "italian",
   "seafood",
   "modernist",
   "fine dining",
-  "Nordic",
+  "nordic",
 ];
+
+const REQUIRED_IMAGES = 3;
+const MAX_TAGS = 5;
 
 interface Instruction {
   step: number;
@@ -58,12 +91,20 @@ interface RecipeFormProps {
   onSubmit: (values: RecipeFormValues) => Promise<void>;
   isSubmitting: boolean;
   submitLabel?: string;
+  /**
+   * Set when the form is hosted in a sheet. The sheet owns a pinned footer,
+   * so its submit button lives outside this element and reaches back in via
+   * `form="<id>"` — a recipe form is long enough that a submit button at the
+   * end of the scroll is a submit button you have to go looking for.
+   */
+  formId?: string;
+  hideSubmit?: boolean;
 }
 
 const schema = z.object({
   title: z.string().min(5).max(100),
   description: z.string().min(10).max(2000),
-  difficulty: z.enum(["beginner", "intermediate", "advance"]),
+  difficulty: z.enum(DIFFICULTIES),
   images: z.array(z.instanceof(File)),
 });
 
@@ -71,8 +112,12 @@ export default function RecipeForm({
   initialData,
   onSubmit,
   isSubmitting,
-  submitLabel = "Publish Recipe",
+  submitLabel = "Publish recipe",
+  formId,
+  hideSubmit = false,
 }: RecipeFormProps) {
+  const reduceMotion = useReducedMotion();
+
   const [ingredients, setIngredients] = useState<string[]>(
     initialData?.ingredients ?? [""],
   );
@@ -84,108 +129,94 @@ export default function RecipeForm({
       instruction: i.instruction,
     })) ?? [{ step: 1, instruction: "" }],
   );
-  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyKey>(
+  const [difficulty, setDifficulty] = useState<DifficultyKey>(
     initialData?.difficulty ?? "beginner",
   );
   const [removeImages, setRemoveImages] = useState<string[]>([]);
-  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
 
-  const markForRemoval = (url: string) =>
-    setRemoveImages((prev) => [...prev, url]);
-  const unmarkForRemoval = (url: string) =>
-    setRemoveImages((prev) => prev.filter((u) => u !== url));
-
+  /* ── Ingredients ── */
   const addIngredient = () => setIngredients((prev) => [...prev, ""]);
   const removeIngredient = (i: number) =>
     setIngredients((prev) => prev.filter((_, idx) => idx !== i));
   const updateIngredient = (i: number, val: string) =>
     setIngredients((prev) => prev.map((v, idx) => (idx === i ? val : v)));
 
+  /* ── Tags ── */
   const addTag = useCallback(
     (tag: string) => {
       const clean = tag.trim().toLowerCase();
-      if (clean && !tags.includes(clean) && tags.length < 5) {
+      if (clean && !tags.includes(clean) && tags.length < MAX_TAGS) {
         setTags((prev) => [...prev, clean]);
       }
       setTagInput("");
     },
     [tags],
   );
-  const removeTag = (tag: string) =>
-    setTags((prev) => prev.filter((t) => t !== tag));
+  const removeTag = (tag: string) => setTags((prev) => prev.filter((t) => t !== tag));
+
+  /* ── Instructions ── */
+  const renumber = (list: Instruction[]) =>
+    list.map((ins, idx) => ({ ...ins, step: idx + 1 }));
 
   const addInstruction = () =>
-    setInstructions((prev) => [
-      ...prev,
-      { step: prev.length + 1, instruction: "" },
-    ]);
+    setInstructions((prev) => [...prev, { step: prev.length + 1, instruction: "" }]);
   const removeInstruction = (i: number) =>
-    setInstructions((prev) =>
-      prev
-        .filter((_, idx) => idx !== i)
-        .map((ins, idx) => ({ ...ins, step: idx + 1 })),
-    );
+    setInstructions((prev) => renumber(prev.filter((_, idx) => idx !== i)));
   const updateInstruction = (i: number, val: string) =>
     setInstructions((prev) =>
-      prev.map((ins, idx) =>
-        idx === i ? { ...ins, instruction: val } : ins,
-      ),
+      prev.map((ins, idx) => (idx === i ? { ...ins, instruction: val } : ins)),
     );
   const moveInstruction = (i: number, dir: "up" | "down") => {
-    const next = [...instructions];
     const target = dir === "up" ? i - 1 : i + 1;
-    if (target < 0 || target >= next.length) return;
+    if (target < 0 || target >= instructions.length) return;
+    const next = [...instructions];
     [next[i], next[target]] = [next[target], next[i]];
-    setInstructions(next.map((ins, idx) => ({ ...ins, step: idx + 1 })));
+    setInstructions(renumber(next));
   };
+
+  /* ── Images ── */
+  const toggleExistingImage = (url: string) =>
+    setRemoveImages((prev) =>
+      prev.includes(url) ? prev.filter((u) => u !== url) : [...prev, url],
+    );
 
   const form = useForm({
     defaultValues: {
       title: initialData?.title ?? "",
       description: initialData?.description ?? "",
-      difficulty: initialData?.difficulty ?? "beginner",
+      difficulty: (initialData?.difficulty ?? "beginner") as DifficultyKey,
       images: [] as File[],
     },
     validators: { onSubmit: schema },
     onSubmit: async ({ value }) => {
       const cleanIngredients = ingredients.filter((i) => i.trim());
       const cleanInstructions = instructions.filter((i) => i.instruction.trim());
+      const keptImages =
+        initialData?.images.filter((url) => !removeImages.includes(url)) ?? [];
+      const finalImageCount = keptImages.length + value.images.length;
 
-      const errors: string[] = [];
-
-      if (cleanIngredients.length === 0)
-        errors.push("Add at least one ingredient");
-      if (tags.length === 0) errors.push("Add at least one tag");
-      if (cleanInstructions.length === 0)
-        errors.push("Add at least one instruction step");
-
-      if (initialData) {
-        const kept = initialData.images.filter(
-          (url) => !removeImages.includes(url),
-        );
-        const finalCount = kept.length + value.images.length;
-        if (finalCount !== 3)
-          errors.push(
-            `Images: need exactly 3 (${kept.length} kept + ${value.images.length} new = ${finalCount})`,
-          );
-      } else {
-        if (value.images.length !== 3)
-          errors.push(
-            `Images: upload exactly 3 (${value.images.length} selected)`,
-          );
-      }
-
-      if (errors.length > 0) {
-        setSubmitAttempted(true);
-        errors.forEach((e) => toast.error(e, { position: "bottom-right" }));
+      if (
+        cleanIngredients.length === 0 ||
+        tags.length === 0 ||
+        cleanInstructions.length === 0 ||
+        finalImageCount !== REQUIRED_IMAGES
+      ) {
+        // One message, and the sections carry the detail. Six simultaneous
+        // toasts stacked over the form and timed out before they could be
+        // acted on.
+        setShowErrors(true);
+        toast.error("A few things still need attention.", {
+          position: "bottom-right",
+        });
         return;
       }
 
-      setSubmitAttempted(false);
+      setShowErrors(false);
       await onSubmit({
         title: value.title,
         description: value.description,
-        difficulty: selectedDifficulty,
+        difficulty,
         images: value.images,
         ingredients: cleanIngredients,
         tags,
@@ -195,247 +226,165 @@ export default function RecipeForm({
     },
   });
 
-  const imageCount = useStore(
-    form.store,
-    (s) => (Array.isArray(s.values.images) ? s.values.images.length : 0),
-  );
-
-  const sectionHeaderStyle = {
-    fontSize: "11px",
-    fontWeight: 600,
-    letterSpacing: "0.06em",
-    textTransform: "uppercase" as const,
-    color: "var(--cs-text-tertiary)",
-  };
-
-  const inputStyle = {
-    border: "1px solid var(--cs-border-default)",
-    backgroundColor: "var(--cs-surface-1)",
-    color: "var(--cs-text-primary)",
-  };
+  const existingImages = initialData?.images.map((url) => ({
+    url,
+    markedForRemoval: removeImages.includes(url),
+  }));
 
   return (
     <form
+      id={formId}
       onSubmit={(e) => {
         e.preventDefault();
         form.handleSubmit();
       }}
-      className="space-y-4"
+      className="space-y-3"
     >
-      {/* Basic info */}
-      <fieldset
-        className="rounded-xl overflow-hidden"
-        style={{ border: "1px solid var(--cs-border-subtle)", backgroundColor: "var(--cs-surface-2)" }}
+      {/* ── The dish ── */}
+      <FormSection title="The dish">
+        <div className="space-y-4">
+          <form.Field name="title">
+            {(field) => (
+              <LabelledField label="Title" htmlFor={field.name}>
+                <TextInput
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="Truffle risotto with aged parmesan"
+                />
+                <FieldError messages={field.state.meta.errors} />
+              </LabelledField>
+            )}
+          </form.Field>
+
+          <form.Field name="description">
+            {(field) => (
+              <LabelledField
+                label="Description"
+                htmlFor={field.name}
+                hint={`${field.state.value.length} / 2000`}
+              >
+                <TextArea
+                  id={field.name}
+                  name={field.name}
+                  rows={4}
+                  maxLength={2000}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="What makes this dish worth cooking?"
+                />
+                <FieldError messages={field.state.meta.errors} />
+              </LabelledField>
+            )}
+          </form.Field>
+
+          <LabelledField label="Difficulty">
+            <SegmentedControl
+              name="difficulty"
+              value={difficulty}
+              onChange={setDifficulty}
+              options={DIFFICULTY_OPTIONS}
+            />
+          </LabelledField>
+        </div>
+      </FormSection>
+
+      {/* ── Photography ── */}
+      <FormSection
+        title="Photography"
+        hint={
+          initialData
+            ? "Press an image to swap it out, then add its replacement."
+            : undefined
+        }
       >
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
-          <p style={sectionHeaderStyle} className="mb-4">Basic Info</p>
-          <div className="space-y-4">
-            <FormField
-              form={form}
-              name="title"
-              label="Title"
-              placeholder="e.g. Truffle Risotto"
+        <form.Field name="images">
+          {(field) => (
+            <ImageDropzone
+              label={initialData ? "Recipe images" : "Three images"}
+              slots={REQUIRED_IMAGES}
+              files={Array.isArray(field.state.value) ? field.state.value : []}
+              onChange={field.handleChange}
+              existing={existingImages}
+              onToggleExisting={toggleExistingImage}
+              invalid={showErrors}
             />
-            <FormField
-              form={form}
-              name="description"
-              label="Description"
-              type="textarea"
-              placeholder="Describe your recipe…"
-              rows={4}
-              maxLength={2000}
-            />
-            <div className="space-y-2">
-              <label className="text-sm font-medium" style={{ color: "var(--cs-text-primary)" }}>
-                Difficulty
-              </label>
-              <div className="flex gap-2">
-                {DIFFICULTIES.map((d) => {
-                  const isActive = selectedDifficulty === d;
-                  return (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => setSelectedDifficulty(d)}
-                      className="px-3.5 py-1.5 text-xs font-medium rounded-lg border capitalize transition-colors duration-150"
-                      style={
-                        isActive
-                          ? DIFFICULTY_ACTIVE_STYLE[d]
-                          : {
-                              border: "1px solid var(--cs-border-default)",
-                              color: "var(--cs-text-secondary)",
-                              backgroundColor: "var(--cs-surface-1)",
-                            }
-                      }
-                    >
-                      {d}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Images */}
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
-          <p style={sectionHeaderStyle} className="mb-1">Images</p>
-          {initialData ? (
-            <p className="text-xs mb-4" style={{ color: "var(--cs-text-tertiary)" }}>
-              Mark current images for removal, then upload replacements to keep the total at 3.
-            </p>
-          ) : (
-            <p
-              className="text-xs mb-4"
-              style={{ color: submitAttempted && imageCount !== 3 ? "#ef4444" : "var(--cs-text-tertiary)" }}
-            >
-              {imageCount}/3 images selected
-              {submitAttempted && imageCount !== 3 ? " — upload exactly 3." : "."}
-            </p>
           )}
+        </form.Field>
+      </FormSection>
 
-          {initialData && (
-            <div className="mb-4 space-y-2">
-              <p className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>
-                Current images — click to mark for removal
-              </p>
-              <div className="flex gap-2 flex-wrap">
-                {initialData.images.map((url, i) => {
-                  const marked = removeImages.includes(url);
-                  return (
-                    <div key={i} className="relative h-20 w-28">
-                      <div
-                        className={`relative h-full w-full rounded-lg overflow-hidden border-2 transition-all ${
-                          marked ? "opacity-40 border-red-400" : "border-transparent"
-                        }`}
-                      >
-                        <Image
-                          src={url}
-                          alt={`Image ${i + 1}`}
-                          className="h-full w-full object-cover"
-                          width={300}
-                          height={200}
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          marked ? unmarkForRemoval(url) : markForRemoval(url)
-                        }
-                        className={`absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full text-white text-[10px] transition-colors ${
-                          marked
-                            ? "bg-zinc-400 hover:bg-zinc-500"
-                            : "bg-red-500 hover:bg-red-600"
-                        }`}
-                      >
-                        {marked ? "↩" : <XIcon size={9} weight="bold" />}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-              {removeImages.length > 0 && (
-                <p className="text-xs" style={{ color: "#ef4444" }}>
-                  {removeImages.length} image{removeImages.length !== 1 ? "s" : ""}{" "}
-                  marked for removal — upload {removeImages.length} new image
-                  {removeImages.length !== 1 ? "s" : ""} to replace them.
-                </p>
-              )}
-            </div>
-          )}
-
-          <FormField
-            form={form}
-            name="images"
-            label={initialData ? "Upload replacement images" : "Upload 3 images"}
-            type="dropzone"
-            multiple
-          />
-        </div>
-
-        {/* Ingredients */}
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p style={sectionHeaderStyle}>
-                Ingredients
-              </p>
-              {submitAttempted && !ingredients.some((i) => i.trim()) && (
-                <p className="text-xs mt-0.5" style={{ color: "#ef4444" }}>Add at least one ingredient.</p>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={addIngredient}
-              className="flex items-center gap-1 text-xs font-medium transition-colors duration-150 hover:opacity-70"
-              style={{ color: "var(--cs-accent)" }}
-            >
-              <PlusIcon size={12} weight="bold" />
-              Add
-            </button>
-          </div>
-          <div className="space-y-2">
+      {/* ── Ingredients ── */}
+      <FormSection
+        title="Ingredients"
+        error={showErrors && !ingredients.some((i) => i.trim()) && "Add at least one ingredient."}
+        action={<AddButton label="Add" onClick={addIngredient} />}
+      >
+        <div className="space-y-2">
+          <AnimatePresence initial={false} mode="popLayout">
             {ingredients.map((ing, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="w-5 text-xs text-right shrink-0 tabular-nums" style={{ color: "var(--cs-text-tertiary)" }}>
-                  {i + 1}.
+              <motion.div
+                key={i}
+                layout={!reduceMotion}
+                initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -8 }}
+                transition={reduceMotion ? { duration: 0.15 } : SPRING.snappy}
+                className="flex items-center gap-2"
+              >
+                <span
+                  className="w-4 text-xs text-right shrink-0 tabular-nums"
+                  style={{ color: "var(--cs-text-tertiary)" }}
+                >
+                  {i + 1}
                 </span>
-                <input
-                  type="text"
+                <TextInput
                   value={ing}
                   onChange={(e) => updateIngredient(i, e.target.value)}
-                  placeholder={`Ingredient ${i + 1}`}
-                  className="flex-1 px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 transition-shadow placeholder:text-[var(--cs-text-tertiary)]"
-                  style={{ ...inputStyle, focusRingColor: "var(--cs-accent)" } as React.CSSProperties}
+                  placeholder={i === 0 ? "200g carnaroli rice" : "Next ingredient"}
+                  aria-label={`Ingredient ${i + 1}`}
                 />
                 {ingredients.length > 1 && (
-                  <button
-                    type="button"
+                  <RemoveButton
                     onClick={() => removeIngredient(i)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg hover:text-red-500 hover:bg-red-50 transition-colors duration-150"
-                    style={{ color: "var(--cs-text-tertiary)" }}
-                  >
-                    <XIcon size={12} weight="bold" />
-                  </button>
+                    label={`Remove ingredient ${i + 1}`}
+                  />
                 )}
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </AnimatePresence>
         </div>
+      </FormSection>
 
-        {/* Tags */}
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}>
-          <div className="mb-4">
-            <p style={sectionHeaderStyle}>
-              Tags{" "}
-              <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: "normal" }}>({tags.length}/5)</span>
-            </p>
-            {submitAttempted && tags.length === 0 && (
-              <p className="text-xs mt-0.5" style={{ color: "#ef4444" }}>Add at least one tag.</p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {POPULAR_TAGS.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => addTag(tag)}
-                disabled={tags.includes(tag.toLowerCase()) || tags.length >= 5}
-                className="px-2.5 py-1 text-xs rounded-lg border transition-colors duration-150 disabled:opacity-30 disabled:cursor-not-allowed hover:border-[var(--cs-accent)] hover:text-[var(--cs-accent)]"
-                style={{
-                  border: "1px solid var(--cs-border-default)",
-                  color: "var(--cs-text-secondary)",
-                }}
+      {/* ── Tags ── */}
+      <FormSection
+        title="Tags"
+        hint={`${tags.length} of ${MAX_TAGS} · how people will find this recipe`}
+        error={showErrors && tags.length === 0 && "Add at least one tag."}
+      >
+        <div className="space-y-3">
+          <AnimatePresence initial={false}>
+            {tags.length > 0 && (
+              <motion.div
+                initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={SPRING.snappy}
+                className="flex flex-wrap gap-1.5 overflow-hidden"
               >
-                #{tag}
-              </button>
-            ))}
-          </div>
+                <AnimatePresence initial={false} mode="popLayout">
+                  {tags.map((tag) => (
+                    <Chip key={tag} label={tag} onRemove={() => removeTag(tag)} />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="flex gap-2">
-            <input
-              type="text"
+            <TextInput
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={(e) => {
@@ -444,130 +393,167 @@ export default function RecipeForm({
                   addTag(tagInput);
                 }
               }}
-              placeholder="Custom tag, press Enter"
-              className="flex-1 px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 transition-shadow placeholder:text-[var(--cs-text-tertiary)]"
-              style={inputStyle}
-              disabled={tags.length >= 5}
+              placeholder="Add your own, then press Enter"
+              disabled={tags.length >= MAX_TAGS}
+              aria-label="Custom tag"
             />
             <Button
               type="button"
               variant="outline"
-              size="sm"
               onClick={() => addTag(tagInput)}
-              disabled={!tagInput.trim() || tags.length >= 5}
-              className="h-8 rounded-lg text-xs"
+              disabled={!tagInput.trim() || tags.length >= MAX_TAGS}
+              className="h-9 rounded-[10px] text-xs shrink-0"
             >
               Add
             </Button>
           </div>
 
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md"
-                  style={{ backgroundColor: "var(--cs-accent-muted)", color: "var(--cs-accent)" }}
-                >
-                  #{tag}
-                  <button
-                    type="button"
-                    onClick={() => removeTag(tag)}
-                    className="transition-opacity hover:opacity-60"
-                  >
-                    <XIcon size={10} weight="bold" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Instructions */}
-        <div className="px-5 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p style={sectionHeaderStyle}>Instructions</p>
-              {submitAttempted && !instructions.some((i) => i.instruction.trim()) && (
-                <p className="text-xs mt-0.5" style={{ color: "#ef4444" }}>Add at least one instruction step.</p>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={addInstruction}
-              className="flex items-center gap-1 text-xs font-medium transition-colors duration-150 hover:opacity-70"
-              style={{ color: "var(--cs-accent)" }}
-            >
-              <PlusIcon size={12} weight="bold" />
-              Add step
-            </button>
-          </div>
-
-          <div className="space-y-2">
-            {instructions.map((ins, i) => (
-              <div key={i} className="flex gap-2 items-start">
-                <div className="flex flex-col items-center gap-0.5 pt-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => moveInstruction(i, "up")}
-                    disabled={i === 0}
-                    className="flex h-5 w-5 items-center justify-center rounded transition-colors duration-150 disabled:opacity-20 hover:opacity-70"
-                    style={{ color: "var(--cs-text-tertiary)" }}
-                  >
-                    <ArrowUpIcon size={10} weight="bold" />
-                  </button>
-                  <span
-                    className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold"
-                    style={{ backgroundColor: "var(--cs-surface-3)", color: "var(--cs-text-secondary)" }}
-                  >
-                    {ins.step}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => moveInstruction(i, "down")}
-                    disabled={i === instructions.length - 1}
-                    className="flex h-5 w-5 items-center justify-center rounded transition-colors duration-150 disabled:opacity-20 hover:opacity-70"
-                    style={{ color: "var(--cs-text-tertiary)" }}
-                  >
-                    <ArrowDownIcon size={10} weight="bold" />
-                  </button>
-                </div>
-
-                <textarea
-                  value={ins.instruction}
-                  onChange={(e) => updateInstruction(i, e.target.value)}
-                  placeholder={`Step ${ins.step}…`}
-                  rows={2}
-                  className="flex-1 px-3 py-2 text-sm rounded-lg resize-none focus:outline-none focus:ring-2 transition-shadow placeholder:text-[var(--cs-text-tertiary)]"
-                  style={inputStyle}
-                />
-
-                {instructions.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeInstruction(i)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg hover:text-red-500 hover:bg-red-50 transition-colors duration-150 mt-1 shrink-0"
-                    style={{ color: "var(--cs-text-tertiary)" }}
-                  >
-                    <TrashIcon size={12} weight="bold" />
-                  </button>
-                )}
-              </div>
+          <div className="flex flex-wrap gap-1.5">
+            {POPULAR_TAGS.map((tag) => (
+              <SuggestionChip
+                key={tag}
+                label={tag}
+                onClick={() => addTag(tag)}
+                disabled={tags.includes(tag) || tags.length >= MAX_TAGS}
+              />
             ))}
           </div>
         </div>
-      </fieldset>
+      </FormSection>
 
-      {/* Submit */}
-      <div className="flex justify-end pb-4">
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="gap-2 px-5 h-9 text-sm rounded-lg"
-        >
-          {isSubmitting ? "Saving…" : submitLabel}
-        </Button>
-      </div>
+      {/* ── Method ── */}
+      <FormSection
+        title="Method"
+        error={
+          showErrors &&
+          !instructions.some((i) => i.instruction.trim()) &&
+          "Add at least one step."
+        }
+        action={<AddButton label="Add step" onClick={addInstruction} />}
+      >
+        <div className="space-y-2">
+          <AnimatePresence initial={false} mode="popLayout">
+            {instructions.map((ins, i) => (
+              /* `layout` is what makes reordering legible: the row springs
+                 to its new position instead of the list cutting to a new
+                 arrangement. */
+              <motion.div
+                key={ins.step + "-" + i}
+                layout={!reduceMotion}
+                initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -8 }}
+                transition={reduceMotion ? { duration: 0.15 } : SPRING.default}
+                className="flex gap-2 items-start"
+              >
+                <div className="flex flex-col items-center gap-0.5 pt-1 shrink-0">
+                  <StepArrow
+                    dir="up"
+                    disabled={i === 0}
+                    onClick={() => moveInstruction(i, "up")}
+                  />
+                  <span
+                    className="flex h-6 w-6 items-center justify-center rounded-lg text-[11px] font-semibold tabular-nums"
+                    style={{
+                      backgroundColor: "var(--cs-surface-3)",
+                      color: "var(--cs-text-secondary)",
+                    }}
+                  >
+                    {ins.step}
+                  </span>
+                  <StepArrow
+                    dir="down"
+                    disabled={i === instructions.length - 1}
+                    onClick={() => moveInstruction(i, "down")}
+                  />
+                </div>
+
+                <TextArea
+                  value={ins.instruction}
+                  onChange={(e) => updateInstruction(i, e.target.value)}
+                  placeholder={
+                    i === 0 ? "Toast the rice in butter until translucent…" : "Then…"
+                  }
+                  rows={2}
+                  aria-label={`Step ${ins.step}`}
+                />
+
+                {instructions.length > 1 && (
+                  <RemoveButton
+                    onClick={() => removeInstruction(i)}
+                    label={`Remove step ${ins.step}`}
+                    className="mt-0.5"
+                  />
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </FormSection>
+
+      {!hideSubmit && (
+        <div className="flex justify-end pb-4">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-5 h-9 text-sm rounded-lg"
+          >
+            {isSubmitting ? "Saving…" : submitLabel}
+          </Button>
+        </div>
+      )}
     </form>
+  );
+}
+
+/* ── Bits ─────────────────────────────────────────────────────────────── */
+
+function StepArrow({
+  dir,
+  disabled,
+  onClick,
+}: {
+  dir: "up" | "down";
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const Icon = dir === "up" ? ArrowUpIcon : ArrowDownIcon;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={`Move step ${dir}`}
+      className="flex h-5 w-6 items-center justify-center rounded-md transition-[background-color,transform] duration-150 hover:bg-[var(--cs-hover)] active:scale-90 disabled:opacity-20 disabled:pointer-events-none"
+      style={{ color: "var(--cs-text-tertiary)" }}
+    >
+      <Icon size={10} weight="bold" />
+    </button>
+  );
+}
+
+/** Inline validation, shown against the field that owns it. */
+function FieldError({ messages }: { messages: unknown[] }) {
+  const text = messages
+    .map((m) =>
+      typeof m === "string" ? m : (m as { message?: string } | null)?.message,
+    )
+    .filter(Boolean)[0];
+
+  return (
+    <AnimatePresence initial={false}>
+      {text && (
+        <motion.p
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={SPRING.snappy}
+          className="text-xs overflow-hidden"
+          style={{ color: "var(--cs-danger-fg)" }}
+        >
+          {text}
+        </motion.p>
+      )}
+    </AnimatePresence>
   );
 }

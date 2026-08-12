@@ -160,6 +160,54 @@ body {
      reads as the danger state sitting next to it. */
   --cs-love: #d9455f;
   --cs-love-bg: rgba(217, 69, 95, 0.1);
+
+  /* ── Data visualisation ────────────────────────────────────────────────
+     The lead series colour is Chefalio lime, so a screenshot of the studio
+     is recognisably ours. But raw #A7D129 is a chrome colour, not a data
+     colour: it measures 1.7:1 on a light card, which makes a lime bar on
+     white a pale smear you have to hunt for.
+
+     So the *hue* is the brand and the *step* is per theme — exactly the
+     trick --cs-accent-text already plays for lime text. Light mode deepens
+     it to an olive-lime that clears 3:1; dark mode brightens it back
+     towards the brand. Both steps read unmistakably as "the lime one".
+
+     Slot 2 is blue, deliberately the far side of the wheel from lime: the
+     two must stay apart under protanopia and deuteranopia, which rules out
+     the orange/yellow that would otherwise pair nicely with it.
+
+     Slots 3–8 exist for completeness and are validated, but the studio
+     runs on the first two. Every value below is checked against
+     --cs-surface-2 for lightness band, chroma floor, adjacent-pair CVD
+     separation, normal-vision separation and contrast. */
+  --cv-1: #6f9410; /* Chefalio lime — light step, 3.4:1 on the card */
+  --cv-2: #2a78d6; /* blue    */
+  --cv-3: #eb6834; /* orange  */
+  --cv-4: #4a3aa7; /* violet  */
+  --cv-5: #1baf7a; /* aqua    */
+  --cv-6: #e87ba4; /* magenta */
+  --cv-7: #eda100; /* yellow  */
+  --cv-8: #e34948; /* red     */
+
+  /* Ordinal ramp — the brand hue at three steps, low → high magnitude.
+     Light mode runs light → dark; the lightest step still clears 2:1. */
+  --cv-ord-1: #8ba634;
+  --cv-ord-2: #6f9410;
+  --cv-ord-3: #3f5608;
+
+  /* Chart chrome. Grid and axis are recessive by design — the data is the
+     only thing on the card allowed to have weight. */
+  --cv-grid: #e8e8e5;
+  --cv-axis: #d4d4cf;
+  --cv-label: #86857f;
+  --cv-fill-strong: 0.16;
+  --cv-fill-soft: 0.02;
+
+  /* Status — reserved. Never doubles as a series colour. */
+  --cv-good: #0ca30c;
+  --cv-warning: #fab219;
+  --cv-serious: #ec835a;
+  --cv-critical: #d03b3b;
 }
 
 /* DARK MODE */
@@ -243,6 +291,37 @@ body {
 
   --cs-love: #f2687f;
   --cs-love-bg: rgba(242, 104, 127, 0.14);
+
+  /* ── Data visualisation — dark ─────────────────────────────────────────
+     The same hues re-stepped for the dark card, not an automatic flip of
+     the light values. Lime climbs back towards the brand here: on a
+     near-black surface it can be bright without glaring, which is where
+     the studio looks most like itself. All clear 3:1 on --cs-surface-2. */
+  --cv-1: #8ab01f; /* Chefalio lime — dark step */
+  --cv-2: #3987e5;
+  --cv-3: #d95926;
+  --cv-4: #9085e9;
+  --cv-5: #199e70;
+  --cv-6: #d55181;
+  --cv-7: #c98500;
+  --cv-8: #e66767;
+
+  /* Ordinal ramp inverts on dark: low → high runs dark → light, so the
+     brightest step still means "most". */
+  --cv-ord-1: #48610d;
+  --cv-ord-2: #8ab01f;
+  --cv-ord-3: #c2dd72;
+
+  --cv-grid: #2a2a27;
+  --cv-axis: #383835;
+  --cv-label: #7c7b76;
+  --cv-fill-strong: 0.22;
+  --cv-fill-soft: 0.03;
+
+  --cv-good: #0ca30c;
+  --cv-warning: #fab219;
+  --cv-serious: #ec835a;
+  --cv-critical: #d03b3b;
 }
 
 @layer base {
@@ -541,20 +620,6 @@ body {
   --cs-material-blur: 18px;
   box-shadow: var(--cs-shadow-float);
 }
-
-/* ── Brand tile ────────────────────────────────────────────────────────
-   The chip an icon sits on, above a section heading or an auth title.
-
-   It used to be a bright lime tile with a near-black glyph. Repeated above
-   every heading in a bento grid that turns into a row of traffic lights:
-   the loudest thing in each cell is the decoration, and a black glyph on
-   saturated lime is a hard, muddy pairing at 19px. The tile is furniture —
-   it gives the glyph a defined edge and a consistent optical weight — so it
-   now recedes into the card and the accent lives in the glyph instead.
-
-   Both modes follow the same rule (quiet surface, accent glyph, hairline
-   edge); only the surface flips. #4d6b16 on white clears 5.6:1, and the
-   dark lime clears far more. */
 
 .brand-tile {
   background: linear-gradient(
@@ -957,6 +1022,51 @@ body {
 
 .scroll-panel:hover::-webkit-scrollbar-thumb {
   background-color: var(--cs-text-tertiary);
+}
+
+/* ── Studio edit sheet ─────────────────────────────────────────────────
+   The sheet was janking on open, for three compounding reasons.
+
+   The base `SheetContent` sets `transition: … duration-200` — the
+   shorthand, with no property list, so it transitions *everything*. Every
+   layout and paint property of a full-height panel became animatable, and
+   the browser had to check all of them each frame. Only transform and
+   opacity should move here; both are compositor-only.
+
+   The overlay ran a `backdrop-filter` blur across the entire viewport.
+   Blurring the whole page behind a panel that is itself fully opaque buys
+   nothing visible and costs a full-screen filter pass every frame of the
+   slide. The scrim alone does the job.
+
+   And the panel had no compositor layer of its own, so each frame
+   re-rasterised a subtree containing a long form. `will-change` promotes
+   it for the duration of the animation only — it's removed once idle,
+   because a permanently promoted layer is its own kind of memory cost. */
+
+.studio-sheet {
+  transition-property: transform, opacity;
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.studio-sheet[data-state="open"],
+.studio-sheet[data-state="closed"] {
+  will-change: transform, opacity;
+}
+
+/* Opaque panel — nothing behind it is visible through it, so don't pay to
+   blur it. */
+.studio-sheet ~ [data-slot="sheet-overlay"],
+body:has(.studio-sheet) [data-slot="sheet-overlay"] {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-color: var(--cs-scrim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-sheet {
+    transition-property: opacity;
+  }
 }
 
 /* ── Status pill ───────────────────────────────────────────────────────
