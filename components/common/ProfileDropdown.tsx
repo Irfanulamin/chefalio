@@ -9,10 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/axios";
-import Image from "next/image";
 import {
-  AtIcon,
-  EnvelopeIcon,
   ForkKnifeIcon,
   GearSixIcon,
   SignOutIcon,
@@ -20,43 +17,84 @@ import {
   UsersIcon,
   ChefHatIcon,
   ShieldCheckIcon,
-  ArrowSquareOutIcon,
   PulseIcon,
   UsersFourIcon,
-  HandTapIcon,
-  HouseLineIcon,
-  ChartLineUpIcon,
-  PackageIcon,
+  CaretRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { useProfile } from "@/hooks/useAuth";
+import { SafeImage } from "@/components/common/SafeImage";
+import { initialsOf } from "@/lib/recipe-display";
 
-interface AvatarButtonProps {
-  profile?: {
-    profile_url?: string;
-    fullName?: string;
-  };
-}
+/**
+ * The account menu.
+ *
+ * Rebuilt around one question: what is this menu *for*? It was carrying
+ * three things at once — an identity card, a read-only copy of that same
+ * identity, and the app's navigation — and the middle one was pure
+ * duplication. The header showed your name and email, then two more rows
+ * below repeated your username and email again, as `DropdownMenuItem`s
+ * with `cursor-default`. Being menu items, they took keyboard focus: arrowing
+ * down through the menu stopped twice on rows that don't do anything. They're
+ * gone; the header is the identity block.
+ *
+ * The rest follows Apple's guidance fairly directly:
+ *
+ * - **The menu is a material**, not an opaque card — translucent with a
+ *   blur and a float shadow, so it reads as a layer above the page rather
+ *   than a rectangle pasted onto it. The base component already anchors its
+ *   transform-origin to the trigger, so it scales out of the avatar you
+ *   pressed instead of appearing from nowhere.
+ * - **Every row responds on pointer-down**, not on release.
+ * - **Log out uses the danger triplet** rather than `text-red-500` /
+ *   `bg-red-500/10`, which were light-mode literals — a pale pink wash
+ *   glowing off a near-black menu in dark mode.
+ */
 
-const AvatarButton = ({ profile }: AvatarButtonProps) => {
-  if (profile?.profile_url) {
-    return (
-      <Image
-        src={profile.profile_url}
-        alt={profile.fullName || "Profile"}
-        width={38}
-        height={38}
-        className="rounded-full object-cover ring-2 ring-primary shadow-sm hover:ring-primary/50 transition-all duration-200 cursor-pointer h-10 w-10"
-      />
-    );
-  }
+const AVATAR = 36;
 
+function Avatar({
+  src,
+  name,
+  size = AVATAR,
+  ringed = false,
+}: {
+  src?: string;
+  name?: string;
+  size?: number;
+  ringed?: boolean;
+}) {
   return (
-    <div className="w-9.5 h-9.5 rounded-full flex items-center justify-center text-white text-sm font-semibold ring-2 ring-primary shadow-sm hover:ring-primary/50 transition-all duration-200 cursor-pointer select-none">
-      {profile?.fullName}
-    </div>
+    <span
+      className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-full"
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: "var(--cs-accent-muted)",
+        boxShadow: ringed ? "0 0 0 1px var(--cs-border-default)" : undefined,
+      }}
+    >
+      {/* The fallback used to render `{profile?.fullName}` — the entire name,
+          in white, with no background, inside a 38px circle. It overflowed
+          into an unreadable smear on every account without a picture. */}
+      <SafeImage
+        src={src}
+        alt=""
+        width={size}
+        height={size}
+        className="h-full w-full object-cover"
+        fallback={
+          <span
+            className="flex h-full w-full items-center justify-center text-xs font-semibold"
+            style={{ color: "var(--cs-accent-text)" }}
+          >
+            {initialsOf(name ?? "")}
+          </span>
+        }
+      />
+    </span>
   );
-};
+}
 
 type NavItem = { label: string; href: string; Icon: React.ElementType };
 
@@ -66,7 +104,7 @@ const ROLE_NAV: Record<string, NavItem[]> = {
     { label: "Cookbooks", href: "/cookbooks", Icon: BookOpenIcon },
     { label: "Chefs", href: "/chefs", Icon: ChefHatIcon },
     { label: "Activity", href: "/activity", Icon: PulseIcon },
-    { label: "Become a Chef", href: "/apply-chef", Icon: UsersFourIcon },
+    { label: "Become a chef", href: "/apply-chef", Icon: UsersFourIcon },
   ],
   chef: [
     { label: "Recipes", href: "/recipes", Icon: ForkKnifeIcon },
@@ -82,123 +120,164 @@ const ROLE_NAV: Record<string, NavItem[]> = {
   ],
 };
 
+/** One row. Shared so every entry has identical metrics and press feel. */
+const rowClass =
+  "flex items-center gap-2.5 px-2.5 h-9 rounded-lg text-sm cursor-pointer " +
+  "transition-transform duration-100 active:scale-[0.98] " +
+  "focus:bg-(--cs-hover) data-highlighted:bg-(--cs-hover)";
+
 export const ProfileDropdown = () => {
   const { profile, isProfileLoading } = useProfile();
   const { logout } = useAuth();
 
   const navItems: NavItem[] = ROLE_NAV[profile?.role ?? ""] ?? [];
-
-  const roleChef = profile?.role === "chef";
+  const isChef = profile?.role === "chef";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="outline-none focus:outline-none">
+        <button
+          type="button"
+          aria-label="Account menu"
+          className="focus-ring rounded-full transition-transform duration-150 active:scale-[0.94]"
+        >
           {isProfileLoading ? (
-            <div className="w-9.5 h-9.5 rounded-full bg-background animate-pulse ring-2 ring-background" />
+            <span
+              className="block animate-pulse rounded-full"
+              style={{
+                width: AVATAR,
+                height: AVATAR,
+                backgroundColor: "var(--cs-surface-3)",
+              }}
+            />
           ) : (
-            <AvatarButton profile={profile} />
+            <Avatar src={profile?.profile_url} name={profile?.fullName} ringed />
           )}
-        </div>
+        </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-64 p-1.5 rounded-xl shadow-lg"
-        style={{
-          backgroundColor: "var(--cs-surface-1)",
-          border: "1px solid var(--cs-border-subtle)",
-        }}
         align="end"
         sideOffset={8}
+        className="w-64 p-1.5 rounded-2xl"
+        style={{
+          backgroundColor: "var(--cs-material-thick)",
+          backdropFilter: "blur(var(--cs-material-blur)) saturate(180%)",
+          WebkitBackdropFilter: "blur(var(--cs-material-blur)) saturate(180%)",
+          border: "1px solid var(--cs-material-edge)",
+          boxShadow: "var(--cs-shadow-float)",
+        }}
       >
-        {/* Profile header */}
-        <div className="flex items-center gap-3 px-2.5 py-2.5 mb-1">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0 ring-2 ring-primary shadow-sm" style={{ backgroundColor: "var(--cs-accent)" }}>
-            {profile?.profile_url ? (
-              <Image
-                src={profile.profile_url}
-                alt="Profile"
-                width={36}
-                height={36}
-                className="rounded-full object-cover h-9 w-9"
-              />
-            ) : (
-              profile?.fullName?.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase()
-            )}
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm font-semibold text-foreground truncate leading-tight">
-              {profile?.fullName || "Anonymous"}
+        {/* ── Identity ──
+            Name, handle and email, stated once. Text over a translucent
+            surface takes a little more weight than it would over a solid
+            one, since what's behind it keeps changing. */}
+        <div className="flex items-center gap-2.5 px-2 py-2">
+          <Avatar src={profile?.profile_url} name={profile?.fullName} />
+          <div className="flex min-w-0 flex-col">
+            <span
+              className="truncate text-sm font-semibold leading-tight"
+              style={{ color: "var(--cs-text-primary)" }}
+            >
+              {profile?.fullName || "Your account"}
             </span>
-            <span className="text-xs text-muted-foreground truncate leading-tight">
-              {profile?.email}
+            <span
+              className="truncate text-xs leading-tight"
+              style={{ color: "var(--cs-text-secondary)" }}
+            >
+              {profile?.username ? `@${profile.username}` : profile?.email}
             </span>
           </div>
         </div>
 
-        <DropdownMenuSeparator className="my-1" />
-
-        {/* Username / email info */}
-        <DropdownMenuGroup>
-          <DropdownMenuItem className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm cursor-default">
-            <AtIcon size={32} className="text-muted-foreground shrink-0" weight="bold" />
-            <span className="text-muted-foreground truncate">
-              {profile?.username || "—"}
-            </span>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm cursor-default">
-            <EnvelopeIcon size={32} className="text-muted-foreground shrink-0" weight="bold" />
-            <span className="text-muted-foreground truncate">
-              {profile?.email || "—"}
-            </span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-
-        <DropdownMenuSeparator className="my-1" />
-
-        {roleChef &&  <Link href="/chef/dashboard" className="flex items-center gap-2 min-w-0 bg-primary/10 px-2.5 py-2 rounded-lg">
-          <ChefHatIcon size={15} weight="duotone" className="text-black shrink-0 dark:text-white" />
-          <span className="text-sm font-semibold tracking-tight text-foreground truncate">
-        Chef <span className="text-primary">Studio</span>
-          </span>
-        </Link>}
-
-        <DropdownMenuSeparator className="my-1" />
-
-        {/* Role-based navigation (user / chef / admin) */}
-        {navItems.length > 0 && (
+        {isChef && (
           <>
-            <DropdownMenuGroup>
-              {navItems.map(({ label, href, Icon }) => (
-                <Link key={href} href={href} className="w-full">
-                  <DropdownMenuItem className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm cursor-pointer hover:bg-accent focus:bg-accent">
-                    <Icon size={32} className="shrink-0" weight="bold" />
-                    <span>{label}</span>
-                  </DropdownMenuItem>
-                </Link>
-              ))}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator className="my-1" />
+            <DropdownMenuSeparator
+              className="my-1"
+              style={{ backgroundColor: "var(--cs-border-subtle)" }}
+            />
+            {/* The one promoted destination in the menu, and the only thing
+                here wearing a fill — which is what marks it as promoted.
+                It's a real menu item now, so it closes the menu on select
+                and takes keyboard focus like everything else; it used to be
+                a bare Link that did neither. */}
+            <DropdownMenuItem asChild className="p-0 focus:bg-transparent">
+              <Link
+                href="/chef/dashboard"
+                className="flex items-center gap-2 min-w-0 bg-primary/10 px-2.5 h-9 rounded-lg cursor-pointer transition-transform duration-100 active:scale-[0.98]"
+              >
+                <ChefHatIcon
+                  size={15}
+                  weight="duotone"
+                  className="text-black shrink-0 dark:text-white"
+                />
+                <span className="text-sm font-semibold tracking-tight text-foreground truncate">
+                  Chef <span style={{ color: "var(--cs-accent-text)" }}>Studio</span>
+                </span>
+                <CaretRightIcon
+                  size={12}
+                  weight="bold"
+                  className="ml-auto shrink-0"
+                  style={{ color: "var(--cs-text-tertiary)" }}
+                />
+              </Link>
+            </DropdownMenuItem>
           </>
         )}
 
-        {/* Settings */}
-        <DropdownMenuGroup>
-          <Link href={profile?.role === "admin" ? "/admin/settings" : "/settings"} className="w-full">
-            <DropdownMenuItem className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm cursor-pointer hover:bg-accent focus:bg-accent">
-              <GearSixIcon size={32} className="shrink-0" weight="bold" />
-              <span>Settings</span>
-            </DropdownMenuItem>
-          </Link>
-        </DropdownMenuGroup>
+        {navItems.length > 0 && (
+          <>
+            <DropdownMenuSeparator
+              className="my-1"
+              style={{ backgroundColor: "var(--cs-border-subtle)" }}
+            />
+            <DropdownMenuGroup>
+              {navItems.map(({ label, href, Icon }) => (
+                <DropdownMenuItem key={href} asChild className="p-0 focus:bg-transparent">
+                  <Link href={href} className={rowClass}>
+                    <Icon
+                      size={16}
+                      className="shrink-0"
+                      style={{ color: "var(--cs-text-tertiary)" }}
+                    />
+                    <span style={{ color: "var(--cs-text-primary)" }}>{label}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+          </>
+        )}
 
-        <DropdownMenuSeparator className="my-1" />
+        <DropdownMenuSeparator
+          className="my-1"
+          style={{ backgroundColor: "var(--cs-border-subtle)" }}
+        />
+
+        <DropdownMenuItem asChild className="p-0 focus:bg-transparent">
+          <Link
+            href={profile?.role === "admin" ? "/admin/settings" : "/settings"}
+            className={rowClass}
+          >
+            <GearSixIcon
+              size={16}
+              className="shrink-0"
+              style={{ color: "var(--cs-text-tertiary)" }}
+            />
+            <span style={{ color: "var(--cs-text-primary)" }}>Settings</span>
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator
+          className="my-1"
+          style={{ backgroundColor: "var(--cs-border-subtle)" }}
+        />
 
         <DropdownMenuItem
           onSelect={() => logout()}
-          className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm cursor-pointer text-red-500 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-500"
+          className="flex items-center gap-2.5 px-2.5 h-9 rounded-lg text-sm cursor-pointer transition-[background-color,transform] duration-100 active:scale-[0.98] focus:bg-(--cs-danger-bg) data-highlighted:bg-(--cs-danger-bg)"
+          style={{ color: "var(--cs-danger-fg)" }}
         >
-          <SignOutIcon size={32} className="shrink-0" weight="bold" />
+          <SignOutIcon size={16} className="shrink-0" />
           <span>Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
