@@ -47,14 +47,18 @@ function NotificationIcon({ type }: { type: AppNotification["type"] }) {
 }
 
 export function NotificationBell() {
-  const { notifications, unreadCount, isLoading, markAllRead } = useNotifications();
+  const { notifications, unreadCount, isLoading, markAllRead } =
+    useNotifications();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
 
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     }
@@ -83,12 +87,16 @@ export function NotificationBell() {
       <button
         onClick={handleOpen}
         aria-label={
-          unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"
+          unreadCount > 0
+            ? `Notifications, ${unreadCount} unread`
+            : "Notifications"
         }
         aria-expanded={open}
         aria-haspopup="dialog"
         className="focus-ring relative rounded-md p-1.5 transition-colors"
-        style={{ color: open ? "var(--cs-text-primary)" : "var(--cs-text-secondary)" }}
+        style={{
+          color: open ? "var(--cs-text-primary)" : "var(--cs-text-secondary)",
+        }}
       >
         <BellIcon size={20} weight={open ? "fill" : "regular"} />
         {unreadCount > 0 && (
@@ -112,7 +120,9 @@ export function NotificationBell() {
             aria-label="Notifications"
             className="material-thick absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl"
             style={{ transformOrigin: "top right" }}
-            initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.94, y: -6 }}
+            initial={
+              reduce ? { opacity: 0 } : { opacity: 0, scale: 0.94, y: -6 }
+            }
             animate={reduce ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
             exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -4 }}
             transition={SPRING.snappy}
@@ -121,7 +131,10 @@ export function NotificationBell() {
               className="flex items-center justify-between px-4 py-3"
               style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
             >
-              <span className="ui-subheading" style={{ color: "var(--cs-text-primary)" }}>
+              <span
+                className="ui-subheading"
+                style={{ color: "var(--cs-text-primary)" }}
+              >
                 Notifications
               </span>
               {notifications.length > 0 && (
@@ -149,7 +162,7 @@ export function NotificationBell() {
                 >
                   <BellIcon size={22} aria-hidden />
                   <p className="ui-caption">Nothing yet</p>
-                  <p className="ui-micro max-w-[15rem] text-center">
+                  <p className="ui-micro max-w-60 text-center">
                     New recipes and cookbooks from chefs you follow land here.
                   </p>
                 </div>
@@ -157,73 +170,143 @@ export function NotificationBell() {
                 <ul>
                   {notifications.map((n) => {
                     const href = notificationHref(n);
-                    const Row = href ? Link : "div";
 
                     return (
-                    <li key={n._id}>
-                    <Row
-                      {...(href ? { href, onClick: () => setOpen(false) } : {})}
-                      className="ui-row focus-ring flex items-start gap-3 px-4 py-3"
-                    >
-                      <SafeImage
-                        src={n.actorAvatar}
-                        alt=""
-                        width={32}
-                        height={32}
-                        className="h-8 w-8 shrink-0 rounded-full object-cover"
-                        fallback={<NotificationIcon type={n.type} />}
-                      />
+                      <li key={n._id}>
+                        {href ? (
+                          <Link
+                            href={href}
+                            onClick={() => setOpen(false)}
+                            className="ui-row focus-ring flex items-start gap-3 px-4 py-3"
+                          >
+                            <SafeImage
+                              src={n.actorAvatar}
+                              alt=""
+                              width={32}
+                              height={32}
+                              className="h-8 w-8 shrink-0 rounded-full object-cover"
+                              fallback={<NotificationIcon type={n.type} />}
+                            />
 
-                      <div className="min-w-0 flex-1">
-                        <p
-                          className="ui-micro font-semibold leading-snug"
-                          style={{ color: "var(--cs-text-primary)" }}
-                        >
-                          {n.title}
-                        </p>
-                        <p
-                          className="ui-micro mt-0.5 line-clamp-2 leading-relaxed"
-                          style={{ color: "var(--cs-text-secondary)" }}
-                        >
-                          {n.message}
-                        </p>
-                        <p
-                          className="ui-micro mt-1"
-                          style={{ color: "var(--cs-text-tertiary)" }}
-                        >
-                          {timeAgo(n.createdAt)}
-                        </p>
-                      </div>
-
-                      {/* The slot is always drawn once a notification has
-                          any thumbnail intent, so a dead URL doesn't
-                          collapse the row's layout to a different shape
-                          from its neighbours. */}
-                      {n.thumbnail && (
-                        <div
-                          className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md"
-                          style={{ backgroundColor: "var(--cs-surface-3)" }}
-                        >
-                          <SafeImage
-                            src={n.thumbnail}
-                            alt=""
-                            fill
-                            sizes="40px"
-                            className="object-cover"
-                            fallback={
-                              <span
-                                aria-hidden
-                                className="flex h-full w-full items-center justify-center"
+                            <div className="min-w-0 flex-1">
+                              <p
+                                className="ui-micro font-semibold leading-snug"
+                                style={{ color: "var(--cs-text-primary)" }}
+                              >
+                                {n.title}
+                              </p>
+                              <p
+                                className="ui-micro mt-0.5 line-clamp-2 leading-relaxed"
+                                style={{ color: "var(--cs-text-secondary)" }}
+                              >
+                                {n.message}
+                              </p>
+                              <p
+                                className="ui-micro mt-1"
                                 style={{ color: "var(--cs-text-tertiary)" }}
                               >
-                                <ImageSquareIcon size={16} />
-                              </span>
-                            }
-                          />
-                        </div>
-                      )}
-                    </Row>
-                    </li>
+                                {timeAgo(n.createdAt)}
+                              </p>
+                            </div>
+
+                            {/* The slot is always drawn once a notification has
+                                any thumbnail intent, so a dead URL doesn't
+                                collapse the row's layout to a different shape
+                                from its neighbours. */}
+                            {n.thumbnail && (
+                              <div
+                                className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md"
+                                style={{
+                                  backgroundColor: "var(--cs-surface-3)",
+                                }}
+                              >
+                                <SafeImage
+                                  src={n.thumbnail}
+                                  alt=""
+                                  fill
+                                  sizes="40px"
+                                  className="object-cover"
+                                  fallback={
+                                    <span
+                                      aria-hidden
+                                      className="flex h-full w-full items-center justify-center"
+                                      style={{
+                                        color: "var(--cs-text-tertiary)",
+                                      }}
+                                    >
+                                      <ImageSquareIcon size={16} />
+                                    </span>
+                                  }
+                                />
+                              </div>
+                            )}
+                          </Link>
+                        ) : (
+                          <div className="ui-row focus-ring flex items-start gap-3 px-4 py-3">
+                            <SafeImage
+                              src={n.actorAvatar}
+                              alt=""
+                              width={32}
+                              height={32}
+                              className="h-8 w-8 shrink-0 rounded-full object-cover"
+                              fallback={<NotificationIcon type={n.type} />}
+                            />
+
+                            <div className="min-w-0 flex-1">
+                              <p
+                                className="ui-micro font-semibold leading-snug"
+                                style={{ color: "var(--cs-text-primary)" }}
+                              >
+                                {n.title}
+                              </p>
+                              <p
+                                className="ui-micro mt-0.5 line-clamp-2 leading-relaxed"
+                                style={{ color: "var(--cs-text-secondary)" }}
+                              >
+                                {n.message}
+                              </p>
+                              <p
+                                className="ui-micro mt-1"
+                                style={{ color: "var(--cs-text-tertiary)" }}
+                              >
+                                {timeAgo(n.createdAt)}
+                              </p>
+                            </div>
+
+                            {/* The slot is always drawn once a notification has
+                                any thumbnail intent, so a dead URL doesn't
+                                collapse the row's layout to a different shape
+                                from its neighbours. */}
+                            {n.thumbnail && (
+                              <div
+                                className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md"
+                                style={{
+                                  backgroundColor: "var(--cs-surface-3)",
+                                }}
+                              >
+                                <SafeImage
+                                  src={n.thumbnail}
+                                  alt=""
+                                  fill
+                                  sizes="40px"
+                                  className="object-cover"
+                                  fallback={
+                                    <span
+                                      aria-hidden
+                                      className="flex h-full w-full items-center justify-center"
+                                      style={{
+                                        color: "var(--cs-text-tertiary)",
+                                      }}
+                                    >
+                                      <ImageSquareIcon size={16} />
+                                    </span>
+                                  }
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </li>
                     );
                   })}
                 </ul>
