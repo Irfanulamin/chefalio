@@ -15,8 +15,8 @@ import { cookbookPrice } from "@/lib/recipe-display";
 import { use } from "react";
 
 const paymentSchema = z.object({
-  email: email().min(3, "Email must be at least 3 characters"),
-  name: z.string().min(3, "Name must be at least 6 characters"),
+  email: email("Enter a valid email address"),
+  name: z.string().min(3, "Name must be at least 3 characters"),
   address: z.string().min(5, "Address must be at least 5 characters"),
   city: z.string().min(2, "City must be at least 2 characters"),
   state: z.string().min(2, "State must be at least 2 characters"),
@@ -218,7 +218,7 @@ export default function PurchaseCookbookPage({
 
           {/* Stays in view while the form is filled in, so the price never
               scrolls out of sight during checkout. */}
-          <div className="w-full lg:sticky lg:top-24 lg:max-w-sm lg:shrink-0">
+          <div className="w-full lg:sticky lg:top-6 lg:max-w-sm lg:shrink-0">
             <SummaryCard cookbook={cookbook} />
           </div>
         </div>

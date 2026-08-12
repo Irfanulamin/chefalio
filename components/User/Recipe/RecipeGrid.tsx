@@ -55,10 +55,15 @@ export const RecipeGrid = ({
       {/* Refetching dims the grid rather than replacing it with skeletons:
           the results you're looking at are still the results, and swapping
           them for placeholders on every keystroke is what makes a filtered
-          list feel like it's thrashing. */}
+          list feel like it's thrashing.
+
+          The dim is deliberately shallow. It fires once per debounced
+          keystroke, so at 0.55 a fast typist watched the whole grid strobe
+          — the signal was louder than the thing it was reporting. This is
+          enough to read as "working", quiet enough to type through. */}
       <div
         className="grid grid-cols-1 gap-5 transition-opacity duration-200 sm:grid-cols-2 lg:grid-cols-3"
-        style={{ opacity: isFetching ? 0.55 : 1 }}
+        style={{ opacity: isFetching ? 0.72 : 1 }}
         aria-busy={isFetching || handleRecipeLoading}
       >
         {data?.map((recipe: Recipe) => (

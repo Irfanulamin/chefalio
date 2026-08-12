@@ -7,8 +7,7 @@ import {
   AuthResult,
   AuthSubmit,
 } from "@/components/common/AuthBits";
-import { FormField } from "@/components/common/FormField";
-import { FieldGroup } from "@/components/ui/field";
+import { AuthField } from "@/components/common/AuthField";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -99,22 +98,24 @@ function ResetPasswordForm() {
           form.handleSubmit();
         }}
       >
-        <FieldGroup>
-          <FormField
+        <div className="space-y-4">
+          <AuthField
             form={form}
             name="newPassword"
             label="New password"
             placeholder="At least 6 characters"
             type="password"
+            autoComplete="new-password"
           />
-          <FormField
+          <AuthField
             form={form}
             name="confirmPassword"
             label="Confirm new password"
             placeholder="Repeat your password"
             type="password"
+            autoComplete="new-password"
           />
-        </FieldGroup>
+        </div>
 
         <AuthSubmit
           pending={isLoading}

@@ -7,8 +7,7 @@ import {
   AuthNotice,
   AuthSubmit,
 } from "@/components/common/AuthBits";
-import { FormField } from "@/components/common/FormField";
-import { FieldGroup } from "@/components/ui/field";
+import { AuthField } from "@/components/common/AuthField";
 import { OAuthButtons } from "@/components/common/OAuthButtons";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
@@ -59,18 +58,23 @@ function LoginForm() {
     },
   });
 
+  /* `autoComplete` was missing entirely, so password managers had to guess
+     what these two fields were — and browsers wouldn't offer to fill or
+     save the credential at all. */
   const fieldDefinitions = [
     {
       name: "usernameOrEmail",
-      label: "Email or Username",
-      placeholder: "Enter your username or email",
+      label: "Email or username",
+      placeholder: "you@example.com",
       type: "text",
+      autoComplete: "username",
     },
     {
       name: "password",
       label: "Password",
-      placeholder: "Enter your password",
+      placeholder: "Your password",
       type: "password",
+      autoComplete: "current-password",
     },
   ];
 
@@ -157,11 +161,11 @@ function LoginForm() {
             form.handleSubmit();
           }}
         >
-          <FieldGroup>
+          <div className="space-y-4">
             {fieldDefinitions.map((fieldDef) => (
-              <FormField key={fieldDef.name} form={form} {...fieldDef} />
+              <AuthField key={fieldDef.name} form={form} {...fieldDef} />
             ))}
-          </FieldGroup>
+          </div>
 
           <div className="flex justify-end">
             <Link

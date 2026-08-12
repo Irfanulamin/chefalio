@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { io, Socket } from "socket.io-client";
 import axiosInstance from "@/hooks/axios/interceptors";
@@ -12,15 +12,29 @@ import type {
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:5000";
 
+const POLL_INTERVAL_MS = 30_000;
+
+/**
+ * A pushed item, tagged with when it arrived.
+ *
+ * The tag is what lets a pushed item be retired without consulting the
+ * clock during render: it is compared against the timestamp of the last
+ * REST snapshot, not against "now".
+ */
+type PushedNotification = AppNotification & { receivedAt: number };
+
 export function useNotifications() {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
 
-  const [liveNotifications, setLiveNotifications] = useState<AppNotification[]>([]);
-  const [lastReadAt, setLastReadAt] = useState<Date | null>(null);
+  /** Items the socket delivered that the REST list may not carry yet. */
+  const [pushed, setPushed] = useState<PushedNotification[]>([]);
 
-  // Always fetch fresh on mount + refocus; poll every 30s as socket fallback
-  const { data, isLoading } = useQuery({
+  /** Set optimistically by "mark all read"; otherwise the server's value wins. */
+  const [readAtOverride, setReadAtOverride] = useState<Date | null>(null);
+
+  // Always fetch fresh on mount + refocus; poll as a socket fallback.
+  const { data, isLoading, dataUpdatedAt } = useQuery({
     queryKey: ["notifications"],
     queryFn: () =>
       axiosInstance
@@ -29,22 +43,10 @@ export function useNotifications() {
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    refetchInterval: 30_000,
+    refetchInterval: POLL_INTERVAL_MS,
   });
 
-  // Merge REST data with any socket-only items not yet persisted in DB
-  useEffect(() => {
-    if (!data) return;
-    setLastReadAt(data.lastReadAt ? new Date(data.lastReadAt) : null);
-    setLiveNotifications((prev) => {
-      const restIds = new Set(data.data.map((n) => n._id));
-      // Keep socket-delivered items that REST hasn't returned yet (brief delay)
-      const socketOnly = prev.filter((n) => !restIds.has(n._id));
-      return [...socketOnly, ...data.data];
-    });
-  }, [data]);
-
-  // Socket.IO — real-time push
+  // Socket.IO — real-time push.
   useEffect(() => {
     const socket = io(SOCKET_URL, {
       withCredentials: true,
@@ -54,34 +56,80 @@ export function useNotifications() {
     socketRef.current = socket;
 
     socket.on("notification", (notification: AppNotification) => {
-      setLiveNotifications((prev) => {
-        // Skip if polling already added it
-        if (prev.some((n) => n._id === notification._id)) return prev;
-        return [notification, ...prev];
-      });
+      setPushed((prev) =>
+        prev.some((n) => n._id === notification._id)
+          ? prev
+          : [{ ...notification, receivedAt: Date.now() }, ...prev],
+      );
+    });
+
+    /* The subject was deleted. Drop it now rather than leaving it on screen
+       until the next poll — it is currently showing a title and thumbnail
+       for something that no longer exists, and linking to a page that
+       would 404. */
+    socket.on("notification:removed", ({ targetId }: { targetId: string }) => {
+      setPushed((prev) =>
+        prev.filter((n) => String(n.targetId ?? "") !== targetId),
+      );
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     });
 
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [queryClient]);
 
-  const unreadCount = liveNotifications.filter((n) => {
-    if (!lastReadAt) return true;
-    return new Date(n.createdAt) > lastReadAt;
-  }).length;
+  const restItems = useMemo(() => data?.data ?? [], [data]);
+
+  /**
+   * The merged list, derived during render rather than mirrored into state
+   * by an effect. The old version copied the query result into a `useState`
+   * inside `useEffect`, which is a second source of truth for data the
+   * query already owns — and it re-rendered twice on every poll.
+   */
+  const notifications = useMemo(() => {
+    const restIds = new Set(restItems.map((n) => n._id));
+
+    /* A pushed item survives only until a REST snapshot newer than it has
+       had the chance to include it.
+
+       "Absent from REST" has two causes: the write hasn't landed yet, or
+       the notification was deleted server-side because its recipe was.
+       Keeping everything absent treated the second as the first, so a
+       deleted notification survived in this tab until a full reload.
+       Comparing against the snapshot's own timestamp separates them
+       without reading the clock mid-render. */
+    const pending = pushed.filter(
+      (n) => !restIds.has(n._id) && n.receivedAt > dataUpdatedAt,
+    );
+
+    return [...pending, ...restItems];
+  }, [restItems, pushed, dataUpdatedAt]);
+
+  const serverReadAt = data?.lastReadAt ? new Date(data.lastReadAt) : null;
+
+  /* The optimistic value only wins while it is ahead of the server's, so a
+     later refetch can't roll the badge back to unread. */
+  const lastReadAt =
+    readAtOverride && (!serverReadAt || readAtOverride > serverReadAt)
+      ? readAtOverride
+      : serverReadAt;
+
+  const unreadCount = notifications.filter(
+    (n) => !lastReadAt || new Date(n.createdAt) > lastReadAt,
+  ).length;
 
   const markAllRead = useMutation({
     mutationFn: () =>
       axiosInstance.patch("/notifications/mark-read").then((r) => r.data),
     onSuccess: () => {
-      setLastReadAt(new Date());
+      setReadAtOverride(new Date());
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 
   return {
-    notifications: liveNotifications,
+    notifications,
     unreadCount,
     isLoading,
     markAllRead: () => markAllRead.mutate(),

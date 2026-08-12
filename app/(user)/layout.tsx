@@ -1,6 +1,5 @@
-import { AuthenticatedFooter } from "@/components/common/AuthenticatedFooter";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
-import { UserHeader } from "@/components/common/UserHeader";
+import { AppShell } from "@/components/common/AppShell";
 
 export default function UserLayout({
   children,
@@ -9,18 +8,7 @@ export default function UserLayout({
 }) {
   return (
     <ProtectedRoute allowedRoles={["user", "chef"]}>
-      <UserHeader />
-      <div className="min-h-screen container max-w-7xl mx-auto px-1.5 md:px-3 xl:px-0 ">
-        {children}
-      </div>
-      <AuthenticatedFooter
-        links={[
-          { label: "Recipes", href: "/recipes" },
-          { label: "Cookbooks", href: "/cookbooks" },
-          { label: "Activity", href: "/activity" },
-          { label: "Chefs", href: "/chefs" },
-        ]}
-      />
+      <AppShell>{children}</AppShell>
     </ProtectedRoute>
   );
 }

@@ -22,10 +22,121 @@ import { SafeImage } from "@/components/common/SafeImage";
 import { EmptyState } from "@/components/common/EmptyState";
 import { StatusPill } from "@/components/User/shared/StatusPill";
 import { difficultyDisplay, initialsOf } from "@/lib/recipe-display";
-import { EASE, SPRING } from "@/lib/motion";
+import { EASE, POP, POP_TRANSITION, SPRING } from "@/lib/motion";
 import Link from "next/link";
 
 const TOGGLE_POP = [1, 1.18, 1];
+
+/**
+ * The ingredients you've gathered.
+ *
+ * These were static rows sitting directly above a checklist you *can*
+ * tick — one visual language for two different behaviours, which is the
+ * inconsistency that teaches people to stop trying things. Gathering
+ * ingredients is the other half of cooking from a recipe, so it gets the
+ * same treatment as a step: the same `--cs-check-*` tokens, the same
+ * one-frame pop, the same `aria-pressed`.
+ *
+ * The state is deliberately local and unsaved. It's a scratchpad for one
+ * cooking session, not a preference — persisting it would mean coming
+ * back to a recipe weeks later with half its ingredients mysteriously
+ * greyed out and no way to tell why.
+ */
+function Ingredients({ ingredients }: { ingredients: string[] }) {
+  const [gathered, setGathered] = useState<Set<number>>(new Set());
+  const reduce = useReducedMotion();
+
+  const toggle = (i: number) =>
+    setGathered((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+
+  const allGathered =
+    ingredients.length > 0 && gathered.size === ingredients.length;
+
+  return (
+    <section className="mb-8">
+      <div className="mb-4 flex items-baseline justify-between gap-3">
+        <h2 className="ui-heading" style={{ color: "var(--cs-text-primary)" }}>
+          Ingredients
+        </h2>
+        {/* Reads exactly like the Instructions counter one section down,
+            because it is the same kind of fact about the same kind of list. */}
+        <span
+          className="ui-caption ui-numeric shrink-0 rounded-lg px-2.5 py-1 font-semibold"
+          style={{
+            backgroundColor: allGathered
+              ? "var(--cs-success-bg)"
+              : "var(--cs-surface-2)",
+            border: `1px solid ${
+              allGathered ? "var(--cs-success-edge)" : "var(--cs-border-subtle)"
+            }`,
+            color: allGathered
+              ? "var(--cs-success-fg)"
+              : "var(--cs-text-secondary)",
+          }}
+        >
+          {gathered.size}/{ingredients.length} gathered
+        </span>
+      </div>
+
+      <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {ingredients.map((item, i) => {
+          const done = gathered.has(i);
+
+          return (
+            <li key={i}>
+              <button
+                type="button"
+                onClick={() => toggle(i)}
+                aria-pressed={done}
+                className="ui-card focus-ring flex w-full items-center gap-3 px-4 py-3 text-left transition-[background-color,transform] duration-150 active:scale-[0.99] motion-reduce:active:scale-100"
+                style={{
+                  backgroundColor: done
+                    ? "var(--cs-surface-3)"
+                    : "var(--cs-surface-2)",
+                }}
+              >
+                <motion.span
+                  aria-hidden
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+                  animate={reduce ? undefined : { scale: done ? POP : 1 }}
+                  transition={{ ...SPRING.snappy, scale: POP_TRANSITION }}
+                  style={{
+                    backgroundColor: done
+                      ? "var(--cs-check-fill)"
+                      : "transparent",
+                    border: `2px solid ${
+                      done ? "var(--cs-check-edge)" : "var(--cs-border-default)"
+                    }`,
+                    color: "var(--cs-check-mark)",
+                  }}
+                >
+                  {done && <CheckIcon weight="bold" size={11} />}
+                </motion.span>
+
+                <span
+                  className="ui-body leading-tight transition-colors duration-150"
+                  style={{
+                    color: done
+                      ? "var(--cs-text-tertiary)"
+                      : "var(--cs-text-primary)",
+                    textDecoration: done ? "line-through" : "none",
+                  }}
+                >
+                  {item}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
 
 function ActionButton({
   active,
@@ -82,7 +193,11 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
       return next;
     });
 
-  const initials = initialsOf(recipe.authorId.fullName);
+  /* Same dangling-join guard as the grid card: a deleted chef leaves the
+     recipe behind with `authorId` populating to null, and dereferencing it
+     threw before the page rendered anything at all. */
+  const author = recipe.authorId ?? null;
+  const initials = initialsOf(author?.fullName ?? "");
   const diff = difficultyDisplay(recipe.difficulty);
   const progress = recipe.instructions.length
     ? Math.round((completedSteps.size / recipe.instructions.length) * 100)
@@ -166,50 +281,57 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
               </p>
             </div>
 
-            <Link
-              href={`/chefs/${recipe.authorId._id}`}
-              className="ui-card ui-card-interactive focus-ring mb-5 flex items-center gap-3 p-4"
-            >
-              <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl">
-                <SafeImage
-                  src={recipe.authorId.profile_url}
-                  alt=""
-                  width={44}
-                  height={44}
-                  className="h-11 w-11 object-cover"
-                  fallback={
-                    <span
-                      className="flex h-11 w-11 items-center justify-center text-sm font-bold"
-                      style={{
-                        backgroundColor: "var(--cs-accent-muted)",
-                        color: "var(--cs-accent-text)",
-                      }}
-                    >
-                      {initials}
-                    </span>
-                  }
-                />
-              </div>
+            {/* No byline at all when the chef's account is gone. Linking to
+                a profile that 404s is worse than saying nothing. */}
+            {author && (
+              <Link
+                href={`/chefs/${author._id}`}
+                className="ui-card ui-card-interactive focus-ring mb-5 flex items-center gap-3 p-4"
+              >
+                <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl">
+                  <SafeImage
+                    src={author.profile_url}
+                    alt=""
+                    width={44}
+                    height={44}
+                    className="h-11 w-11 object-cover"
+                    fallback={
+                      <span
+                        className="flex h-11 w-11 items-center justify-center text-sm font-bold"
+                        style={{
+                          backgroundColor: "var(--cs-accent-muted)",
+                          color: "var(--cs-accent-text)",
+                        }}
+                      >
+                        {initials}
+                      </span>
+                    }
+                  />
+                </div>
 
-              <div className="min-w-0 flex-1">
-                <p
-                  className="ui-subheading"
-                  style={{ color: "var(--cs-text-primary)" }}
-                >
-                  {recipe.authorId.fullName}
-                </p>
-                <p
-                  className="ui-micro mt-0.5 truncate"
-                  style={{ color: "var(--cs-text-secondary)" }}
-                >
-                  @{recipe.authorId.username}
-                </p>
-              </div>
+                <div className="min-w-0 flex-1">
+                  <p
+                    className="ui-subheading"
+                    style={{ color: "var(--cs-text-primary)" }}
+                  >
+                    {author.fullName}
+                  </p>
+                  <p
+                    className="ui-micro mt-0.5 truncate"
+                    style={{ color: "var(--cs-text-secondary)" }}
+                  >
+                    @{author.username}
+                  </p>
+                </div>
 
-              <span className="ui-label shrink-0" style={{ color: "var(--cs-text-tertiary)" }}>
-                Chef
-              </span>
-            </Link>
+                <span
+                  className="ui-label shrink-0"
+                  style={{ color: "var(--cs-text-tertiary)" }}
+                >
+                  Chef
+                </span>
+              </Link>
+            )}
 
             <ul className="mb-5 flex flex-wrap gap-2">
               {recipe.tags.map((t) => (
@@ -283,47 +405,12 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
               injected into the middle of the render tree — a global
               stylesheet re-parsed on every render of this component. */}
           <div
-            className="flex h-fit w-full flex-col lg:sticky lg:top-24 lg:border-l lg:pl-8"
+            /* `top-24` was clearing the old sticky header. The shell has no
+               header on desktop, so that offset is now just a gap. */
+            className="flex h-fit w-full flex-col lg:sticky lg:top-6 lg:border-l lg:pl-8"
             style={{ borderColor: "var(--cs-border-subtle)" }}
           >
-            <section className="mb-8">
-              <div className="mb-4 flex items-baseline justify-between">
-                <h2 className="ui-heading" style={{ color: "var(--cs-text-primary)" }}>
-                  Ingredients
-                </h2>
-                <span
-                  className="ui-caption ui-numeric rounded-lg px-2.5 py-1 font-semibold"
-                  style={{
-                    backgroundColor: "var(--cs-surface-2)",
-                    border: "1px solid var(--cs-border-subtle)",
-                    color: "var(--cs-text-secondary)",
-                  }}
-                >
-                  {recipe.ingredients.length} items
-                </span>
-              </div>
-
-              <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {recipe.ingredients.map((item, i) => (
-                  <li
-                    key={i}
-                    className="ui-card flex items-center gap-3 px-4 py-3"
-                  >
-                    <span
-                      aria-hidden
-                      className="h-1.5 w-1.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: "var(--primary)" }}
-                    />
-                    <span
-                      className="ui-body leading-tight"
-                      style={{ color: "var(--cs-text-primary)" }}
-                    >
-                      {item}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
+            <Ingredients ingredients={recipe.ingredients} />
 
             <Instructions
               recipe={recipe}

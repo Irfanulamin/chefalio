@@ -33,17 +33,22 @@ const TONES: Record<
     border: "color-mix(in oklab, var(--primary) 40%, transparent)",
     text: "var(--cs-accent-text)",
   },
+  /* These were hardcoded amber and red literals — `#a16207` on
+     `rgba(234,179,8,0.12)`. Both are light-mode values, so in dark mode an
+     "email not verified" notice glowed as a pale sticker on a near-black
+     card. The status triplets are defined per theme, so this is correct in
+     both by construction. */
   warning: {
     icon: WarningCircleIcon,
-    bg: "rgba(234,179,8,0.12)",
-    border: "rgba(234,179,8,0.35)",
-    text: "#a16207",
+    bg: "var(--cs-warning-bg)",
+    border: "var(--cs-warning-edge)",
+    text: "var(--cs-warning-fg)",
   },
   error: {
     icon: WarningCircleIcon,
-    bg: "rgba(239,68,68,0.1)",
-    border: "rgba(239,68,68,0.3)",
-    text: "#dc2626",
+    bg: "var(--cs-danger-bg)",
+    border: "var(--cs-danger-edge)",
+    text: "var(--cs-danger-fg)",
   },
 };
 
@@ -81,29 +86,27 @@ export function AuthNotice({
 
 /** A labelled rule, for the seam between a form and its OAuth alternative. */
 export function AuthDivider({ label }: { label: string }) {
+  /* Two rules either side of the label rather than one rule with an opaque
+     chip sitting on top of it. The chip was painted `--cs-surface-1` to
+     mask the line behind it, but the auth card is a *translucent* material
+     — so it showed up as a solid light block floating in the middle of the
+     glass instead of disappearing into it. */
   return (
-    <div className="relative my-6" aria-hidden>
-      <div
-        className="absolute inset-0 flex items-center"
-        style={{ pointerEvents: "none" }}
+    <div className="my-6 flex items-center gap-3" aria-hidden>
+      <span
+        className="h-px flex-1"
+        style={{ backgroundColor: "var(--cs-border-subtle)" }}
+      />
+      <span
+        className="type-micro font-semibold uppercase"
+        style={{ color: "var(--cs-text-tertiary)", letterSpacing: "0.1em" }}
       >
-        <span
-          className="h-px w-full"
-          style={{ backgroundColor: "var(--cs-border-subtle)" }}
-        />
-      </div>
-      <div className="relative flex justify-center">
-        <span
-          className="type-micro px-3 font-semibold uppercase"
-          style={{
-            backgroundColor: "var(--cs-surface-1)",
-            color: "var(--cs-text-tertiary)",
-            letterSpacing: "0.1em",
-          }}
-        >
-          {label}
-        </span>
-      </div>
+        {label}
+      </span>
+      <span
+        className="h-px flex-1"
+        style={{ backgroundColor: "var(--cs-border-subtle)" }}
+      />
     </div>
   );
 }
@@ -250,7 +253,9 @@ export function AuthResult({
       >
         <span
           className="type-label"
-          style={{ color: success ? "var(--cs-accent-text)" : "#dc2626" }}
+          style={{
+            color: success ? "var(--cs-accent-text)" : "var(--cs-danger-fg)",
+          }}
         >
           {label ?? (success ? "Done" : "Something went wrong")}
         </span>

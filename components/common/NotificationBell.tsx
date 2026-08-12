@@ -11,18 +11,11 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useNotifications } from "@/hooks/useNotifications";
 import type { AppNotification } from "@/types/notification.type";
+import Link from "next/link";
 import { SafeImage } from "./SafeImage";
 import { SPRING } from "@/lib/motion";
-
-function timeAgo(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
+import { timeAgo } from "@/lib/time";
+import { notificationHref } from "@/lib/notification-link";
 
 /**
  * The type glyph doubles as the avatar fallback, so a notification with
@@ -162,10 +155,15 @@ export function NotificationBell() {
                 </div>
               ) : (
                 <ul>
-                  {notifications.map((n) => (
-                    <li
-                      key={n._id}
-                      className="ui-row flex items-start gap-3 px-4 py-3"
+                  {notifications.map((n) => {
+                    const href = notificationHref(n);
+                    const Row = href ? Link : "div";
+
+                    return (
+                    <li key={n._id}>
+                    <Row
+                      {...(href ? { href, onClick: () => setOpen(false) } : {})}
+                      className="ui-row focus-ring flex items-start gap-3 px-4 py-3"
                     >
                       <SafeImage
                         src={n.actorAvatar}
@@ -224,8 +222,10 @@ export function NotificationBell() {
                           />
                         </div>
                       )}
+                    </Row>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               )}
             </div>

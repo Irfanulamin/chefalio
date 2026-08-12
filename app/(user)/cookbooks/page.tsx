@@ -15,6 +15,11 @@ import { useDebounce } from "use-debounce";
 
 const GRID = "grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
+/* Matches the recipes page. 500ms read as a stall between the last
+   keystroke and the grid reacting; 300ms still folds a typing burst into
+   one request. */
+const SEARCH_DEBOUNCE_MS = 300;
+
 export default function CookbooksPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -35,8 +40,8 @@ export default function CookbooksPage() {
     [searchParams, router],
   );
 
-  const [debouncedSearch] = useDebounce(search, 500);
-  const [debouncedAuthor] = useDebounce(author, 500);
+  const [debouncedSearch] = useDebounce(search, SEARCH_DEBOUNCE_MS);
+  const [debouncedAuthor] = useDebounce(author, SEARCH_DEBOUNCE_MS);
 
   const {
     cookbooks,

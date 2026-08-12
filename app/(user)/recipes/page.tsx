@@ -11,6 +11,9 @@ import { PageHeader } from "@/components/User/shared/PageHeader";
 import { LoadMoreSentinel } from "@/components/User/shared/LoadMoreSentinel";
 import { DIFFICULTIES, type Difficulty } from "@/lib/recipe-display";
 
+/** Shared by the two type-to-filter fields on this page. See below. */
+const SEARCH_DEBOUNCE_MS = 300;
+
 export const POPULAR_TAGS = [
   "vegetarian",
   "dessert",
@@ -49,8 +52,13 @@ export default function RecipesPage() {
     [searchParams, router],
   );
 
-  const [debouncedSearch] = useDebounce(search, 500);
-  const [debouncedAuthor] = useDebounce(author, 500);
+  /* 500ms was long enough that typing felt like it had stalled: the grid
+     sat unchanged for half a second after the last keystroke, which is
+     well past the point a filter stops feeling connected to the keyboard.
+     300ms still coalesces a normal typing burst into one request, and the
+     search field's own `busy` state covers the gap. */
+  const [debouncedSearch] = useDebounce(search, SEARCH_DEBOUNCE_MS);
+  const [debouncedAuthor] = useDebounce(author, SEARCH_DEBOUNCE_MS);
 
   const {
     recipes,

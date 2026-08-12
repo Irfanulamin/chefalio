@@ -7,8 +7,7 @@ import {
   AuthResult,
   AuthSubmit,
 } from "@/components/common/AuthBits";
-import { FormField } from "@/components/common/FormField";
-import { FieldGroup } from "@/components/ui/field";
+import { AuthField } from "@/components/common/AuthField";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -79,15 +78,14 @@ export default function ForgotPasswordPage() {
           form.handleSubmit();
         }}
       >
-        <FieldGroup>
-          <FormField
-            form={form}
-            name="email"
-            label="Email address"
-            placeholder="you@example.com"
-            type="email"
-          />
-        </FieldGroup>
+        <AuthField
+          form={form}
+          name="email"
+          label="Email address"
+          placeholder="you@example.com"
+          type="email"
+          autoComplete="email"
+        />
 
         <AuthSubmit pending={isLoading} pendingLabel="Sending…">
           Send reset link

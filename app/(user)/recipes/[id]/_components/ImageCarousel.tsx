@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import { difficultyDisplay } from "@/lib/recipe-display";
 import { StatusPill } from "@/components/User/shared/StatusPill";
 
@@ -16,14 +17,56 @@ export function ImageCarousel({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
   const diff = difficultyDisplay(difficulty);
+  const hasMany = images.length > 1;
 
-  const scrollToImage = (index: number) => {
-    setActiveIndex(index);
-    const container = scrollRef.current;
-    if (!container) return;
-    const slide = container.children[index] as HTMLElement;
-    slide?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+  /**
+   * Scrolls the strip itself rather than calling `scrollIntoView` on the
+   * slide.
+   *
+   * `scrollIntoView` walks *every* scrollable ancestor, so tapping a
+   * thumbnail could nudge the page vertically as a side effect of moving
+   * the carousel horizontally. Driving the container moves exactly one
+   * axis of exactly one element.
+   *
+   * Smooth scrolling is a fixed-duration browser animation — the one kind
+   * of motion reduced-motion asks us to drop. The jump still lands on the
+   * same photo, it just doesn't travel there.
+   */
+  const scrollToImage = useCallback(
+    (index: number) => {
+      const container = scrollRef.current;
+      if (!container) return;
+
+      const clamped = Math.max(0, Math.min(index, images.length - 1));
+      setActiveIndex(clamped);
+      container.scrollTo({
+        left: clamped * container.clientWidth,
+        behavior: reduce ? "auto" : "smooth",
+      });
+    },
+    [images.length, reduce],
+  );
+
+  /* The strip is a real focusable region: arrows step through it, Home and
+     End jump to the ends. Native scroll-snap already carries the platform's
+     own momentum, rubber-banding and trackpad handling for pointer input —
+     this is the half of the interaction a keyboard was missing. */
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!hasMany) return;
+
+    const step: Record<string, number> = {
+      ArrowRight: activeIndex + 1,
+      ArrowLeft: activeIndex - 1,
+      Home: 0,
+      End: images.length - 1,
+    };
+
+    if (e.key in step) {
+      e.preventDefault();
+      scrollToImage(step[e.key]);
+    }
   };
 
   return (
@@ -34,7 +77,12 @@ export function ImageCarousel({
             trackpad handling, which no reimplementation gets right. */}
         <div
           ref={scrollRef}
-          className="relative flex overflow-x-auto"
+          role="region"
+          aria-label={`${title}, ${images.length} photo${images.length === 1 ? "" : "s"}`}
+          aria-roledescription="carousel"
+          tabIndex={hasMany ? 0 : -1}
+          onKeyDown={handleKeyDown}
+          className="focus-ring relative flex overflow-x-auto [&::-webkit-scrollbar]:hidden"
           style={{
             scrollSnapType: "x mandatory",
             scrollbarWidth: "none",
@@ -81,7 +129,7 @@ export function ImageCarousel({
             {diff.label}
           </StatusPill>
 
-          {images.length > 1 && (
+          {hasMany && (
             <span
               className="material-thick ui-micro ui-numeric absolute right-3 top-3 z-10 rounded-lg px-2.5 py-1 font-bold"
               style={{ color: "var(--cs-text-primary)" }}
@@ -92,9 +140,17 @@ export function ImageCarousel({
           )}
         </div>
 
-        {images.length > 1 && (
+        {/* Arrowing through the strip is silent to a screen reader without
+            this — the counter above it is decorative. */}
+        {hasMany && (
+          <span aria-live="polite" className="sr-only">
+            Photo {activeIndex + 1} of {images.length}
+          </span>
+        )}
+
+        {hasMany && (
           <div
-            className="flex gap-2 overflow-x-auto p-3"
+            className="flex gap-2 overflow-x-auto p-3 [&::-webkit-scrollbar]:hidden"
             style={{
               scrollbarWidth: "none",
               borderTop: "1px solid var(--cs-border-subtle)",
@@ -108,13 +164,17 @@ export function ImageCarousel({
                   onClick={() => scrollToImage(i)}
                   aria-label={`Show photo ${i + 1}`}
                   aria-current={isActive}
-                  className="focus-ring relative h-14 w-14 shrink-0 overflow-hidden rounded-lg transition-all duration-150"
+                  /* Selection is a ring drawn *inside* the thumbnail via
+                     box-shadow, not an `outline` — outline is what
+                     `.focus-ring` uses, and the two were overwriting each
+                     other, so a focused thumbnail and a selected one were
+                     indistinguishable. */
+                  className="focus-ring relative h-14 w-14 shrink-0 overflow-hidden rounded-lg transition-[opacity,box-shadow] duration-150 active:scale-95"
                   style={{
                     opacity: isActive ? 1 : 0.55,
-                    outline: isActive
-                      ? "2px solid var(--cs-accent-text)"
-                      : "2px solid transparent",
-                    outlineOffset: "1px",
+                    boxShadow: isActive
+                      ? "inset 0 0 0 2px var(--cs-accent-text)"
+                      : "inset 0 0 0 2px transparent",
                   }}
                 >
                   <Image src={img} alt="" fill className="object-cover" sizes="56px" />

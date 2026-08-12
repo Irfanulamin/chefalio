@@ -9,8 +9,7 @@ import {
   AuthSecondary,
   AuthSubmit,
 } from "@/components/common/AuthBits";
-import { FormField } from "@/components/common/FormField";
-import { FieldGroup } from "@/components/ui/field";
+import { AuthField } from "@/components/common/AuthField";
 import { OAuthButtons } from "@/components/common/OAuthButtons";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
@@ -146,36 +145,45 @@ export default function RegisterPage() {
             form.handleSubmit();
           }}
         >
-          <FieldGroup>
-            {[
-              {
-                name: "fullName",
-                label: "Full Name",
-                placeholder: "Enter your full name",
-                type: "text",
-              },
-              {
-                name: "username",
-                label: "Username",
-                placeholder: "Enter your username",
-                type: "text",
-              },
-              {
-                name: "email",
-                label: "Email",
-                placeholder: "Enter your email",
-                type: "email",
-              },
-              {
-                name: "password",
-                label: "Password",
-                placeholder: "At least 6 characters",
-                type: "password",
-              },
-            ].map((fieldDef) => (
-              <FormField key={fieldDef.name} form={form} {...fieldDef} />
-            ))}
-          </FieldGroup>
+          {/* Name and username sit on one row at `sm`: they are both short,
+              and pairing them stops a four-field form reading as a longer
+              climb than it is. */}
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <AuthField
+                form={form}
+                name="fullName"
+                label="Full name"
+                placeholder="Ada Lovelace"
+                autoComplete="name"
+              />
+              <AuthField
+                form={form}
+                name="username"
+                label="Username"
+                placeholder="ada"
+                autoComplete="username"
+              />
+            </div>
+
+            <AuthField
+              form={form}
+              name="email"
+              label="Email"
+              placeholder="you@example.com"
+              type="email"
+              autoComplete="email"
+            />
+
+            <AuthField
+              form={form}
+              name="password"
+              label="Password"
+              placeholder="At least 6 characters"
+              type="password"
+              autoComplete="new-password"
+            />
+          </div>
 
           <AuthSubmit pending={isSubmitting} pendingLabel="Creating account…">
             Create account

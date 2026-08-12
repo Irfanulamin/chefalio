@@ -101,7 +101,16 @@ export const RecipeCard = memo(
     );
 
     const diff = difficultyDisplay(recipe.difficulty);
-    const initials = initialsOf(recipe.authorId.fullName);
+
+    /* `authorId` is a populated join, and the join can come back empty: if
+       the chef's account is deleted the recipe survives with a dangling
+       reference, and Mongoose populates `null`. This used to read
+       `recipe.authorId.fullName` directly, so one deleted chef threw a
+       TypeError that took down the entire grid — every other recipe on the
+       page included. A missing author is a missing byline, not a broken
+       page. */
+    const author = recipe.authorId ?? null;
+    const initials = initialsOf(author?.fullName ?? "");
 
     return (
       <motion.article

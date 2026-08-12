@@ -134,7 +134,7 @@ export function CookbookCard({
 
         <h3 className="ui-subheading">
           <Link
-            href={`/cookbooks/${cookbook._id}`}
+            href={`/purchase-cookbook/${cookbook._id}`}
             className="stretched-link focus-ring line-clamp-2 rounded-md transition-colors duration-150 group-hover:text-[color:var(--cs-accent-text)]"
             style={{ color: "var(--cs-text-primary)" }}
           >
@@ -156,9 +156,13 @@ export function CookbookCard({
             className="mt-auto pt-3"
             style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
           >
+            {/* Presses on contact rather than on release. The card itself
+                already scales under `whileTap`; without its own state this
+                button would be the one thing on the tile that didn't
+                acknowledge the finger. */}
             <Link
               href={`/purchase-cookbook/${cookbook._id}`}
-              className="above-stretched-link focus-ring block w-full rounded-xl py-2 text-center text-sm font-semibold transition-colors duration-150"
+              className="above-stretched-link focus-ring block w-full rounded-xl py-2 text-center text-sm font-semibold transition-[background-color,opacity,transform] duration-150 hover:opacity-90 active:scale-[0.97] active:duration-[90ms] motion-reduce:active:scale-100"
               style={{
                 backgroundColor: "var(--primary)",
                 color: "var(--primary-foreground)",

@@ -35,23 +35,28 @@ const ErrorToast = ({ message, onDismiss }: ToastProps) => {
   return (
     <div
       role="alert"
-      className={[
-        "flex items-start gap-3 rounded-xl px-4 py-3 shadow-lg",
-        "bg-white dark:bg-zinc-900",
-        "border border-red-200 dark:border-red-800",
-        "text-sm",
-      ].join(" ")}
+      className="flex items-start gap-3 rounded-xl px-4 py-3"
+      style={{
+        backgroundColor: "var(--cs-danger-bg)",
+        border: "1px solid var(--cs-danger-edge)",
+        boxShadow: "var(--cs-shadow-card)",
+      }}
     >
       <WarningCircleIcon
         size={18}
         weight="fill"
-        className="mt-0.5 shrink-0 text-red-500"
+        className="mt-0.5 shrink-0"
+        style={{ color: "var(--cs-danger-fg)" }}
       />
-      <p className="flex-1 text-zinc-700 dark:text-zinc-300">{message}</p>
+      <p className="ui-caption flex-1" style={{ color: "var(--cs-text-primary)" }}>
+        {message}
+      </p>
       <button
         type="button"
         onClick={onDismiss}
-        className="shrink-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+        aria-label="Dismiss"
+        className="focus-ring shrink-0 rounded-md transition-colors"
+        style={{ color: "var(--cs-text-tertiary)" }}
       >
         <XIcon size={14} weight="bold" />
       </button>
@@ -162,18 +167,24 @@ const ImageDropzoneField = ({
           onBlur,
           "aria-invalid": isInvalid,
         })}
-        className={[
-          "relative flex h-96 w-full flex-col items-center justify-center gap-2.5",
-          "rounded-2xl cursor-pointer select-none overflow-hidden",
-          "border-2 border-dashed transition-all duration-200",
-          isDragReject || isInvalid
-            ? "border-red-400 bg-red-50/60 dark:bg-red-950/20"
-            : isDragActive
-              ? "border-sky-400 bg-sky-50/60 dark:bg-sky-950/30 scale-[1.01]"
-              : hasSinglePreview
-                ? "border-zinc-300 dark:border-zinc-600"
-                : "border-zinc-300 dark:border-zinc-700 bg-zinc-50/80 dark:bg-zinc-900/60 hover:border-zinc-400 dark:hover:border-zinc-500 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60",
-        ].join(" ")}
+        className="focus-ring relative flex h-96 w-full cursor-pointer select-none flex-col items-center justify-center gap-2.5 overflow-hidden rounded-2xl transition-colors duration-150"
+        style={{
+          border: `2px dashed ${
+            isDragReject || isInvalid
+              ? "var(--cs-danger-fg)"
+              : isDragActive
+                ? "var(--primary)"
+                : "var(--cs-border-default)"
+          }`,
+          backgroundColor:
+            isDragReject || isInvalid
+              ? "var(--cs-danger-bg)"
+              : isDragActive
+                ? "var(--cs-accent-muted)"
+                : hasSinglePreview
+                  ? "var(--cs-surface-1)"
+                  : "var(--cs-surface-3)",
+        }}
       >
         <input {...getInputProps()} />
 
@@ -203,11 +214,8 @@ const ImageDropzoneField = ({
                 e.stopPropagation();
                 removeFile(0);
               }}
-              className={[
-                "absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full",
-                "bg-black/60 text-white hover:bg-black/80 transition-colors",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-white",
-              ].join(" ")}
+              className="material-thick focus-ring absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full"
+              style={{ color: "var(--cs-text-primary)" }}
             >
               <XIcon size={12} weight="bold" />
             </button>
@@ -215,44 +223,40 @@ const ImageDropzoneField = ({
         ) : (
           <>
             <div
-              className={[
-                "flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-200",
-                isDragReject || isInvalid
-                  ? "bg-red-100 dark:bg-red-900/40"
-                  : isDragActive
-                    ? "bg-sky-100 dark:bg-sky-900/40"
-                    : "bg-zinc-200/80 dark:bg-zinc-800",
-              ].join(" ")}
+              className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-150"
+              style={{
+                backgroundColor:
+                  isDragReject || isInvalid
+                    ? "var(--cs-danger-bg)"
+                    : isDragActive
+                      ? "var(--cs-accent-muted)"
+                      : "var(--cs-surface-2)",
+                color:
+                  isDragReject || isInvalid
+                    ? "var(--cs-danger-fg)"
+                    : isDragActive
+                      ? "var(--cs-accent-text)"
+                      : "var(--cs-text-tertiary)",
+              }}
             >
               {isDragReject || isInvalid ? (
-                <WarningCircleIcon
-                  size={20}
-                  weight="fill"
-                  className="text-red-500"
-                />
+                <WarningCircleIcon size={20} weight="fill" />
               ) : (
-                <ImageIcon
-                  size={20}
-                  weight="duotone"
-                  className={
-                    isDragActive
-                      ? "text-sky-500"
-                      : "text-zinc-500 dark:text-zinc-400"
-                  }
-                />
+                <ImageIcon size={20} weight="duotone" />
               )}
             </div>
 
-            <div className="text-center px-4">
+            <div className="px-4 text-center">
               <p
-                className={[
-                  "text-sm font-semibold tracking-tight",
-                  isDragReject || isInvalid
-                    ? "text-red-600 dark:text-red-400"
-                    : isDragActive
-                      ? "text-sky-600 dark:text-sky-400"
-                      : "text-zinc-700 dark:text-zinc-200",
-                ].join(" ")}
+                className="ui-subheading"
+                style={{
+                  color:
+                    isDragReject || isInvalid
+                      ? "var(--cs-danger-fg)"
+                      : isDragActive
+                        ? "var(--cs-accent-text)"
+                        : "var(--cs-text-primary)",
+                }}
               >
                 {isDragReject
                   ? "Images only, please"
@@ -262,9 +266,12 @@ const ImageDropzoneField = ({
                       ? "Add more images"
                       : "Drop your image here"}
               </p>
-              <p className="mt-0.5 text-xs text-zinc-400 dark:text-zinc-500">
+              <p className="ui-micro mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
                 or{" "}
-                <span className="text-sky-500 underline underline-offset-2 decoration-dotted">
+                <span
+                  className="underline decoration-dotted underline-offset-2"
+                  style={{ color: "var(--cs-accent-text)" }}
+                >
                   browse
                 </span>
                 {` · JPG or PNG · Max ${Math.round(maxSize / (1024 * 1024))} MB each`}
@@ -279,7 +286,11 @@ const ImageDropzoneField = ({
           {files.map((file, index) => (
             <li
               key={`${file.name}-${index}`}
-              className="group relative aspect-square overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800"
+              className="group relative aspect-square overflow-hidden rounded-xl"
+              style={{
+                border: "1px solid var(--cs-border-subtle)",
+                backgroundColor: "var(--cs-surface-3)",
+              }}
             >
               <Image
                 src={previews[index]}
@@ -292,12 +303,8 @@ const ImageDropzoneField = ({
                 type="button"
                 aria-label={`Remove ${file.name}`}
                 onClick={() => removeFile(index)}
-                className={[
-                  "absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full",
-                  "bg-black/60 text-white opacity-0 group-hover:opacity-100 hover:bg-black/80",
-                  "transition-all duration-150",
-                  "focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white",
-                ].join(" ")}
+                className="material-thick focus-ring absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full opacity-0 transition-opacity duration-150 focus:opacity-100 group-hover:opacity-100"
+                style={{ color: "var(--cs-text-primary)" }}
               >
                 <XIcon size={10} weight="bold" />
               </button>
@@ -444,7 +451,11 @@ export const FormField = ({
 
             <div>
               {isInvalid && (
-                <p className="text-red-500 text-sm">
+                <p
+                  className="ui-caption flex items-center gap-1.5"
+                  style={{ color: "var(--cs-danger-fg)" }}
+                >
+                  <WarningCircleIcon size={13} weight="fill" aria-hidden />
                   {field.state.meta.errors
                     .map((e: any) =>
                       typeof e === "string" ? e : (e?.message ?? String(e)),
