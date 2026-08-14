@@ -31,6 +31,7 @@ import {
   PlusIcon,
   UsersIcon,
 } from "@phosphor-icons/react/dist/ssr"
+import { PageHeader } from "@/components/Admin/AdminUI"
 
 const EMPTY_FORM = {
   fullName: "",
@@ -59,16 +60,8 @@ const ACTIVE_FILTER_CONFIG: FilterConfig = {
   type: "segmented",
   options: [
     { label: "All", value: "" },
-    {
-      label: "Active",
-      value: "true",
-      activeClassName: "bg-emerald-500 text-white shadow-sm",
-    },
-    {
-      label: "Inactive",
-      value: "false",
-      activeClassName: "bg-red-500 text-white shadow-sm",
-    },
+    { label: "Active", value: "true" },
+    { label: "Inactive", value: "false" },
   ],
 }
 
@@ -140,7 +133,7 @@ export default function AdminUsersPage() {
     setShowPassword(false)
   }
 
-  async function handleCreateUser(e: React.FormEvent) {
+  async function handleCreateUser(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     try {
       await createUser.mutateAsync(form)
@@ -180,22 +173,21 @@ export default function AdminUsersPage() {
       <title>Users – Chefalio Admin</title>
 
       <div className="space-y-4 max-w-7xl mx-auto">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">Users</h1>
-            <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
-              Manage accounts, roles, and status ·{" "}
-              {pagination?.total ?? 0} total
-            </p>
-          </div>
-          <button
-            onClick={() => setCreateOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-black hover:bg-primary/90 transition-colors shrink-0"
-          >
-            <PlusIcon size={13} weight="bold" />
-            Create User
-          </button>
-        </div>
+        <PageHeader
+          title="Users"
+          description={`Manage accounts, roles, and status · ${pagination?.total ?? 0} total`}
+          icon={UsersIcon}
+          iconTone="info"
+          action={
+            <button
+              onClick={() => setCreateOpen(true)}
+              className="focus-ring flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-black hover:bg-primary/90 active:scale-[0.97] transition-[background-color,transform] duration-150 shrink-0"
+            >
+              <PlusIcon size={13} weight="bold" />
+              Create User
+            </button>
+          }
+        />
 
         {/* Create User Dialog */}
         <Dialog
@@ -232,62 +224,65 @@ export default function AdminUsersPage() {
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-xs font-medium" style={{ color: "var(--cs-text-secondary)" }}>
                     Full Name
                   </label>
                   <div className="relative">
-                    <UserIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+                    <UserIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--cs-text-tertiary)" }} />
                     <input
                       type="text"
                       required
                       placeholder="Jane Doe"
                       value={form.fullName}
                       onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
-                      className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                      className="w-full pl-8 pr-3 py-2 text-sm rounded-lg text-foreground placeholder:text-(--cs-text-tertiary) outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                      style={{ border: "1px solid var(--cs-border-default)", backgroundColor: "var(--cs-surface-1)" }}
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-xs font-medium" style={{ color: "var(--cs-text-secondary)" }}>
                     Username
                   </label>
                   <div className="relative">
-                    <AtIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+                    <AtIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--cs-text-tertiary)" }} />
                     <input
                       type="text"
                       required
                       placeholder="janedoe"
                       value={form.username}
                       onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-                      className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                      className="w-full pl-8 pr-3 py-2 text-sm rounded-lg text-foreground placeholder:text-(--cs-text-tertiary) outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                      style={{ border: "1px solid var(--cs-border-default)", backgroundColor: "var(--cs-surface-1)" }}
                     />
                   </div>
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                <label className="text-xs font-medium" style={{ color: "var(--cs-text-secondary)" }}>
                   Email address
                 </label>
                 <div className="relative">
-                  <EnvelopeSimpleIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+                  <EnvelopeSimpleIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--cs-text-tertiary)" }} />
                   <input
                     type="email"
                     required
                     placeholder="jane@example.com"
                     value={form.email}
                     onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                    className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    className="w-full pl-8 pr-3 py-2 text-sm rounded-lg text-foreground placeholder:text-(--cs-text-tertiary) outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    style={{ border: "1px solid var(--cs-border-default)", backgroundColor: "var(--cs-surface-1)" }}
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                <label className="text-xs font-medium" style={{ color: "var(--cs-text-secondary)" }}>
                   Password
                 </label>
                 <div className="relative">
-                  <LockSimpleIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+                  <LockSimpleIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--cs-text-tertiary)" }} />
                   <input
                     type={showPassword ? "text" : "password"}
                     required
@@ -295,13 +290,15 @@ export default function AdminUsersPage() {
                     placeholder="Min. 6 characters"
                     value={form.password}
                     onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                    className="w-full pl-8 pr-10 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    className="w-full pl-8 pr-10 py-2 text-sm rounded-lg text-foreground placeholder:text-(--cs-text-tertiary) outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    style={{ border: "1px solid var(--cs-border-default)", backgroundColor: "var(--cs-surface-1)" }}
                   />
                   <button
                     type="button"
                     tabIndex={-1}
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors p-0.5"
+                    className="focus-ring absolute right-2.5 top-1/2 -translate-y-1/2 transition-colors p-0.5 hover:text-foreground"
+                    style={{ color: "var(--cs-text-tertiary)" }}
                   >
                     {showPassword ? <EyeSlashIcon size={15} /> : <EyeIcon size={15} />}
                   </button>
@@ -309,7 +306,7 @@ export default function AdminUsersPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                <label className="text-xs font-medium" style={{ color: "var(--cs-text-secondary)" }}>
                   Role
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -320,56 +317,58 @@ export default function AdminUsersPage() {
                         label: "Member",
                         desc: "Browse & buy",
                         Icon: UserIcon,
-                        color: "text-zinc-500",
-                        active: "border-zinc-400 bg-zinc-50 dark:bg-zinc-800/60 dark:border-zinc-500",
+                        tone: "neutral",
                       },
                       {
                         value: "chef",
                         label: "Chef",
                         desc: "Publish content",
                         Icon: ChefHatIcon,
-                        color: "text-primary",
-                        active: "border-primary bg-primary/5",
+                        tone: "accent",
                       },
                       {
                         value: "admin",
                         label: "Admin",
                         desc: "Full access",
                         Icon: CrownSimpleIcon,
-                        color: "text-purple-500",
-                        active: "border-purple-400 bg-purple-50 dark:bg-purple-900/20",
+                        tone: "info",
                       },
                     ] as const
-                  ).map(({ value, label, desc, Icon, color, active }) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setForm((f) => ({ ...f, role: value }))}
-                      className={[
-                        "flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-center transition-all cursor-pointer",
-                        form.role === value
-                          ? active
-                          : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600",
-                      ].join(" ")}
-                    >
-                      <Icon
-                        size={18}
-                        weight={form.role === value ? "fill" : "regular"}
-                        className={form.role === value ? color : "text-zinc-400"}
-                      />
-                      <span
-                        className={[
-                          "text-xs font-semibold leading-tight",
-                          form.role === value
-                            ? "text-foreground"
-                            : "text-zinc-500 dark:text-zinc-400",
-                        ].join(" ")}
+                  ).map(({ value, label, desc, Icon, tone }) => {
+                    const isActive = form.role === value
+                    const toneVars: Record<string, { fg: string; bg: string; border: string }> = {
+                      neutral: { fg: "var(--cs-text-primary)", bg: "var(--cs-surface-3)", border: "var(--cs-border-default)" },
+                      accent: { fg: "var(--cs-accent-text)", bg: "var(--cs-accent-muted)", border: "color-mix(in oklab, var(--primary) 45%, transparent)" },
+                      info: { fg: "var(--cs-info-fg)", bg: "var(--cs-info-bg)", border: "var(--cs-info-edge)" },
+                    }
+                    const t = toneVars[tone]
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, role: value }))}
+                        className="focus-ring flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-center transition-[transform,background-color,border-color] duration-150 cursor-pointer active:scale-[0.97]"
+                        style={
+                          isActive
+                            ? { borderColor: t.border, backgroundColor: t.bg }
+                            : { borderColor: "var(--cs-border-subtle)" }
+                        }
                       >
-                        {label}
-                      </span>
-                      <span className="text-[10px] text-zinc-400 leading-tight">{desc}</span>
-                    </button>
-                  ))}
+                        <Icon
+                          size={18}
+                          weight={isActive ? "fill" : "regular"}
+                          style={{ color: isActive ? t.fg : "var(--cs-text-tertiary)" }}
+                        />
+                        <span
+                          className="text-xs font-semibold leading-tight"
+                          style={{ color: isActive ? "var(--cs-text-primary)" : "var(--cs-text-secondary)" }}
+                        >
+                          {label}
+                        </span>
+                        <span className="text-[10px] leading-tight" style={{ color: "var(--cs-text-tertiary)" }}>{desc}</span>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -377,14 +376,15 @@ export default function AdminUsersPage() {
                 <button
                   type="button"
                   onClick={closeCreateModal}
-                  className="px-4 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors"
+                  className="focus-ring px-4 py-2 text-sm rounded-lg transition-[color,border-color] duration-150 hover:text-foreground"
+                  style={{ border: "1px solid var(--cs-border-default)", color: "var(--cs-text-secondary)" }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={createUser.isPending}
-                  className="px-4 py-2 text-sm rounded-lg bg-primary text-black font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                  className="focus-ring px-4 py-2 text-sm rounded-lg bg-primary text-black font-medium hover:bg-primary/90 active:scale-[0.97] disabled:opacity-50 transition-[background-color,transform] duration-150"
                 >
                   {createUser.isPending ? "Creating…" : "Create user"}
                 </button>

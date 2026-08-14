@@ -34,63 +34,102 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Reveal, StatCard, Panel } from "@/components/Admin/AdminUI";
+import { cn } from "@/lib/utils";
 
+// Difficulty is a severity dimension, not a category — it draws from the
+// reserved status triplets (the same ones the recipe table's pills use)
+// rather than the categorical data-vis ramp, so "advance" always reads as
+// the same red everywhere it appears in the console.
+//
+// Keys must match the schema's actual enum (`beginner` | `intermediate` |
+// `advance` — see recipe.schema.ts). This previously keyed on
+// `easy`/`medium`/`hard`, which never matched, so every slice fell through
+// to the same fallback color and the pie read as one undifferentiated hue.
 const DIFFICULTY_COLORS: Record<string, string> = {
-  easy: "#a7d129",
-  medium: "#f59e0b",
-  hard: "#ef4444",
+  beginner: "var(--cs-success-fg)",
+  intermediate: "var(--cs-warning-fg)",
+  advance: "var(--cs-danger-fg)",
 };
-const FALLBACK_COLORS = ["#a7d129", "#f59e0b", "#ef4444", "#6366f1", "#14b8a6"];
+const FALLBACK_COLORS = ["var(--cs-success-fg)", "var(--cs-warning-fg)", "var(--cs-danger-fg)", "var(--cv-4)", "var(--cv-5)"];
 
-function StatCard({
-  label,
-  value,
-  sub,
-  icon: Icon,
-}: {
-  label: string;
-  value: string | number;
-  sub?: string;
-  icon: React.ElementType;
-}) {
-  return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-          {label}
-        </span>
-        <Icon size={14} className="text-zinc-400 dark:text-zinc-500" />
-      </div>
-      <p className="text-2xl font-semibold text-foreground tabular-nums leading-none">
-        {value}
-      </p>
-      {sub && (
-        <p className="mt-1.5 text-xs text-zinc-400 dark:text-zinc-500">{sub}</p>
-      )}
-    </div>
-  );
-}
+// Chart chrome — grid, axis tick and label all read from the data-vis
+// tokens so a chart doesn't go illegible the moment dark mode is on; these
+// used to be `#f4f4f5` / `#a1a1aa` literals baked for a white card only.
+// The grid is solid rather than dashed: a dashed hairline is what a
+// spreadsheet export looks like, and this dashboard isn't one.
+const GRID_STROKE = "var(--cv-grid)";
+const TICK_STYLE = { fontSize: 10, fill: "var(--cv-label)" };
+const TOOLTIP_STYLE = {
+  borderRadius: "12px",
+  border: "1px solid var(--cs-border-subtle)",
+  backgroundColor: "var(--cs-surface-1)",
+  color: "var(--cs-text-primary)",
+  fontSize: "12px",
+  padding: "8px 12px",
+  boxShadow: "var(--cs-shadow-float)",
+};
+/** Bar hover column — a soft wash in the chart's own accent rather than the
+   flat gray recharts ships by default, so the highlight still reads as
+   belonging to this card. */
+const cursorFill = (accent: string) => ({ fill: `color-mix(in oklab, ${accent} 10%, transparent)` });
 
 function ChartCard({
   title,
   children,
+  index = 0,
+  accent = "var(--cv-1)",
+  headline,
+  hero = false,
+  className,
 }: {
   title: string;
   children: React.ReactNode;
+  index?: number;
+  /** A CSS color driving this card's signature hue — echoed as a top edge
+     and a soft corner glow behind the plot, so each card reads as its own
+     instrument, not an interchangeable gray tile. Chrome only; never data
+     ink. */
+  accent?: string;
+  /** A big inline number beside the title — the hero total the chart below
+     it explains, the way a real analytics product leads with the figure
+     and uses the chart to justify it rather than making you read axes. */
+  headline?: React.ReactNode;
+  hero?: boolean;
+  className?: string;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
-      <h2 className="text-sm font-semibold text-foreground mb-5">{title}</h2>
-      {children}
-    </div>
+    <Reveal delay={index * 0.03} className={className}>
+      <Panel
+        className="relative overflow-hidden"
+        style={{
+          backgroundImage: `linear-gradient(90deg, ${accent}, color-mix(in oklab, ${accent} 15%, transparent)), radial-gradient(220px 140px at calc(100% + 40px) -40px, color-mix(in oklab, ${accent} ${hero ? 16 : 12}%, transparent), transparent 70%)`,
+          backgroundSize: "100% 3px, auto",
+          backgroundRepeat: "no-repeat, no-repeat",
+        }}
+      >
+        <div className="flex items-end justify-between gap-3 mb-5 relative">
+          <h2 className={hero ? "ui-heading text-foreground" : "ui-subheading text-foreground"}>{title}</h2>
+          {headline && (
+            <span
+              className={cn("ui-numeric font-semibold leading-none shrink-0", hero ? "text-2xl" : "text-base")}
+              style={{ color: accent }}
+            >
+              {headline}
+            </span>
+          )}
+        </div>
+        <div className="relative">{children}</div>
+      </Panel>
+    </Reveal>
   );
 }
 
-function EmptyState({ height = 176 }: { height?: number }) {
+function EmptyState({ height = 190 }: { height?: number }) {
   return (
     <div
-      className="flex items-center justify-center text-sm text-zinc-400"
-      style={{ height }}
+      className="flex items-center justify-center text-sm"
+      style={{ height, color: "var(--cs-text-tertiary)" }}
     >
       No data yet
     </div>
@@ -126,10 +165,7 @@ export default function AdminDashboardPage() {
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3"
-            >
+            <div key={i} className="ui-card p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <Skeleton className="h-3 w-24" />
                 <Skeleton className="h-3.5 w-3.5 rounded-sm" />
@@ -142,10 +178,7 @@ export default function AdminDashboardPage() {
         {[0, 1, 2, 3].map((i) => (
           <div key={i} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {[0, 1].map((j) => (
-              <div
-                key={j}
-                className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5"
-              >
+              <div key={j} className="ui-card p-5">
                 <Skeleton className="h-4 w-36 mb-5" />
                 <Skeleton className="h-44 w-full rounded-lg" />
               </div>
@@ -236,84 +269,178 @@ export default function AdminDashboardPage() {
     sales: c.totalSales,
   }));
 
+  // ── KPI sparklines — trailing real series, not fabricated ─────────────────
+  const usersTrend = userGrowthData.map((d) => d.Members + d.Chefs);
+  const recipesTrend = uploadTrendData.map((d) => d.Recipes);
+  const revenueTrend = (earnings?.salesGraph ?? []).map((d) => d.amount);
+  // Profit is a fixed cut of revenue, so its trend is the same series scaled
+  // by that rate — not a different fabricated shape, the same real curve.
+  const profitRateNum = parseFloat(earnings?.profitRate ?? "") / 100 || 0.2;
+  const profitTrend = revenueTrend.map((v) => v * profitRateNum);
+
   return (
     <>
       <title>Dashboard – Chefalio Admin</title>
 
       <div className="space-y-6 max-w-7xl mx-auto">
         {/* Page header */}
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">
+        <Reveal>
+          <h1 className="ui-title text-foreground">
             {greeting}, {firstName}
           </h1>
-          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
+          <p className="ui-caption mt-0.5" style={{ color: "var(--cs-text-secondary)" }}>
             Platform overview across all users and content.
           </p>
-        </div>
+        </Reveal>
 
         {/* ── Stat cards ─────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard
+            index={0}
             label="Total Users"
             value={(userAnalytics?.totalUsers ?? 0).toLocaleString()}
             sub={`${userAnalytics?.totalMembers ?? 0} members · ${userAnalytics?.totalChefs ?? 0} chefs`}
             icon={UsersIcon}
+            tone="info"
+            trend={usersTrend}
           />
           <StatCard
+            index={1}
             label="Total Recipes"
             value={(recipeAnalytics?.totalRecipes ?? 0).toLocaleString()}
             sub="Published"
             icon={ForkKnifeIcon}
+            tone="accent"
+            trend={recipesTrend}
           />
           <StatCard
+            index={2}
             label="Total Revenue"
             value={`$${(earnings?.totalRevenue ?? 0).toFixed(2)}`}
             sub={`${earnings?.totalOrders ?? 0} orders`}
             icon={CurrencyDollarIcon}
+            tone="success"
+            trend={revenueTrend}
           />
           <StatCard
+            index={3}
             label="Platform Profit"
             value={`$${(earnings?.totalProfit ?? 0).toFixed(2)}`}
             sub={earnings?.profitRate ?? "20% cut"}
             icon={BookOpenIcon}
+            tone="violet"
+            trend={profitTrend}
           />
         </div>
 
-        {/* ── Row 1: Users by role + Revenue over time ───────────────────── */}
+        {/* ── Hero: Revenue over time ──────────────────────────────────────
+             The one number the rest of the dashboard exists to explain gets
+             its own full-width row, a taller plot, and the total inline in
+             its header — the way a real analytics product leads with the
+             figure instead of making you hunt for it in a small multiple. */}
+        <ChartCard
+          title="Revenue Over Time"
+          accent="var(--cs-success-fg)"
+          headline={`$${(earnings?.totalRevenue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          hero
+        >
+          {(earnings?.salesGraph ?? []).length === 0 ? (
+            <EmptyState height={260} />
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart
+                data={earnings?.salesGraph ?? []}
+                margin={{ left: -20, right: 8 }}
+              >
+                <defs>
+                  <linearGradient
+                    id="revenueGrad"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor="var(--cs-success-fg)"
+                      stopOpacity={0.45}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--cs-success-fg)"
+                      stopOpacity={0}
+                    />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  stroke={GRID_STROKE}
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="date"
+                  tick={TICK_STYLE}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  tick={TICK_STYLE}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  contentStyle={TOOLTIP_STYLE}
+                  cursor={{ stroke: "var(--cs-success-fg)", strokeWidth: 1, strokeDasharray: "4 4" }}
+                  formatter={(val) => [`$${Number(val).toFixed(2)}`, "Revenue"]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="amount"
+                  stroke="var(--cs-success-fg)"
+                  strokeWidth={2.5}
+                  fill="url(#revenueGrad)"
+                  dot={false}
+                  activeDot={{ r: 5, strokeWidth: 2, stroke: "var(--cs-surface-1)", fill: "var(--cs-success-fg)" }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+        </ChartCard>
+
+        {/* ── Row: Users by role + New user registrations ─────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ChartCard title="Users by Role">
+          <ChartCard title="Users by Role" accent="var(--cv-1)">
             <div className="space-y-3">
               {roleBreakdown.map((r) => {
                 const pct = Math.round((r.value / totalForPct) * 100);
                 return (
                   <div key={r.label} className="flex items-center gap-3">
-                    <r.icon size={13} className="text-zinc-400 shrink-0" />
-                    <span className="text-xs text-zinc-500 w-14 shrink-0">
+                    <r.icon size={13} className="shrink-0" style={{ color: "var(--cs-text-tertiary)" }} />
+                    <span className="text-xs w-14 shrink-0" style={{ color: "var(--cs-text-secondary)" }}>
                       {r.label}
                     </span>
-                    <div className="flex-1 h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                    <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--cs-surface-3)" }}>
                       <div
                         className="h-full rounded-full bg-primary transition-all duration-500"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <span className="text-xs font-semibold text-foreground tabular-nums w-8 text-right">
+                    <span className="text-xs font-semibold text-foreground ui-numeric w-8 text-right">
                       {r.value}
                     </span>
                   </div>
                 );
               })}
             </div>
-            <div className="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800 grid grid-cols-3 gap-2">
+            <div className="mt-5 pt-4 grid grid-cols-3 gap-2" style={{ borderTop: "1px solid var(--cs-border-subtle)" }}>
               {roleBreakdown.map((r) => (
                 <div
                   key={r.label}
                   className="flex flex-col items-center gap-0.5 py-1"
                 >
-                  <span className="text-lg font-semibold text-foreground tabular-nums">
+                  <span className="text-lg font-semibold text-foreground ui-numeric">
                     {r.active}
                   </span>
-                  <span className="text-[10px] text-zinc-400 text-center leading-tight">
+                  <span className="text-[10px] text-center leading-tight" style={{ color: "var(--cs-text-tertiary)" }}>
                     Active {r.label}
                   </span>
                 </div>
@@ -321,114 +448,78 @@ export default function AdminDashboardPage() {
             </div>
           </ChartCard>
 
-          <ChartCard title="Revenue Over Time">
-            {(earnings?.salesGraph ?? []).length === 0 ? (
+          <ChartCard title="New User Registrations (Last 30 Days)" index={1} accent="var(--cv-2)">
+            {userGrowthData.length === 0 ? (
               <EmptyState />
             ) : (
-              <ResponsiveContainer width="100%" height={176}>
-                <AreaChart
-                  data={earnings?.salesGraph ?? []}
+              <ResponsiveContainer width="100%" height={190}>
+                <BarChart
+                  data={userGrowthData}
                   margin={{ left: -20, right: 8 }}
                 >
                   <defs>
-                    <linearGradient
-                      id="revenueGrad"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient id="memberBar" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--cv-1)" stopOpacity={0.95} />
                       <stop
-                        offset="5%"
-                        stopColor="#a7d129"
-                        stopOpacity={0.25}
+                        offset="100%"
+                        stopColor="var(--cv-1)"
+                        stopOpacity={0.6}
                       />
+                    </linearGradient>
+                    <linearGradient id="chefBar" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--cv-2)" stopOpacity={0.95} />
                       <stop
-                        offset="95%"
-                        stopColor="#a7d129"
-                        stopOpacity={0}
+                        offset="100%"
+                        stopColor="var(--cv-2)"
+                        stopOpacity={0.6}
                       />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#f4f4f5"
+                    stroke={GRID_STROKE}
                     vertical={false}
                   />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
+                    tick={{ fontSize: 9, fill: "var(--cv-label)" }}
                     tickLine={false}
                     axisLine={false}
+                    interval="preserveStartEnd"
                   />
                   <YAxis
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
+                    tick={TICK_STYLE}
                     tickLine={false}
                     axisLine={false}
+                    allowDecimals={false}
                   />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "8px",
-                      border: "1px solid #e4e4e7",
-                      fontSize: "12px",
-                    }}
-                    formatter={(val) => [`$${Number(val).toFixed(2)}`, "Revenue"]}
+                  <Tooltip contentStyle={TOOLTIP_STYLE} cursor={cursorFill("var(--cv-1)")} />
+                  <Legend
+                    wrapperStyle={{ fontSize: "11px", paddingTop: "8px", color: "var(--cs-text-secondary)" }}
                   />
-                  <Area
-                    type="monotone"
-                    dataKey="amount"
-                    stroke="#a7d129"
-                    strokeWidth={2}
-                    fill="url(#revenueGrad)"
+                  <Bar
+                    dataKey="Members"
+                    stackId="a"
+                    fill="url(#memberBar)"
+                    radius={[0, 0, 0, 0]}
                   />
-                </AreaChart>
+                  <Bar
+                    dataKey="Chefs"
+                    stackId="a"
+                    fill="url(#chefBar)"
+                    radius={[6, 6, 0, 0]}
+                  />
+                </BarChart>
               </ResponsiveContainer>
             )}
           </ChartCard>
         </div>
 
-        {/* ── Row 2: Top tags + Top selling cookbooks ─────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ChartCard title="Top Recipe Tags">
-            {(recipeAnalytics?.topTags ?? []).length === 0 ? (
-              <EmptyState height={140} />
-            ) : (
-              <ResponsiveContainer width="100%" height={140}>
-                <BarChart
-                  data={recipeAnalytics?.topTags ?? []}
-                  margin={{ left: -20, right: 8 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#f4f4f5"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="tag"
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
-                    tickLine={false}
-                    axisLine={false}
-                    allowDecimals={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "8px",
-                      border: "1px solid #e4e4e7",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Bar dataKey="count" fill="#a7d129" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </ChartCard>
-
-          <ChartCard title="Top Selling Cookbooks">
+        {/* ── Leaderboard row: three ranked lists side by side ──────────────
+             Grouping the "top N" list-style cards into one three-across row
+             — instead of pairing each with an unrelated chart — is what
+             breaks the "every row is two identical gray boxes" monotony. */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <ChartCard title="Top Selling Cookbooks" accent="var(--cv-3)">
             {(earnings?.top3MostSoldCookbooks ?? []).length === 0 ? (
               <EmptyState height={140} />
             ) : (
@@ -436,12 +527,12 @@ export default function AdminDashboardPage() {
                 {earnings?.top3MostSoldCookbooks.map((cb, i) => (
                   <div
                     key={cb.cookbookId}
-                    className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                    className="flex items-center gap-3 px-2 py-2.5 rounded-lg transition-colors duration-150 hover:bg-(--cs-hover)"
                   >
-                    <span className="text-xs font-bold text-zinc-400 w-4 shrink-0 text-center">
+                    <span className="text-xs font-bold w-4 shrink-0 text-center" style={{ color: "var(--cs-text-tertiary)" }}>
                       {i + 1}
                     </span>
-                    <div className="relative h-9 w-12 rounded-md overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
+                    <div className="relative h-9 w-12 rounded-md overflow-hidden shrink-0" style={{ backgroundColor: "var(--cs-surface-3)" }}>
                       <Image
                         src={cb.cookbookImage}
                         alt={cb.cookbookTitle}
@@ -454,9 +545,9 @@ export default function AdminDashboardPage() {
                       <p className="text-sm font-medium text-foreground truncate">
                         {cb.cookbookTitle}
                       </p>
-                      <p className="text-xs text-zinc-400">{cb.totalSold} sold</p>
+                      <p className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>{cb.totalSold} sold</p>
                     </div>
-                    <span className="text-xs font-semibold text-primary tabular-nums">
+                    <span className="text-xs font-semibold text-primary ui-numeric">
                       ${cb.totalRevenue.toFixed(2)}
                     </span>
                   </div>
@@ -464,178 +555,8 @@ export default function AdminDashboardPage() {
               </div>
             )}
           </ChartCard>
-        </div>
 
-        {/* ── Row 3: New user growth + Recipe difficulty mix ──────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ChartCard title="New User Registrations (Last 30 Days)">
-            {userGrowthData.length === 0 ? (
-              <EmptyState />
-            ) : (
-              <ResponsiveContainer width="100%" height={176}>
-                <BarChart
-                  data={userGrowthData}
-                  margin={{ left: -20, right: 8 }}
-                >
-                  <defs>
-                    <linearGradient id="memberBar" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#a7d129" stopOpacity={0.9} />
-                      <stop
-                        offset="100%"
-                        stopColor="#a7d129"
-                        stopOpacity={0.5}
-                      />
-                    </linearGradient>
-                    <linearGradient id="chefBar" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#6366f1" stopOpacity={0.9} />
-                      <stop
-                        offset="100%"
-                        stopColor="#6366f1"
-                        stopOpacity={0.5}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#f4f4f5"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 9, fill: "#a1a1aa" }}
-                    tickLine={false}
-                    axisLine={false}
-                    interval="preserveStartEnd"
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
-                    tickLine={false}
-                    axisLine={false}
-                    allowDecimals={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "8px",
-                      border: "1px solid #e4e4e7",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Legend
-                    wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }}
-                  />
-                  <Bar
-                    dataKey="Members"
-                    stackId="a"
-                    fill="url(#memberBar)"
-                    radius={[0, 0, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="Chefs"
-                    stackId="a"
-                    fill="url(#chefBar)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </ChartCard>
-
-          <ChartCard title="Recipe Difficulty Distribution">
-            {difficultyData.length === 0 ? (
-              <EmptyState />
-            ) : (
-              <ResponsiveContainer width="100%" height={176}>
-                <PieChart>
-                  <Pie
-                    data={difficultyData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={52}
-                    outerRadius={76}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {difficultyData.map((entry, i) => (
-                      <Cell
-                        key={entry.name}
-                        fill={
-                          entry.fill ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length]
-                        }
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "8px",
-                      border: "1px solid #e4e4e7",
-                      fontSize: "12px",
-                    }}
-                    formatter={(val, name) => [val, name]}
-                  />
-                  <Legend
-                    wrapperStyle={{ fontSize: "11px" }}
-                    formatter={(value) => (
-                      <span className="text-xs text-zinc-500">{value}</span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
-          </ChartCard>
-        </div>
-
-        {/* ── Row 4: Top engaged recipes + Top recipe authors ─────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ChartCard title="Top Engaged Recipes">
-            {topEngagedData.length === 0 ? (
-              <EmptyState />
-            ) : (
-              <ResponsiveContainer width="100%" height={176}>
-                <BarChart
-                  data={topEngagedData}
-                  layout="vertical"
-                  margin={{ left: 8, right: 16 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#f4f4f5"
-                    horizontal={false}
-                  />
-                  <XAxis
-                    type="number"
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
-                    tickLine={false}
-                    axisLine={false}
-                    allowDecimals={false}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
-                    tickLine={false}
-                    axisLine={false}
-                    width={90}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "8px",
-                      border: "1px solid #e4e4e7",
-                      fontSize: "12px",
-                    }}
-                    formatter={(val, key) => [val, key === "score" ? "Engagement Score" : key]}
-                  />
-                  <Bar
-                    dataKey="score"
-                    fill="#a7d129"
-                    radius={[0, 4, 4, 0]}
-                    name="Engagement Score"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </ChartCard>
-
-          <ChartCard title="Top Recipe Authors">
+          <ChartCard title="Top Recipe Authors" index={1} accent="var(--primary)">
             {(recipeAnalytics?.top3MostUploadedAuthors ?? []).length === 0 ? (
               <EmptyState />
             ) : (
@@ -656,15 +577,15 @@ export default function AdminDashboardPage() {
                             <p className="text-sm font-medium text-foreground truncate">
                               {author.fullName}
                             </p>
-                            <p className="text-xs text-zinc-400">
+                            <p className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>
                               @{author.username}
                             </p>
                           </div>
-                          <span className="text-xs font-semibold text-primary tabular-nums shrink-0">
+                          <span className="text-xs font-semibold text-primary ui-numeric shrink-0">
                             {author.count} recipes
                           </span>
                         </div>
-                        <div className="h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                        <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--cs-surface-3)" }}>
                           <div
                             className="h-full rounded-full bg-primary/70 transition-all duration-500"
                             style={{ width: `${pct}%` }}
@@ -677,15 +598,177 @@ export default function AdminDashboardPage() {
               </div>
             )}
           </ChartCard>
+
+          <ChartCard title="Top Chefs by Revenue" index={2} accent="var(--cv-6)">
+            {topChefsBarData.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <div className="space-y-1">
+                {topChefsBarData.slice(0, 5).map((c, i) => {
+                  const maxRevenue = topChefsBarData[0]?.revenue || 1;
+                  const pct = Math.round((c.revenue / maxRevenue) * 100);
+                  return (
+                    <div key={c.name} className="px-2 py-2.5">
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="text-sm font-medium text-foreground truncate">
+                          {i + 1}. {c.name}
+                        </span>
+                        <span className="text-xs font-semibold ui-numeric shrink-0" style={{ color: "var(--cv-6)" }}>
+                          ${c.revenue.toFixed(0)}
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--cs-surface-3)" }}>
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{ width: `${pct}%`, backgroundColor: "var(--cv-6)" }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </ChartCard>
         </div>
 
-        {/* ── Row 5: Recipe upload trend + Top chefs by revenue ───────────── */}
+        {/* ── Row: Recipe difficulty mix + Top recipe tags ─────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ChartCard title="Recipe Upload Trend (Last 30 Days)">
+          <ChartCard title="Top Recipe Tags" accent="var(--cv-4)">
+            {(recipeAnalytics?.topTags ?? []).length === 0 ? (
+              <EmptyState height={190} />
+            ) : (
+              <ResponsiveContainer width="100%" height={190}>
+                <BarChart
+                  data={recipeAnalytics?.topTags ?? []}
+                  margin={{ left: -20, right: 8 }}
+                >
+                  <defs>
+                    <linearGradient id="tagsGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--cv-4)" stopOpacity={0.95} />
+                      <stop offset="100%" stopColor="var(--cv-4)" stopOpacity={0.55} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    stroke={GRID_STROKE}
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="tag"
+                    tick={TICK_STYLE}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    tick={TICK_STYLE}
+                    tickLine={false}
+                    axisLine={false}
+                    allowDecimals={false}
+                  />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} cursor={cursorFill("var(--cv-4)")} />
+                  <Bar dataKey="count" fill="url(#tagsGrad)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
+
+          <ChartCard title="Recipe Difficulty Distribution" index={1} accent="var(--cs-warning-fg)">
+            {difficultyData.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <ResponsiveContainer width="100%" height={190}>
+                <PieChart>
+                  <Pie
+                    data={difficultyData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={52}
+                    outerRadius={76}
+                    paddingAngle={3}
+                    dataKey="value"
+                  >
+                    {difficultyData.map((entry, i) => (
+                      <Cell
+                        key={entry.name}
+                        fill={
+                          entry.fill ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length]
+                        }
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(val, name) => [val, name]}
+                  />
+                  <Legend
+                    wrapperStyle={{ fontSize: "11px" }}
+                    formatter={(value) => (
+                      <span className="text-xs" style={{ color: "var(--cs-text-secondary)" }}>{value}</span>
+                    )}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
+        </div>
+
+        {/* ── Row: Top engaged recipes + Recipe upload trend ───────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ChartCard title="Top Engaged Recipes" accent="var(--cv-6)">
+            {topEngagedData.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <ResponsiveContainer width="100%" height={190}>
+                <BarChart
+                  data={topEngagedData}
+                  layout="vertical"
+                  margin={{ left: 8, right: 16 }}
+                >
+                  <defs>
+                    <linearGradient id="engagedGrad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="var(--cv-6)" stopOpacity={0.55} />
+                      <stop offset="100%" stopColor="var(--cv-6)" stopOpacity={0.95} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    stroke={GRID_STROKE}
+                    horizontal={false}
+                  />
+                  <XAxis
+                    type="number"
+                    tick={TICK_STYLE}
+                    tickLine={false}
+                    axisLine={false}
+                    allowDecimals={false}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={TICK_STYLE}
+                    tickLine={false}
+                    axisLine={false}
+                    width={90}
+                  />
+                  <Tooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    cursor={cursorFill("var(--cv-6)")}
+                    formatter={(val, key) => [val, key === "score" ? "Engagement Score" : key]}
+                  />
+                  <Bar
+                    dataKey="score"
+                    fill="url(#engagedGrad)"
+                    radius={[0, 6, 6, 0]}
+                    name="Engagement Score"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
+
+          <ChartCard title="Recipe Upload Trend (Last 30 Days)" index={1} accent="var(--cv-2)">
             {uploadTrendData.length === 0 ? (
               <EmptyState />
             ) : (
-              <ResponsiveContainer width="100%" height={176}>
+              <ResponsiveContainer width="100%" height={190}>
                 <AreaChart
                   data={uploadTrendData}
                   margin={{ left: -20, right: 8 }}
@@ -700,150 +783,96 @@ export default function AdminDashboardPage() {
                     >
                       <stop
                         offset="5%"
-                        stopColor="#6366f1"
-                        stopOpacity={0.25}
+                        stopColor="var(--cv-2)"
+                        stopOpacity={0.4}
                       />
                       <stop
                         offset="95%"
-                        stopColor="#6366f1"
+                        stopColor="var(--cv-2)"
                         stopOpacity={0}
                       />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#f4f4f5"
+                    stroke={GRID_STROKE}
                     vertical={false}
                   />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 9, fill: "#a1a1aa" }}
+                    tick={{ fontSize: 9, fill: "var(--cv-label)" }}
                     tickLine={false}
                     axisLine={false}
                     interval="preserveStartEnd"
                   />
                   <YAxis
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
+                    tick={TICK_STYLE}
                     tickLine={false}
                     axisLine={false}
                     allowDecimals={false}
                   />
                   <Tooltip
-                    contentStyle={{
-                      borderRadius: "8px",
-                      border: "1px solid #e4e4e7",
-                      fontSize: "12px",
-                    }}
+                    contentStyle={TOOLTIP_STYLE}
+                    cursor={{ stroke: "var(--cv-2)", strokeWidth: 1, strokeDasharray: "4 4" }}
                     formatter={(val) => [val, "Recipes"]}
                   />
                   <Area
                     type="monotone"
                     dataKey="Recipes"
-                    stroke="#6366f1"
-                    strokeWidth={2}
+                    stroke="var(--cv-2)"
+                    strokeWidth={2.5}
                     fill="url(#uploadGrad)"
+                    dot={false}
+                    activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--cs-surface-1)", fill: "var(--cv-2)" }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             )}
           </ChartCard>
-
-          <ChartCard title="Top Chefs by Revenue">
-            {topChefsBarData.length === 0 ? (
-              <EmptyState />
-            ) : (
-              <ResponsiveContainer width="100%" height={176}>
-                <BarChart
-                  data={topChefsBarData}
-                  layout="vertical"
-                  margin={{ left: 8, right: 24 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#f4f4f5"
-                    horizontal={false}
-                  />
-                  <XAxis
-                    type="number"
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(v) => `$${v}`}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
-                    tickLine={false}
-                    axisLine={false}
-                    width={64}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "8px",
-                      border: "1px solid #e4e4e7",
-                      fontSize: "12px",
-                    }}
-                    formatter={(val, key) => [
-                      key === "revenue"
-                        ? `$${Number(val).toFixed(2)}`
-                        : val,
-                      key === "revenue" ? "Revenue" : "Sales",
-                    ]}
-                  />
-                  <Bar
-                    dataKey="revenue"
-                    fill="#f59e0b"
-                    radius={[0, 4, 4, 0]}
-                    name="Revenue"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </ChartCard>
         </div>
 
-        {/* ── Row 6: Orders per day + Recipe love/save breakdown ──────────── */}
+        {/* ── Row: Orders per day + Recipe love/save breakdown ─────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ChartCard title="Orders Per Day">
+          <ChartCard title="Orders Per Day" accent="var(--cv-5)">
             {(earnings?.salesGraph ?? []).length === 0 ? (
               <EmptyState />
             ) : (
-              <ResponsiveContainer width="100%" height={176}>
+              <ResponsiveContainer width="100%" height={190}>
                 <BarChart
                   data={earnings?.salesGraph ?? []}
                   margin={{ left: -20, right: 8 }}
                 >
+                  <defs>
+                    <linearGradient id="ordersGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--cv-5)" stopOpacity={0.95} />
+                      <stop offset="100%" stopColor="var(--cv-5)" stopOpacity={0.55} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#f4f4f5"
+                    stroke={GRID_STROKE}
                     vertical={false}
                   />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 9, fill: "#a1a1aa" }}
+                    tick={{ fontSize: 9, fill: "var(--cv-label)" }}
                     tickLine={false}
                     axisLine={false}
                     interval="preserveStartEnd"
                   />
                   <YAxis
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
+                    tick={TICK_STYLE}
                     tickLine={false}
                     axisLine={false}
                     allowDecimals={false}
                   />
                   <Tooltip
-                    contentStyle={{
-                      borderRadius: "8px",
-                      border: "1px solid #e4e4e7",
-                      fontSize: "12px",
-                    }}
+                    contentStyle={TOOLTIP_STYLE}
+                    cursor={cursorFill("var(--cv-5)")}
                     formatter={(val) => [val, "Orders"]}
                   />
                   <Bar
                     dataKey="orders"
-                    fill="#14b8a6"
-                    radius={[4, 4, 0, 0]}
+                    fill="url(#ordersGrad)"
+                    radius={[6, 6, 0, 0]}
                     name="Orders"
                   />
                 </BarChart>
@@ -851,11 +880,11 @@ export default function AdminDashboardPage() {
             )}
           </ChartCard>
 
-          <ChartCard title="Top Loved vs Saved Recipes">
+          <ChartCard title="Top Loved vs Saved Recipes" index={1} accent="var(--cs-love)">
             {(interactions?.topLoved ?? []).length === 0 ? (
               <EmptyState />
             ) : (
-              <ResponsiveContainer width="100%" height={176}>
+              <ResponsiveContainer width="100%" height={190}>
                 <BarChart
                   data={(interactions?.topLoved ?? []).map((r) => ({
                     name:
@@ -868,32 +897,25 @@ export default function AdminDashboardPage() {
                   margin={{ left: -20, right: 8 }}
                 >
                   <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#f4f4f5"
+                    stroke={GRID_STROKE}
                     vertical={false}
                   />
                   <XAxis
                     dataKey="name"
-                    tick={{ fontSize: 9, fill: "#a1a1aa" }}
+                    tick={{ fontSize: 9, fill: "var(--cv-label)" }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 10, fill: "#a1a1aa" }}
+                    tick={TICK_STYLE}
                     tickLine={false}
                     axisLine={false}
                     allowDecimals={false}
                   />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "8px",
-                      border: "1px solid #e4e4e7",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "6px" }} />
-                  <Bar dataKey="Loves" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Saves" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} cursor={cursorFill("var(--cs-love)")} />
+                  <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "6px", color: "var(--cs-text-secondary)" }} />
+                  <Bar dataKey="Loves" fill="var(--cs-love)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="Saves" fill="var(--cv-2)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}

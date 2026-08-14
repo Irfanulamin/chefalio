@@ -101,7 +101,7 @@ export function CookbookCard({
       <div className="flex flex-1 flex-col gap-2 p-4">
         {showAuthor && cookbook.authorId && (
           <Link
-            href={`/chefs/${cookbook.authorId._id}`}
+            href={`/chefs/${cookbook.authorId.username}`}
             className="above-stretched-link focus-ring flex w-fit items-center gap-2 rounded-md"
           >
             <SafeImage

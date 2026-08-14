@@ -8,12 +8,13 @@ import {
   ClockIcon,
   XCircleIcon,
 } from "@phosphor-icons/react/dist/ssr"
+import { StatusPill, type StatusTone } from "@/components/Admin/AdminUI"
 import type { AdminOrder } from "@/types/admin.type"
 
-const STATUS_STYLES: Record<string, string> = {
-  paid: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  pending: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  failed: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
+const STATUS_TONE: Record<string, StatusTone> = {
+  paid: "success",
+  pending: "warning",
+  failed: "danger",
 }
 
 const STATUS_ICONS: Record<string, React.ElementType> = {
@@ -27,7 +28,7 @@ export function createAdminOrderColumns(): ColumnDef<AdminOrder, unknown>[] {
     {
       id: "cookbook",
       header: () => (
-        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
+        <span className="ui-micro font-medium uppercase tracking-wide" style={{ color: "var(--cs-text-tertiary)" }}>
           Cookbook
         </span>
       ),
@@ -35,7 +36,7 @@ export function createAdminOrderColumns(): ColumnDef<AdminOrder, unknown>[] {
         const o = row.original
         return (
           <div className="flex items-center gap-3">
-            <div className="relative h-10 w-10 rounded-md overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
+            <div className="relative h-10 w-10 rounded-md overflow-hidden shrink-0" style={{ backgroundColor: "var(--cs-surface-3)" }}>
               {o.cookbookImage && (
                 <Image src={o.cookbookImage} alt={o.cookbookTitle} fill className="object-cover" sizes="40px" />
               )}
@@ -49,13 +50,14 @@ export function createAdminOrderColumns(): ColumnDef<AdminOrder, unknown>[] {
     },
     {
       id: "customer",
+      meta: { className: "hidden sm:table-cell" },
       header: () => (
-        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wide hidden sm:block">
+        <span className="ui-micro font-medium uppercase tracking-wide" style={{ color: "var(--cs-text-tertiary)" }}>
           Customer
         </span>
       ),
       cell: ({ row }) => (
-        <span className="text-xs text-zinc-500 truncate max-w-48 hidden sm:block">
+        <span className="text-xs truncate max-w-48 block" style={{ color: "var(--cs-text-secondary)" }}>
           {row.original.receiptEmail}
         </span>
       ),
@@ -64,13 +66,10 @@ export function createAdminOrderColumns(): ColumnDef<AdminOrder, unknown>[] {
       id: "amount",
       accessorKey: "price",
       enableSorting: true,
-      header: ({ column }) => (
-        <div className="hidden md:block">
-          <SortableHeader column={column} title="Amount" />
-        </div>
-      ),
+      meta: { className: "hidden md:table-cell" },
+      header: ({ column }) => <SortableHeader column={column} title="Amount" />,
       cell: ({ row }) => (
-        <span className="hidden md:block text-sm font-medium text-foreground tabular-nums">
+        <span className="text-sm font-medium text-foreground tabular-nums">
           ${row.original.price.toFixed(2)}
         </span>
       ),
@@ -78,20 +77,16 @@ export function createAdminOrderColumns(): ColumnDef<AdminOrder, unknown>[] {
     {
       id: "status",
       header: () => (
-        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
+        <span className="ui-micro font-medium uppercase tracking-wide" style={{ color: "var(--cs-text-tertiary)" }}>
           Status
         </span>
       ),
       cell: ({ row }) => {
         const s = row.original.paymentStatus
-        const Icon = STATUS_ICONS[s] ?? ClockIcon
         return (
-          <span
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[s] ?? "bg-zinc-100 text-zinc-500"}`}
-          >
-            <Icon size={11} weight="fill" />
+          <StatusPill tone={STATUS_TONE[s] ?? "neutral"} icon={STATUS_ICONS[s] ?? ClockIcon}>
             {s}
-          </span>
+          </StatusPill>
         )
       },
     },
@@ -99,13 +94,10 @@ export function createAdminOrderColumns(): ColumnDef<AdminOrder, unknown>[] {
       id: "date",
       accessorFn: (row) => new Date(row.createdAt).getTime(),
       enableSorting: true,
-      header: ({ column }) => (
-        <div className="hidden lg:block">
-          <SortableHeader column={column} title="Date" />
-        </div>
-      ),
+      meta: { className: "hidden lg:table-cell" },
+      header: ({ column }) => <SortableHeader column={column} title="Date" />,
       cell: ({ row }) => (
-        <span className="hidden lg:block text-xs text-zinc-400 tabular-nums">
+        <span className="text-xs ui-numeric" style={{ color: "var(--cs-text-tertiary)" }}>
           {new Date(row.original.createdAt).toLocaleDateString("en-US", {
             year: "numeric",
             month: "short",

@@ -134,7 +134,13 @@ export const ProfileDropdown = () => {
   const isChef = profile?.role === "chef";
 
   return (
-    <DropdownMenu>
+    // `modal={false}`: Radix's default modal mode locks body scroll while
+    // the menu is open, which hides the scrollbar and shifts the page
+    // width by its size — a jump that has nothing to do with this being a
+    // simple navigation menu rather than a form. Non-modal keeps outside
+    // scroll and pointer interaction alive and closes on outside click same
+    // as before.
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"

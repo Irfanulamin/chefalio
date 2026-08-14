@@ -328,21 +328,28 @@ export function DataTable<TData>({
                 >
                   {fc.options.map((opt) => {
                     const isActive = (filterValues[fc.key] ?? "") === opt.value
+                    // `activeClassName` names itself for the selected state —
+                    // it used to land on the button unconditionally, so an
+                    // unselected colored option showed the color's
+                    // background with the *inactive* gray text on top of
+                    // it, which is what made Active/Inactive unreadable.
                     return (
                       <button
                         key={opt.value}
                         onClick={() => onFilterChange?.(fc.key, opt.value)}
                         className={cn(
                           "px-3 h-7 text-xs font-medium rounded-lg transition-all duration-150 active:scale-[0.97]",
-                          opt.activeClassName,
+                          isActive && opt.activeClassName,
                         )}
                         style={
                           isActive
-                            ? {
-                                backgroundColor: "var(--cs-surface-1)",
-                                color: "var(--cs-text-primary)",
-                                boxShadow: "var(--cs-shadow-chip)",
-                              }
+                            ? isActive && opt.activeClassName
+                              ? undefined
+                              : {
+                                  backgroundColor: "var(--cs-surface-1)",
+                                  color: "var(--cs-text-primary)",
+                                  boxShadow: "var(--cs-shadow-chip)",
+                                }
                             : { color: "var(--cs-text-secondary)" }
                         }
                       >
@@ -371,15 +378,17 @@ export function DataTable<TData>({
                       onClick={() => onFilterChange?.(fc.key, opt.value)}
                       className={cn(
                         "px-3 h-7 text-xs font-medium rounded-lg whitespace-nowrap transition-all duration-150 active:scale-[0.97]",
-                        opt.activeClassName,
+                        isActive && opt.activeClassName,
                       )}
                       style={
                         isActive
-                          ? {
-                              backgroundColor: "var(--cs-surface-1)",
-                              color: "var(--cs-text-primary)",
-                              boxShadow: "var(--cs-shadow-chip)",
-                            }
+                          ? isActive && opt.activeClassName
+                            ? undefined
+                            : {
+                                backgroundColor: "var(--cs-surface-1)",
+                                color: "var(--cs-text-primary)",
+                                boxShadow: "var(--cs-shadow-chip)",
+                              }
                           : { color: "var(--cs-text-secondary)" }
                       }
                     >

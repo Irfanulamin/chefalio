@@ -156,6 +156,14 @@ body {
   --cs-info-fg: #395a91;
   --cs-info-edge: rgba(57, 90, 145, 0.22);
 
+  /* A fifth status step for admin consoles that need more than four KPI
+     hues before anything repeats. Derived from --cv-4 via color-mix rather
+     than a hand-picked hex, so it re-steps for dark mode automatically
+     the same way --cv-4 itself does — one definition, both themes. */
+  --cs-violet-bg: color-mix(in oklab, var(--cv-4) 12%, var(--cs-surface-2));
+  --cs-violet-fg: var(--cv-4);
+  --cs-violet-edge: color-mix(in oklab, var(--cv-4) 30%, transparent);
+
   /* "Loved" is affection, not an error — it gets its own hue so it never
      reads as the danger state sitting next to it. */
   --cs-love: #d9455f;
@@ -1108,6 +1116,12 @@ body:has(.studio-sheet) [data-slot="sheet-overlay"] {
   background-color: var(--cs-info-bg);
   color: var(--cs-info-fg);
   border-color: var(--cs-info-edge);
+}
+
+.ui-status[data-tone="violet"] {
+  background-color: var(--cs-violet-bg);
+  color: var(--cs-violet-fg);
+  border-color: var(--cs-violet-edge);
 }
 
 .ui-status[data-tone="neutral"] {

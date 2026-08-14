@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { GridLoader } from "../ui/GridLoading";
 
-type AllowedRole = "user" | "chef" | "admin";
+export type AllowedRole = "user" | "chef" | "admin";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;

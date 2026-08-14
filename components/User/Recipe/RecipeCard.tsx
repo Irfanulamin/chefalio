@@ -4,7 +4,6 @@ import type { Recipe, RecipeStats } from "@/types/recipes.type";
 import { useToggleLove, useToggleSave } from "@/hooks/useRecipe";
 import { difficultyDisplay, initialsOf } from "@/lib/recipe-display";
 import { EASE, SPRING } from "@/lib/motion";
-import { StatusPill } from "@/components/User/shared/StatusPill";
 import { BookmarkSimpleIcon, HeartIcon } from "@phosphor-icons/react/dist/ssr";
 import { motion, useReducedMotion } from "framer-motion";
 import { SafeImage } from "@/components/common/SafeImage";
@@ -146,10 +145,6 @@ export const RecipeCard = memo(
               </div>
             }
           />
-
-          <StatusPill tone={diff.tone} overMedia className="absolute right-2.5 top-2.5">
-            {diff.label}
-          </StatusPill>
         </div>
 
         <div className="flex flex-1 flex-col gap-2 p-4">
@@ -157,7 +152,7 @@ export const RecipeCard = memo(
               else — a card is one destination, but the chef's name has
               always been a second one. */}
           <Link
-            href={`${chefPath}/${recipe.authorId._id}`}
+            href={`${chefPath}/${recipe.authorId.username}`}
             className="above-stretched-link focus-ring flex w-fit items-center gap-2 rounded-md"
           >
             <SafeImage
@@ -206,22 +201,35 @@ export const RecipeCard = memo(
             </p>
           )}
 
-          {recipe.tags.length > 0 && (
-            <ul className="flex flex-wrap gap-1.5">
-              {recipe.tags.slice(0, 2).map((tag) => (
-                <li
-                  key={tag}
-                  className="ui-micro rounded-full px-2 py-0.5 capitalize"
-                  style={{
-                    backgroundColor: "var(--cs-surface-3)",
-                    color: "var(--cs-text-secondary)",
-                  }}
-                >
-                  {tag}
-                </li>
-              ))}
-            </ul>
-          )}
+          {/* Difficulty reads as a fact about the recipe, not a shouty
+             sticker — a dot the size of a punctuation mark plus the word,
+             sized and weighted to sit level with the tags beside it
+             rather than announcing itself as a separate colored pill. */}
+          <ul className="flex flex-wrap items-center gap-1.5">
+            <li
+              className="ui-micro flex items-center gap-1.5 font-medium"
+              style={{ color: `var(--cs-${diff.tone}-fg)` }}
+            >
+              <span
+                aria-hidden
+                className="h-1.5 w-1.5 shrink-0 rounded-full"
+                style={{ backgroundColor: `var(--cs-${diff.tone}-fg)` }}
+              />
+              {diff.label}
+            </li>
+            {recipe.tags.slice(0, 2).map((tag) => (
+              <li
+                key={tag}
+                className="ui-micro rounded-full px-2 py-0.5 capitalize"
+                style={{
+                  backgroundColor: "var(--cs-surface-3)",
+                  color: "var(--cs-text-secondary)",
+                }}
+              >
+                {tag}
+              </li>
+            ))}
+          </ul>
 
           <div
             className="mt-auto flex items-center gap-4 pt-3"

@@ -5,6 +5,7 @@ import { useAdminOrdersTable } from "@/hooks/swr/use-admin-orders-table"
 import { DataTable, type FilterConfig } from "@/components/ui/data-table"
 import { createAdminOrderColumns } from "./columns"
 import { ShoppingCartSimpleIcon } from "@phosphor-icons/react/dist/ssr"
+import { PageHeader } from "@/components/Admin/AdminUI"
 
 const STATUS_FILTER: FilterConfig = {
   key: "status",
@@ -45,13 +46,12 @@ export default function AdminOrdersPage() {
       <title>Orders – Chefalio Admin</title>
 
       <div className="space-y-4 max-w-7xl mx-auto">
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">Orders</h1>
-          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
-            View and track all cookbook purchases ·{" "}
-            {pagination?.total ?? 0} total
-          </p>
-        </div>
+        <PageHeader
+          title="Orders"
+          description={`View and track all cookbook purchases · ${pagination?.total ?? 0} total`}
+          icon={ShoppingCartSimpleIcon}
+          iconTone="success"
+        />
 
         <DataTable
           columns={columns}

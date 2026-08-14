@@ -39,9 +39,10 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-black/60 backdrop-blur-sm duration-150 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 isolate z-50 backdrop-blur-sm duration-150 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className,
       )}
+      style={{ backgroundColor: "var(--cs-scrim)" }}
       {...props}
     />
   );
@@ -61,15 +62,24 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] bg-white dark:bg-zinc-900 -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl p-6 text-sm text-popover-foreground ring-1 ring-zinc-200 dark:ring-zinc-800 duration-150 outline-none sm:max-w-lg data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 shadow-2xl",
+          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl p-6 text-sm duration-150 outline-none sm:max-w-lg data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className,
         )}
+        style={{
+          backgroundColor: "var(--cs-surface-1)",
+          color: "var(--cs-text-primary)",
+          border: "1px solid var(--cs-border-subtle)",
+          boxShadow: "var(--cs-shadow-float)",
+        }}
         {...props}
       >
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
-            <button className="absolute top-4 right-4 rounded-lg p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+            <button
+              className="focus-ring absolute top-4 right-4 rounded-lg p-1.5 transition-[background-color,color,transform] duration-150 active:scale-90 hover:bg-(--cs-hover)"
+              style={{ color: "var(--cs-text-tertiary)" }}
+            >
               <XIcon size={16} />
             </button>
           </DialogPrimitive.Close>
@@ -123,7 +133,8 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-base leading-none font-medium", className)}
+      className={cn("ui-subheading leading-none", className)}
+      style={{ color: "var(--cs-text-primary)" }}
       {...props}
     />
   );
@@ -137,9 +148,10 @@ function DialogDescription({
     <DialogPrimitive.Description
       data-slot="dialog-description"
       className={cn(
-        "text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
+        "ui-caption *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
         className,
       )}
+      style={{ color: "var(--cs-text-secondary)" }}
       {...props}
     />
   );

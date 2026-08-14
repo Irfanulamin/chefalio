@@ -24,17 +24,13 @@ import {
   IdentificationCardIcon,
   GlobeIcon,
   PlusIcon,
-  ArrowRightIcon,
-  ArrowLeftIcon,
   PaperPlaneTiltIcon,
   CircleNotchIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { motion, useReducedMotion } from "framer-motion";
 import { useProfile } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/User/shared/PageHeader";
 import { StatusPill } from "@/components/User/shared/StatusPill";
-import { EASE, SPRING } from "@/lib/motion";
 
 interface FormValues {
   fullName: string;
@@ -71,98 +67,6 @@ const KYC_LABELS: Record<KycType, string> = {
   nid: "National ID",
   driving_license: "Driving licence",
 };
-
-const STEPS = ["About you", "Identity", "Online presence"] as const;
-
-/* ── Step indicator ───────────────────────────────────────────────────
-   The connector fills rather than switching colour, so progress is
-   something that visibly *advances* rather than three lights changing
-   state. It's the one piece of choreography on the page and it earns its
-   place: this is a three-step form and "how much is left" is the
-   question people ask at every step. */
-
-function StepIndicator({ current }: { current: number }) {
-  const reduce = useReducedMotion();
-
-  return (
-    <ol className="mb-8 flex items-start" aria-label="Application progress">
-      {STEPS.map((label, i) => {
-        const step = i + 1;
-        const done = step < current;
-        const active = step === current;
-
-        return (
-          <li
-            key={label}
-            className="flex flex-1 items-center last:flex-none"
-            aria-current={active ? "step" : undefined}
-          >
-            <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
-              <motion.span
-                className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
-                animate={
-                  reduce ? undefined : { scale: active || done ? [1, 1.12, 1] : 1 }
-                }
-                transition={{ duration: 0.28, times: [0, 0.45, 1], ease: EASE }}
-                style={{
-                  backgroundColor: done
-                    ? "var(--cs-check-fill)"
-                    : active
-                      ? "var(--cs-accent-muted)"
-                      : "var(--cs-surface-3)",
-                  color: done
-                    ? "var(--cs-check-mark)"
-                    : active
-                      ? "var(--cs-accent-text)"
-                      : "var(--cs-text-tertiary)",
-                  border: `1px solid ${
-                    done
-                      ? "var(--cs-check-edge)"
-                      : active
-                        ? "color-mix(in oklab, var(--primary) 45%, transparent)"
-                        : "var(--cs-border-subtle)"
-                  }`,
-                }}
-              >
-                {done ? <CheckIcon size={15} weight="bold" /> : step}
-              </motion.span>
-              <span
-                className="ui-micro hidden text-center font-medium sm:block"
-                style={{
-                  color: active
-                    ? "var(--cs-text-primary)"
-                    : "var(--cs-text-tertiary)",
-                }}
-              >
-                {label}
-              </span>
-            </div>
-
-            {i < STEPS.length - 1 && (
-              <div
-                className="mx-1 mb-5 h-0.5 flex-1 overflow-hidden rounded-full"
-                style={{ backgroundColor: "var(--cs-border-subtle)" }}
-              >
-                <motion.div
-                  className="h-full rounded-full"
-                  /* Scales from the left, so progress fills forwards
-                     rather than growing out of its own middle. */
-                  style={{
-                    backgroundColor: "var(--primary)",
-                    transformOrigin: "left",
-                  }}
-                  initial={false}
-                  animate={{ scaleX: done ? 1 : 0 }}
-                  transition={reduce ? { duration: 0 } : SPRING.default}
-                />
-              </div>
-            )}
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
 
 /* ── KYC dropzone ─────────────────────────────────────────────────── */
 
@@ -528,7 +432,6 @@ export default function ApplyChefPage() {
   const submitMutation = useSubmitChefApplication();
   const resubmitMutation = useResubmitChefApplication();
 
-  const [step, setStep] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<FormValues>(EMPTY_FORM);
 
@@ -537,23 +440,18 @@ export default function ApplyChefPage() {
 
   const isResubmit = application?.status === "rejected";
 
-  const validateStep1 = () => {
+  /* One form, one pass of validation — checked in the order the fields
+     appear on the page, so the toast always names the first thing that
+     actually needs fixing as you scroll down from the top. */
+  const validate = () => {
     if (!form.fullName.trim()) return "Full name is required";
     if (form.bio.trim().length < 30) return "Bio must be at least 30 characters";
     if (!form.specialty.trim()) return "Specialty is required";
     const exp = Number(form.yearsOfExperience);
     if (!form.yearsOfExperience || isNaN(exp) || exp < 0)
       return "Enter a valid number of years";
-    return null;
-  };
-
-  const validateStep2 = () => {
     if (!form.kycType) return "Choose a document type";
     if (!form.kycDocument && !isResubmit) return "Upload your document";
-    return null;
-  };
-
-  const validateStep3 = () => {
     if (!form.referenceUrl.trim()) return "A reference website is required";
     try {
       new URL(form.referenceUrl);
@@ -570,24 +468,10 @@ export default function ApplyChefPage() {
     return null;
   };
 
-  const next = () => {
-    const err =
-      step === 1 ? validateStep1() : step === 2 ? validateStep2() : validateStep3();
-    if (err) {
-      toast.error(err);
-      return;
-    }
-    setStep((s) => s + 1);
-  };
-
   const handleSubmit = async () => {
-    const err = validateStep3();
+    const err = validate();
     if (err) {
       toast.error(err);
-      return;
-    }
-    if (!form.kycDocument && !isResubmit) {
-      toast.error("A KYC document is required");
       return;
     }
 
@@ -631,7 +515,6 @@ export default function ApplyChefPage() {
         twitterUrl: application.twitterUrl ?? "",
       });
     }
-    setStep(1);
     setShowForm(true);
   };
 
@@ -640,15 +523,15 @@ export default function ApplyChefPage() {
   const lede = useMemo(() => {
     if (showStatus) return "Where your application has got to.";
     if (isResubmit) return "Update what the reviewer flagged, then send it back.";
-    return "Three short steps. We review every application by hand, usually within 2–5 business days.";
+    return "Tell us about your cooking, verify your identity, and share where people can find your work. We review every application by hand, usually within 2–5 business days.";
   }, [showStatus, isResubmit]);
 
   if (isLoading) {
     return (
       <div className="app-root">
-        <div className="mx-auto max-w-2xl px-4 py-10">
+        <div className="max-w-3xl px-4 py-10 sm:px-6">
           <div
-            className="ui-card flex min-h-[50vh] items-center justify-center"
+            className="flex min-h-[50vh] items-center justify-center"
             aria-busy="true"
           >
             <CircleNotchIcon
@@ -666,7 +549,7 @@ export default function ApplyChefPage() {
     <div className="app-root">
       <title>Chefalio — Become a Chef</title>
 
-      <div className="mx-auto max-w-2xl px-4 py-10">
+      <div className="max-w-3xl px-4 py-10 sm:px-6">
         <PageHeader
           title={isResubmit && showForm ? "Resubmit your application" : "Become a chef"}
           lede={lede}
@@ -691,7 +574,7 @@ export default function ApplyChefPage() {
           }
         />
 
-        <div className="ui-card p-6">
+        <div>
           {showStatus && application!.status === "pending" && (
             <StatusView
               tone="warning"
@@ -762,10 +645,17 @@ export default function ApplyChefPage() {
           )}
 
           {(!application || showForm) && (
-            <>
-              <StepIndicator current={step} />
-
-              {step === 1 && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+              className="space-y-9"
+            >
+              <div className="space-y-5">
+                <h2 className="ui-subheading" style={{ color: "var(--cs-text-primary)" }}>
+                  About you
+                </h2>
                 <div className="space-y-5">
                   <Field label="Full name" required>
                     {(ids) => (
@@ -842,9 +732,15 @@ export default function ApplyChefPage() {
                     )}
                   </Field>
                 </div>
-              )}
+              </div>
 
-              {step === 2 && (
+              <div
+                className="space-y-5 pt-8"
+                style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
+              >
+                <h2 className="ui-subheading" style={{ color: "var(--cs-text-primary)" }}>
+                  Identity verification
+                </h2>
                 <div className="space-y-5">
                   <div
                     className="ui-body rounded-xl p-4"
@@ -876,7 +772,7 @@ export default function ApplyChefPage() {
                         *
                       </span>
                     </legend>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid max-w-sm grid-cols-3 gap-2">
                       {(["passport", "nid", "driving_license"] as KycType[]).map(
                         (type) => {
                           const selected = form.kycType === type;
@@ -886,7 +782,7 @@ export default function ApplyChefPage() {
                               type="button"
                               onClick={() => set("kycType", type)}
                               aria-pressed={selected}
-                              className="focus-ring flex flex-col items-center gap-1.5 rounded-xl p-3 text-center text-xs font-medium transition-colors duration-150"
+                              className="focus-ring flex aspect-square flex-col items-center justify-center gap-2 rounded-xl p-3 text-center text-xs font-medium transition-colors duration-150"
                               style={{
                                 border: `1px solid ${
                                   selected
@@ -902,7 +798,7 @@ export default function ApplyChefPage() {
                               }}
                             >
                               <IdentificationCardIcon
-                                size={20}
+                                size={24}
                                 weight={selected ? "fill" : "regular"}
                               />
                               {KYC_LABELS[type]}
@@ -931,9 +827,15 @@ export default function ApplyChefPage() {
                     )}
                   </Field>
                 </div>
-              )}
+              </div>
 
-              {step === 3 && (
+              <div
+                className="space-y-5 pt-8"
+                style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
+              >
+                <h2 className="ui-subheading" style={{ color: "var(--cs-text-primary)" }}>
+                  Online presence
+                </h2>
                 <div className="space-y-5">
                   <Field
                     label="Reference website"
@@ -1025,66 +927,35 @@ export default function ApplyChefPage() {
                     </Field>
                   </fieldset>
                 </div>
-              )}
+              </div>
 
               <div
-                className="mt-8 flex items-center justify-between pt-5"
+                className="flex items-center justify-end pt-6"
                 style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
               >
-                {step > 1 ? (
-                  <button
-                    type="button"
-                    onClick={() => setStep((s) => s - 1)}
-                    className="focus-ring flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-colors"
-                    style={{
-                      border: "1px solid var(--cs-border-default)",
-                      color: "var(--cs-text-secondary)",
-                    }}
-                  >
-                    <ArrowLeftIcon size={14} weight="bold" /> Back
-                  </button>
-                ) : (
-                  <span />
-                )}
-
-                {step < 3 ? (
-                  <button
-                    type="button"
-                    onClick={next}
-                    className="focus-ring flex items-center gap-1.5 rounded-xl px-5 py-2 text-sm font-semibold transition-opacity hover:opacity-90"
-                    style={{
-                      backgroundColor: "var(--primary)",
-                      color: "var(--primary-foreground)",
-                    }}
-                  >
-                    Continue <ArrowRightIcon size={14} weight="bold" />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={isPending}
-                    className="focus-ring flex items-center gap-1.5 rounded-xl px-6 py-2 text-sm font-semibold transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                    style={{
-                      backgroundColor: "var(--primary)",
-                      color: "var(--primary-foreground)",
-                    }}
-                  >
-                    {isPending ? (
-                      <>
-                        <CircleNotchIcon size={15} className="animate-spin" />
-                        Submitting…
-                      </>
-                    ) : (
-                      <>
-                        <PaperPlaneTiltIcon size={15} weight="bold" />
-                        {isResubmit ? "Resubmit" : "Submit application"}
-                      </>
-                    )}
-                  </button>
-                )}
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="focus-ring flex items-center gap-1.5 rounded-xl px-6 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    color: "var(--primary-foreground)",
+                  }}
+                >
+                  {isPending ? (
+                    <>
+                      <CircleNotchIcon size={15} className="animate-spin" />
+                      Submitting…
+                    </>
+                  ) : (
+                    <>
+                      <PaperPlaneTiltIcon size={15} weight="bold" />
+                      {isResubmit ? "Resubmit" : "Submit application"}
+                    </>
+                  )}
+                </button>
               </div>
-            </>
+            </form>
           )}
         </div>
       </div>

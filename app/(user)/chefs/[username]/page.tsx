@@ -16,6 +16,8 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { CardSkeletonGrid } from "@/components/User/shared/CardSkeleton";
 import { LoadMoreSentinel } from "@/components/User/shared/LoadMoreSentinel";
 import { SegmentedTabs, type Segment } from "@/components/User/shared/SegmentedTabs";
+import { FollowButton } from "@/components/common/FollowButton";
+import { useFollowStatus } from "@/hooks/useFollow";
 import { initialsOf } from "@/lib/recipe-display";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -24,6 +26,7 @@ import {
   TrophyIcon,
   ForkKnifeIcon,
   BookOpenIcon,
+  UsersIcon,
   CircleNotchIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -67,10 +70,10 @@ function StatPill({
 }
 
 export default function ChefProfilePage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ username: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const chefId = params.id;
+  const chefId = params.username;
 
   const tab = (searchParams.get("tab") ?? "recipes") as Tab;
 
@@ -92,6 +95,8 @@ export default function ChefProfilePage() {
   const { chef, isLoading: isChefLoading } = useChef(chefId);
   const { profile: chefProfile, isLoading: isChefProfileLoading } =
     useChefProfile(chefId);
+  const { status: followStatus, isLoading: isFollowStatusLoading } =
+    useFollowStatus(chef?._id);
 
   const {
     recipes,
@@ -231,17 +236,22 @@ export default function ChefProfilePage() {
             </div>
 
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="ui-title" style={{ color: "var(--cs-text-primary)" }}>
-                {chef.fullName}
-              </h1>
-              {chef.username && (
-                <p
-                  className="ui-caption mt-0.5"
-                  style={{ color: "var(--cs-text-tertiary)" }}
-                >
-                  @{chef.username}
-                </p>
-              )}
+              <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h1 className="ui-title" style={{ color: "var(--cs-text-primary)" }}>
+                    {chef.fullName}
+                  </h1>
+                  {chef.username && (
+                    <p
+                      className="ui-caption mt-0.5"
+                      style={{ color: "var(--cs-text-tertiary)" }}
+                    >
+                      @{chef.username}
+                    </p>
+                  )}
+                </div>
+                <FollowButton chefId={chef._id} chefUsername={chef.username} />
+              </div>
 
               <div className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
                 <StatPill
@@ -255,6 +265,12 @@ export default function ChefProfilePage() {
                   value={cookbooksTotal}
                   label="cookbooks"
                   loading={isCookbooksLoading}
+                />
+                <StatPill
+                  Icon={UsersIcon}
+                  value={followStatus?.followerCount ?? 0}
+                  label="followers"
+                  loading={isFollowStatusLoading}
                 />
               </div>
 
@@ -280,40 +296,64 @@ export default function ChefProfilePage() {
                   ))}
                 </ul>
               )}
+            </div>
+          </header>
 
-              {chefProfile?.achievements && chefProfile.achievements.length > 0 && (
-                <div className="mt-4">
-                  <p
-                    className="ui-label mb-2 text-center sm:text-left"
-                    style={{ color: "var(--cs-text-tertiary)" }}
+          {/* Accolades read as a showcase now, not a row of chips crammed
+             into the header sidebar — each one is a real card with its
+             own icon, so a Michelin star and a local cook-off win both
+             get room to say what they actually are. */}
+          {chefProfile?.achievements && chefProfile.achievements.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="ui-heading" style={{ color: "var(--cs-text-primary)" }}>
+                Achievements
+              </h2>
+              <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {chefProfile.achievements.map((a, i) => (
+                  <li
+                    key={i}
+                    className="ui-card flex items-start gap-3 p-4"
                   >
-                    Achievements
-                  </p>
-                  <ul className="flex flex-wrap justify-center gap-2 sm:justify-start">
-                    {chefProfile.achievements.map((a, i) => (
-                      <li
-                        key={i}
-                        className="flex items-center gap-1.5 rounded-lg px-3 py-1.5"
-                        style={{
-                          backgroundColor: "var(--cs-warning-bg)",
-                          border: "1px solid var(--cs-warning-edge)",
-                          color: "var(--cs-warning-fg)",
-                        }}
-                      >
-                        <TrophyIcon size={12} weight="fill" aria-hidden />
-                        <span className="ui-micro font-semibold">{a.title}</span>
+                    <div
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                      style={{
+                        backgroundColor: "var(--cs-warning-bg)",
+                        color: "var(--cs-warning-fg)",
+                      }}
+                    >
+                      <TrophyIcon size={18} weight="fill" aria-hidden />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p
+                          className="ui-subheading"
+                          style={{ color: "var(--cs-text-primary)" }}
+                        >
+                          {a.title}
+                        </p>
                         {a.year && (
-                          <span className="ui-micro ui-numeric opacity-80">
+                          <span
+                            className="ui-micro ui-numeric shrink-0 font-semibold"
+                            style={{ color: "var(--cs-text-tertiary)" }}
+                          >
                             {a.year}
                           </span>
                         )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </header>
+                      </div>
+                      {a.description && (
+                        <p
+                          className="ui-caption mt-1"
+                          style={{ color: "var(--cs-text-secondary)" }}
+                        >
+                          {a.description}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <SegmentedTabs
             segments={TABS}

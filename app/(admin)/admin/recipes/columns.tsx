@@ -19,6 +19,7 @@ import {
   BookmarkSimpleIcon,
   TrashIcon,
 } from "@phosphor-icons/react/dist/ssr"
+import { StatusPill, type StatusTone } from "@/components/Admin/AdminUI"
 import type { Recipe } from "@/types/recipes.type"
 
 const DIFFICULTY_ORDER: Record<string, number> = {
@@ -27,10 +28,10 @@ const DIFFICULTY_ORDER: Record<string, number> = {
   advance: 2,
 }
 
-const DIFFICULTY_COLORS: Record<string, string> = {
-  beginner: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  intermediate: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  advance: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+const DIFFICULTY_TONE: Record<string, StatusTone> = {
+  beginner: "success",
+  intermediate: "warning",
+  advance: "danger",
 }
 
 export function createRecipeColumns({
@@ -42,7 +43,7 @@ export function createRecipeColumns({
     {
       id: "recipe",
       header: () => (
-        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
+        <span className="ui-micro font-medium uppercase tracking-wide" style={{ color: "var(--cs-text-tertiary)" }}>
           Recipe
         </span>
       ),
@@ -50,7 +51,7 @@ export function createRecipeColumns({
         const r = row.original
         return (
           <div className="flex items-center gap-3">
-            <div className="relative h-9 w-12 rounded-md overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
+            <div className="relative h-9 w-12 rounded-md overflow-hidden shrink-0" style={{ backgroundColor: "var(--cs-surface-3)" }}>
               {r.images[0] && (
                 <Image src={r.images[0]} alt={r.title} fill className="object-cover" sizes="48px" />
               )}
@@ -62,17 +63,18 @@ export function createRecipeColumns({
     },
     {
       id: "author",
+      meta: { className: "hidden sm:table-cell" },
       header: () => (
-        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wide hidden sm:block">
+        <span className="ui-micro font-medium uppercase tracking-wide" style={{ color: "var(--cs-text-tertiary)" }}>
           Author
         </span>
       ),
       cell: ({ row }) => {
         const a = row.original.authorId
         return (
-          <div className="hidden sm:block">
+          <div>
             <p className="text-sm text-foreground">{a.fullName}</p>
-            <p className="text-xs text-zinc-400">@{a.username}</p>
+            <p className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>@{a.username}</p>
           </div>
         )
       },
@@ -81,32 +83,24 @@ export function createRecipeColumns({
       id: "difficulty",
       accessorFn: (row) => DIFFICULTY_ORDER[row.difficulty] ?? 0,
       enableSorting: true,
-      header: ({ column }) => (
-        <div className="hidden md:block">
-          <SortableHeader column={column} title="Difficulty" />
-        </div>
-      ),
+      meta: { className: "hidden md:table-cell" },
+      header: ({ column }) => <SortableHeader column={column} title="Difficulty" />,
       cell: ({ row }) => (
-        <span
-          className={`hidden md:inline-flex px-2 py-0.5 rounded-full text-xs font-medium capitalize ${DIFFICULTY_COLORS[row.original.difficulty] ?? ""}`}
-        >
+        <StatusPill tone={DIFFICULTY_TONE[row.original.difficulty] ?? "neutral"}>
           {row.original.difficulty}
-        </span>
+        </StatusPill>
       ),
     },
     {
       id: "engagement",
       accessorFn: (row) => row.lovedCount * 2 + row.savedCount * 1.5,
       enableSorting: true,
-      header: ({ column }) => (
-        <div className="hidden lg:block">
-          <SortableHeader column={column} title="Engagement" />
-        </div>
-      ),
+      meta: { className: "hidden lg:table-cell" },
+      header: ({ column }) => <SortableHeader column={column} title="Engagement" />,
       cell: ({ row }) => (
-        <div className="hidden lg:flex items-center gap-3 text-xs text-zinc-400">
+        <div className="flex items-center gap-3 text-xs" style={{ color: "var(--cs-text-tertiary)" }}>
           <span className="flex items-center gap-1">
-            <HeartIcon size={11} weight="fill" className="text-red-400" />
+            <HeartIcon size={11} weight="fill" style={{ color: "var(--cs-love)" }} />
             {row.original.lovedCount.toLocaleString()}
           </span>
           <span className="flex items-center gap-1">
@@ -123,7 +117,10 @@ export function createRecipeColumns({
       cell: ({ row }) => (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <button className="h-7 w-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+            <button
+              className="focus-ring h-7 w-7 flex items-center justify-center rounded-lg transition-[background-color,color,transform] duration-150 active:scale-90 hover:text-red-500 hover:bg-(--cs-danger-bg)"
+              style={{ color: "var(--cs-text-tertiary)" }}
+            >
               <TrashIcon size={14} />
             </button>
           </AlertDialogTrigger>

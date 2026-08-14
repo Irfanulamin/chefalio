@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { TrashIcon, PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr"
+import { StatusPill } from "@/components/Admin/AdminUI"
 import type { Cookbook } from "@/types/cookbook.type"
 
 export function createCookbookColumns({
@@ -28,7 +29,7 @@ export function createCookbookColumns({
     {
       id: "cookbook",
       header: () => (
-        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
+        <span className="ui-micro font-medium uppercase tracking-wide" style={{ color: "var(--cs-text-tertiary)" }}>
           Cookbook
         </span>
       ),
@@ -36,14 +37,14 @@ export function createCookbookColumns({
         const c = row.original
         return (
           <div className="flex items-center gap-3">
-            <div className="relative h-10 w-10 rounded-md overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
+            <div className="relative h-10 w-10 rounded-md overflow-hidden shrink-0" style={{ backgroundColor: "var(--cs-surface-3)" }}>
               {c.cookbook_image && (
                 <Image src={c.cookbook_image} alt={c.title} fill className="object-cover" sizes="40px" />
               )}
             </div>
             <div className="min-w-0">
               <p className="font-medium text-foreground truncate max-w-48 text-sm">{c.title}</p>
-              <p className="text-xs text-zinc-400 truncate max-w-48">{c.description}</p>
+              <p className="text-xs truncate max-w-48" style={{ color: "var(--cs-text-tertiary)" }}>{c.description}</p>
             </div>
           </div>
         )
@@ -51,17 +52,18 @@ export function createCookbookColumns({
     },
     {
       id: "author",
+      meta: { className: "hidden sm:table-cell" },
       header: () => (
-        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wide hidden sm:block">
+        <span className="ui-micro font-medium uppercase tracking-wide" style={{ color: "var(--cs-text-tertiary)" }}>
           Author
         </span>
       ),
       cell: ({ row }) => {
         const a = row.original.authorId
         return (
-          <div className="hidden sm:block">
+          <div>
             <p className="text-sm text-foreground">{a.fullName}</p>
-            <p className="text-xs text-zinc-400">@{a.username}</p>
+            <p className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>@{a.username}</p>
           </div>
         )
       },
@@ -70,13 +72,10 @@ export function createCookbookColumns({
       id: "price",
       accessorKey: "price",
       enableSorting: true,
-      header: ({ column }) => (
-        <div className="hidden md:block">
-          <SortableHeader column={column} title="Price" />
-        </div>
-      ),
+      meta: { className: "hidden md:table-cell" },
+      header: ({ column }) => <SortableHeader column={column} title="Price" />,
       cell: ({ row }) => (
-        <span className="hidden md:block text-sm font-medium text-foreground">
+        <span className="text-sm font-medium text-foreground ui-numeric">
           ${row.original.price.toFixed(2)}
         </span>
       ),
@@ -85,19 +84,14 @@ export function createCookbookColumns({
       id: "stock",
       accessorKey: "stockCount",
       enableSorting: true,
-      header: ({ column }) => (
-        <div className="hidden lg:block">
-          <SortableHeader column={column} title="Stock" />
-        </div>
-      ),
+      meta: { className: "hidden lg:table-cell" },
+      header: ({ column }) => <SortableHeader column={column} title="Stock" />,
       cell: ({ row }) => {
         const s = row.original.stockCount
+        const color =
+          s === 0 ? "var(--cs-danger-fg)" : s < 5 ? "var(--cs-warning-fg)" : "var(--cs-text-secondary)"
         return (
-          <span
-            className={`hidden lg:block text-xs font-medium tabular-nums ${
-              s === 0 ? "text-red-500" : s < 5 ? "text-amber-500" : "text-zinc-500"
-            }`}
-          >
+          <span className="text-xs font-medium ui-numeric" style={{ color }}>
             {s} left
           </span>
         )
@@ -105,19 +99,18 @@ export function createCookbookColumns({
     },
     {
       id: "discount",
+      meta: { className: "hidden xl:table-cell" },
       header: () => (
-        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wide hidden xl:block">
+        <span className="ui-micro font-medium uppercase tracking-wide" style={{ color: "var(--cs-text-tertiary)" }}>
           Discount
         </span>
       ),
       cell: ({ row }) => {
         const d = row.original.discount ?? 0
         return d > 0 ? (
-          <span className="hidden xl:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-            -{d}%
-          </span>
+          <StatusPill tone="success">-{d}%</StatusPill>
         ) : (
-          <span className="hidden xl:block text-xs text-zinc-400">—</span>
+          <span className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>—</span>
         )
       },
     },
@@ -128,7 +121,8 @@ export function createCookbookColumns({
       cell: ({ row }) => (
         <button
           onClick={() => onEdit(row.original)}
-          className="h-7 w-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-primary hover:bg-primary/10 transition-colors"
+          className="focus-ring h-7 w-7 flex items-center justify-center rounded-lg transition-[background-color,color,transform] duration-150 active:scale-90 hover:text-primary hover:bg-(--cs-accent-muted)"
+          style={{ color: "var(--cs-text-tertiary)" }}
         >
           <PencilSimpleIcon size={14} />
         </button>
@@ -141,7 +135,10 @@ export function createCookbookColumns({
       cell: ({ row }) => (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <button className="h-7 w-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+            <button
+              className="focus-ring h-7 w-7 flex items-center justify-center rounded-lg transition-[background-color,color,transform] duration-150 active:scale-90 hover:text-red-500 hover:bg-(--cs-danger-bg)"
+              style={{ color: "var(--cs-text-tertiary)" }}
+            >
               <TrashIcon size={14} />
             </button>
           </AlertDialogTrigger>

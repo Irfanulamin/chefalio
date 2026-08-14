@@ -10,6 +10,10 @@ export interface Chef {
   role: "chef";
   recipeCount?: number;
   cookbookCount?: number;
+  followerCount?: number;
+  /** Whether the viewer already follows this chef — computed server-side
+     against the requesting user, not derived on the client. */
+  isFollowing?: boolean;
 }
 
 export interface ChefPagination {

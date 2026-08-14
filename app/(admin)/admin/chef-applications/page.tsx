@@ -7,7 +7,6 @@ import {
 } from "@/hooks/swr/use-chef-applications-table"
 import { DataTable, type FilterConfig } from "@/components/ui/data-table"
 import { createChefApplicationColumns } from "./columns"
-import { cn } from "@/lib/utils"
 import type { ApplicationStatus } from "@/types/chef-application.type"
 import {
   ClockIcon,
@@ -15,35 +14,7 @@ import {
   XCircleIcon,
   ChefHatIcon,
 } from "@phosphor-icons/react/dist/ssr"
-
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  classes,
-}: {
-  label: string
-  value: number
-  icon: React.ElementType
-  classes: string
-}) {
-  return (
-    <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-zinc-500">{label}</p>
-        <div
-          className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-lg",
-            classes,
-          )}
-        >
-          <Icon size={15} weight="fill" />
-        </div>
-      </div>
-      <p className="mt-2 text-2xl font-bold text-foreground">{value}</p>
-    </div>
-  )
-}
+import { PageHeader, StatCard } from "@/components/Admin/AdminUI"
 
 const STATUS_FILTER: FilterConfig = {
   key: "status",
@@ -100,46 +71,18 @@ export default function AdminChefApplicationsPage() {
   const totalPages = pagination?.totalPages ?? 1
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
-          <ChefHatIcon size={18} weight="duotone" className="text-primary" />
-        </div>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">
-            Chef Applications
-          </h1>
-          <p className="text-xs text-zinc-500">
-            Review and manage chef applicants
-          </p>
-        </div>
-      </div>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <PageHeader
+        title="Chef Applications"
+        description="Review and manage chef applicants"
+        icon={ChefHatIcon}
+      />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard
-          label="Total"
-          value={stats?.total ?? 0}
-          icon={ChefHatIcon}
-          classes="bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
-        />
-        <StatCard
-          label="Pending"
-          value={stats?.pending ?? 0}
-          icon={ClockIcon}
-          classes="bg-amber-100 dark:bg-amber-900/30 text-amber-500"
-        />
-        <StatCard
-          label="Approved"
-          value={stats?.approved ?? 0}
-          icon={CheckCircleIcon}
-          classes="bg-green-100 dark:bg-green-900/30 text-green-500"
-        />
-        <StatCard
-          label="Rejected"
-          value={stats?.rejected ?? 0}
-          icon={XCircleIcon}
-          classes="bg-red-100 dark:bg-red-900/30 text-red-500"
-        />
+        <StatCard index={0} label="Total" value={stats?.total ?? 0} icon={ChefHatIcon} tone="neutral" />
+        <StatCard index={1} label="Pending" value={stats?.pending ?? 0} icon={ClockIcon} tone="warning" />
+        <StatCard index={2} label="Approved" value={stats?.approved ?? 0} icon={CheckCircleIcon} tone="success" />
+        <StatCard index={3} label="Rejected" value={stats?.rejected ?? 0} icon={XCircleIcon} tone="danger" />
       </div>
 
       <DataTable

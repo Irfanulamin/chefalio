@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { io, Socket } from "socket.io-client";
 import axiosInstance from "@/hooks/axios/interceptors";
+import { useMyFollowing } from "@/hooks/useFollow";
 import type {
   AppNotification,
   NotificationsResponse,
@@ -26,6 +27,12 @@ type PushedNotification = AppNotification & { receivedAt: number };
 export function useNotifications() {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
+  /* The REST list (`restItems` below) is already scoped server-side to
+     chefs you follow — `notification.gateway.ts`'s socket push isn't
+     (it broadcasts to every connected client, since sockets aren't tied
+     to a user identity there), so a live push for a chef you don't follow
+     needs filtering out here before it's allowed into the merged list. */
+  const { followedChefIds } = useMyFollowing();
 
   /** Items the socket delivered that the REST list may not carry yet. */
   const [pushed, setPushed] = useState<PushedNotification[]>([]);
@@ -100,11 +107,16 @@ export function useNotifications() {
        Comparing against the snapshot's own timestamp separates them
        without reading the clock mid-render. */
     const pending = pushed.filter(
-      (n) => !restIds.has(n._id) && n.receivedAt > dataUpdatedAt,
+      (n) =>
+        !restIds.has(n._id) &&
+        n.receivedAt > dataUpdatedAt &&
+        // No chefId = a platform-wide notice, always shown. Otherwise it
+        // only counts if it's from a chef this user actually follows.
+        (!n.chefId || followedChefIds.includes(n.chefId)),
     );
 
     return [...pending, ...restItems];
-  }, [restItems, pushed, dataUpdatedAt]);
+  }, [restItems, pushed, dataUpdatedAt, followedChefIds]);
 
   const serverReadAt = data?.lastReadAt ? new Date(data.lastReadAt) : null;
 

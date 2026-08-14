@@ -285,7 +285,7 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
                 a profile that 404s is worse than saying nothing. */}
             {author && (
               <Link
-                href={`/chefs/${author._id}`}
+                href={`/chefs/${author.username}`}
                 className="ui-card ui-card-interactive focus-ring mb-5 flex items-center gap-3 p-4"
               >
                 <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl">

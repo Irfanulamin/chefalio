@@ -31,6 +31,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { BookOpenIcon, TagIcon } from "@phosphor-icons/react/dist/ssr"
+import { PageHeader, Panel } from "@/components/Admin/AdminUI"
 
 const DISCOUNT_PRESETS = [
   { label: "Off", value: 0 },
@@ -142,13 +143,12 @@ export default function AdminCookbooksPage() {
       <title>Cookbooks – Chefalio Admin</title>
 
       <div className="space-y-4 max-w-7xl mx-auto">
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">Cookbooks</h1>
-          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
-            Manage pricing, stock, discounts, and remove cookbooks ·{" "}
-            {pagination?.total ?? 0} total
-          </p>
-        </div>
+        <PageHeader
+          title="Cookbooks"
+          description={`Manage pricing, stock, discounts, and remove cookbooks · ${pagination?.total ?? 0} total`}
+          icon={BookOpenIcon}
+          iconTone="warning"
+        />
 
         {/* Edit Modal */}
         <Dialog
@@ -162,8 +162,8 @@ export default function AdminCookbooksPage() {
             <div className="overflow-y-auto flex-1 px-1">
               {editTarget && (
               <form onSubmit={handleUpdate} className="space-y-4 pt-1">
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 min-w-0">
-                  <div className="relative h-10 w-10 rounded-md overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
+                <div className="flex items-center gap-3 p-3 rounded-lg min-w-0" style={{ backgroundColor: "var(--cs-surface-3)" }}>
+                  <div className="relative h-10 w-10 rounded-md overflow-hidden shrink-0" style={{ backgroundColor: "var(--cs-surface-2)" }}>
                     {editTarget.cookbook_image && (
                       <Image
                         src={editTarget.cookbook_image}
@@ -180,7 +180,7 @@ export default function AdminCookbooksPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                    <label className="text-xs font-medium" style={{ color: "var(--cs-text-secondary)" }}>
                       Price (USD)
                     </label>
                     <input
@@ -192,11 +192,12 @@ export default function AdminCookbooksPage() {
                       onChange={(e) =>
                         setEditForm((f) => ({ ...f, price: e.target.value }))
                       }
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                      className="w-full px-3 py-2 text-sm rounded-lg text-foreground outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                      style={{ border: "1px solid var(--cs-border-default)", backgroundColor: "var(--cs-surface-1)" }}
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                    <label className="text-xs font-medium" style={{ color: "var(--cs-text-secondary)" }}>
                       Stock Count
                     </label>
                     <input
@@ -211,35 +212,39 @@ export default function AdminCookbooksPage() {
                           stockCount: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                      className="w-full px-3 py-2 text-sm rounded-lg text-foreground outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                      style={{ border: "1px solid var(--cs-border-default)", backgroundColor: "var(--cs-surface-1)" }}
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-xs font-medium" style={{ color: "var(--cs-text-secondary)" }}>
                     Discount (0–15%)
                   </label>
                   <div className="flex items-center gap-1.5">
-                    {DISCOUNT_PRESETS.map((p) => (
-                      <button
-                        key={p.value}
-                        type="button"
-                        onClick={() =>
-                          setEditForm((f) => ({
-                            ...f,
-                            discount: String(p.value),
-                          }))
-                        }
-                        className={[
-                          "flex-1 py-1.5 text-xs rounded-lg border transition-colors",
-                          parseInt(editForm.discount, 10) === p.value
-                            ? "border-primary bg-primary/10 text-primary font-medium"
-                            : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground",
-                        ].join(" ")}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
+                    {DISCOUNT_PRESETS.map((p) => {
+                      const active = parseInt(editForm.discount, 10) === p.value
+                      return (
+                        <button
+                          key={p.value}
+                          type="button"
+                          onClick={() =>
+                            setEditForm((f) => ({
+                              ...f,
+                              discount: String(p.value),
+                            }))
+                          }
+                          className="focus-ring flex-1 py-1.5 text-xs rounded-lg transition-[background-color,color,transform] duration-150 active:scale-[0.97] hover:text-foreground"
+                          style={
+                            active
+                              ? { border: "1px solid var(--primary)", backgroundColor: "var(--cs-accent-muted)", color: "var(--cs-accent-text)", fontWeight: 500 }
+                              : { border: "1px solid var(--cs-border-default)", color: "var(--cs-text-secondary)" }
+                          }
+                        >
+                          {p.label}
+                        </button>
+                      )
+                    })}
                   </div>
                   <input
                     type="number"
@@ -250,7 +255,8 @@ export default function AdminCookbooksPage() {
                     onChange={(e) =>
                       setEditForm((f) => ({ ...f, discount: e.target.value }))
                     }
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    className="w-full px-3 py-2 text-sm rounded-lg text-foreground outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    style={{ border: "1px solid var(--cs-border-default)", backgroundColor: "var(--cs-surface-1)" }}
                     placeholder="Custom (0-15)"
                   />
                 </div>
@@ -258,14 +264,15 @@ export default function AdminCookbooksPage() {
                   <button
                     type="button"
                     onClick={() => setEditTarget(null)}
-                    className="px-4 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground transition-colors"
+                    className="focus-ring px-4 py-2 text-sm rounded-lg transition-colors hover:text-foreground"
+                    style={{ border: "1px solid var(--cs-border-default)", color: "var(--cs-text-secondary)" }}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={updateCookbook.isPending}
-                    className="px-4 py-2 text-sm rounded-lg bg-primary text-black font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                    className="focus-ring px-4 py-2 text-sm rounded-lg bg-primary text-black font-medium hover:bg-primary/90 active:scale-[0.97] disabled:opacity-50 transition-[background-color,transform] duration-150"
                   >
                     {updateCookbook.isPending ? "Saving…" : "Save"}
                   </button>
@@ -277,31 +284,34 @@ export default function AdminCookbooksPage() {
         </Dialog>
 
         {/* Global Discount */}
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 flex flex-wrap items-center gap-3">
+        <Panel padded={false} className="p-4 flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 shrink-0">
-            <TagIcon size={16} className="text-zinc-400" />
+            <TagIcon size={16} style={{ color: "var(--cs-text-tertiary)" }} />
             <span className="text-sm font-medium text-foreground">
               Global Discount
             </span>
           </div>
-          <p className="text-xs text-zinc-400 flex-1 min-w-0">
+          <p className="text-xs flex-1 min-w-0" style={{ color: "var(--cs-text-tertiary)" }}>
             Apply a site-wide discount to all cookbooks at once (max 15%).
           </p>
           <div className="flex items-center gap-1.5 shrink-0">
-            {DISCOUNT_PRESETS.map((p) => (
-              <button
-                key={p.value}
-                onClick={() => setPendingGlobalDiscount(p.value)}
-                className={[
-                  "px-3 py-1.5 text-xs rounded-lg border transition-colors",
-                  pendingGlobalDiscount === p.value
-                    ? "border-primary bg-primary/10 text-primary font-medium"
-                    : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-foreground",
-                ].join(" ")}
-              >
-                {p.label}
-              </button>
-            ))}
+            {DISCOUNT_PRESETS.map((p) => {
+              const active = pendingGlobalDiscount === p.value
+              return (
+                <button
+                  key={p.value}
+                  onClick={() => setPendingGlobalDiscount(p.value)}
+                  className="focus-ring px-3 py-1.5 text-xs rounded-lg transition-[background-color,color,transform] duration-150 active:scale-[0.97] hover:text-foreground"
+                  style={
+                    active
+                      ? { border: "1px solid var(--primary)", backgroundColor: "var(--cs-accent-muted)", color: "var(--cs-accent-text)", fontWeight: 500 }
+                      : { border: "1px solid var(--cs-border-default)", color: "var(--cs-text-secondary)" }
+                  }
+                >
+                  {p.label}
+                </button>
+              )
+            })}
           </div>
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -310,7 +320,7 @@ export default function AdminCookbooksPage() {
                   pendingGlobalDiscount === null ||
                   applyGlobalDiscount.isPending
                 }
-                className="px-3 py-1.5 text-xs rounded-lg bg-primary text-black font-medium hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
+                className="focus-ring px-3 py-1.5 text-xs rounded-lg bg-primary text-black font-medium hover:bg-primary/90 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed transition-[background-color,transform] duration-150 shrink-0"
               >
                 {applyGlobalDiscount.isPending ? "Applying…" : "Apply"}
               </button>
@@ -339,7 +349,7 @@ export default function AdminCookbooksPage() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        </div>
+        </Panel>
 
         <DataTable
           columns={columns}

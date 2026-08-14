@@ -24,16 +24,17 @@ const MEDIA_RATIO: Record<Exclude<Variant, "chef">, string> = {
 export function CardSkeleton({ variant }: { variant: Variant }) {
   if (variant === "chef") {
     return (
-      <div className="ui-card flex flex-col items-center gap-3 p-5">
-        <Skeleton className="h-20 w-20 rounded-full" />
-        <Skeleton className="h-3.5 w-3/4" />
-        <Skeleton className="h-3 w-1/2" />
-        <div
-          className="flex w-full justify-center gap-4 pt-2"
-          style={{ borderTop: "1px solid var(--cs-border-subtle)" }}
-        >
-          <Skeleton className="h-3 w-8" />
-          <Skeleton className="h-3 w-8" />
+      <div className="ui-card flex flex-col items-center overflow-hidden">
+        <Skeleton className="h-14 w-full rounded-none" />
+        <div className="flex w-full flex-col items-center gap-3 px-5 pb-5" style={{ marginTop: -38 }}>
+          <Skeleton className="h-19 w-19 rounded-full" style={{ border: "3px solid var(--cs-surface-2)" }} />
+          <Skeleton className="h-3.5 w-3/4" />
+          <Skeleton className="h-3 w-1/2" />
+          <div className="flex gap-2">
+            <Skeleton className="h-6 w-14 rounded-full" />
+            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-6 w-14 rounded-full" />
+          </div>
         </div>
       </div>
     );

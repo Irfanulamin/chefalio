@@ -7,6 +7,7 @@ import { DataTable } from "@/components/ui/data-table"
 import { createRecipeColumns } from "./columns"
 import { toast } from "sonner"
 import { ForkKnifeIcon } from "@phosphor-icons/react/dist/ssr"
+import { PageHeader } from "@/components/Admin/AdminUI"
 
 export default function AdminRecipesPage() {
   const [search, setSearch] = useState("")
@@ -40,13 +41,12 @@ export default function AdminRecipesPage() {
       <title>Recipes – Chefalio Admin</title>
 
       <div className="space-y-4 max-w-7xl mx-auto">
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">Recipes</h1>
-          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
-            Search, review, or delete any recipe on the platform ·{" "}
-            {pagination?.total ?? 0} total
-          </p>
-        </div>
+        <PageHeader
+          title="Recipes"
+          description={`Search, review, or delete any recipe on the platform · ${pagination?.total ?? 0} total`}
+          icon={ForkKnifeIcon}
+          iconTone="violet"
+        />
 
         <DataTable
           columns={columns}
