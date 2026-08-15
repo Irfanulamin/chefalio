@@ -132,7 +132,7 @@ export const Hero = () => {
               className="w-full sm:w-auto"
             >
               <Link
-                href="/register"
+                href="/sign-up"
                 className="type-subheading group inline-flex h-12 w-full items-center justify-center gap-2 rounded-full px-7 transition-shadow duration-200 hover:shadow-lg sm:w-auto"
                 style={{
                   backgroundColor: "var(--primary)",

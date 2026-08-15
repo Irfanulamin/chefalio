@@ -237,11 +237,7 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
       <div className="page-content">
         <div className="flex flex-col items-start gap-8 lg:flex-row">
           <div className="flex w-full shrink-0 flex-col lg:w-[480px]">
-            <ImageCarousel
-              images={recipe.images}
-              title={recipe.title}
-              difficulty={recipe.difficulty}
-            />
+            <ImageCarousel images={recipe.images} title={recipe.title} />
 
             <div className="mb-5">
               <div className="mb-2 flex items-start justify-between gap-3">

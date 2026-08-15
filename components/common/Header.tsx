@@ -137,31 +137,23 @@ export const Header = () => {
                 <ProfileDropdown />
               </>
             ) : (
-              <>
-                <motion.button
-                  type="button"
-                  whileTap={{ scale: 0.96 }}
-                  transition={{ type: "spring", bounce: 0, duration: 0.26 }}
-                  onClick={() => router.push("/login")}
-                  className="type-caption cursor-pointer rounded-full px-3 py-2 font-semibold"
-                  style={{ color: "var(--cs-text-secondary)" }}
-                >
-                  Log in
-                </motion.button>
-                <motion.button
-                  type="button"
-                  whileTap={{ scale: 0.96 }}
-                  transition={{ type: "spring", bounce: 0, duration: 0.26 }}
-                  onClick={() => router.push("/register")}
-                  className="type-caption cursor-pointer rounded-full px-4 py-2 font-semibold"
-                  style={{
-                    backgroundColor: "var(--primary)",
-                    color: "var(--primary-foreground)",
-                  }}
-                >
-                  Get started
-                </motion.button>
-              </>
+              // One CTA, not two — this goes to sign-in, and the sign-in
+              // screen itself links to sign-up for anyone who needs it. A
+              // second nav button whose only job is "I don't have an
+              // account yet" doesn't earn a permanent slot in the bar.
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: "spring", bounce: 0, duration: 0.26 }}
+                onClick={() => router.push("/sign-in")}
+                className="type-caption cursor-pointer rounded-full px-4 py-2 font-semibold"
+                style={{
+                  backgroundColor: "var(--primary)",
+                  color: "var(--primary-foreground)",
+                }}
+              >
+                Get started
+              </motion.button>
             )}
           </div>
 
@@ -298,41 +290,25 @@ export const Header = () => {
                         Log out
                       </motion.button>
                     ) : (
-                      <>
-                        <motion.button
-                          type="button"
-                          whileTap={{ scale: 0.98 }}
-                          transition={{ type: "spring", bounce: 0, duration: 0.26 }}
-                          onClick={() => {
-                            router.push("/register");
-                            closeSheet();
-                          }}
-                          className="type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full"
-                          style={{
-                            backgroundColor: "var(--primary)",
-                            color: "var(--primary-foreground)",
-                          }}
-                        >
-                          Start cooking free
-                          <ArrowRightIcon size={15} weight="bold" />
-                        </motion.button>
-                        <motion.button
-                          type="button"
-                          whileTap={{ scale: 0.98 }}
-                          transition={{ type: "spring", bounce: 0, duration: 0.26 }}
-                          onClick={() => {
-                            router.push("/login");
-                            closeSheet();
-                          }}
-                          className="type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full"
-                          style={{
-                            color: "var(--cs-text-primary)",
-                            border: "1px solid var(--cs-border-default)",
-                          }}
-                        >
-                          Log in
-                        </motion.button>
-                      </>
+                      // Same one-CTA reasoning as the desktop bar — sign-in,
+                      // which links to sign-up for anyone who needs it.
+                      <motion.button
+                        type="button"
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: "spring", bounce: 0, duration: 0.26 }}
+                        onClick={() => {
+                          router.push("/sign-in");
+                          closeSheet();
+                        }}
+                        className="type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full"
+                        style={{
+                          backgroundColor: "var(--primary)",
+                          color: "var(--primary-foreground)",
+                        }}
+                      >
+                        Start cooking free
+                        <ArrowRightIcon size={15} weight="bold" />
+                      </motion.button>
                     )}
                   </div>
                 )}

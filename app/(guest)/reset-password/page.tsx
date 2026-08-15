@@ -14,6 +14,7 @@ import * as z from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { LockIcon } from "@phosphor-icons/react/dist/ssr";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -63,7 +64,7 @@ function ResetPasswordForm() {
         panel={AUTH_PANELS.recover}
         title="That link didn't work"
         subtitle="Reset links expire, and each one can only be used once."
-        footer={<AuthLink href="/login">Back to sign in</AuthLink>}
+        footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
       >
         <AuthResult
           tone="error"
@@ -86,7 +87,7 @@ function ResetPasswordForm() {
       subtitle="Choose something at least 6 characters long that you haven't used here before."
       footer={
         <>
-          Back to <AuthLink href="/login">sign in</AuthLink>
+          Back to <AuthLink href="/sign-in">sign in</AuthLink>
         </>
       }
     >
@@ -106,6 +107,7 @@ function ResetPasswordForm() {
             placeholder="At least 6 characters"
             type="password"
             autoComplete="new-password"
+            icon={LockIcon}
           />
           <AuthField
             form={form}
@@ -114,6 +116,7 @@ function ResetPasswordForm() {
             placeholder="Repeat your password"
             type="password"
             autoComplete="new-password"
+            icon={LockIcon}
           />
         </div>
 

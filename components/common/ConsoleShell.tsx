@@ -15,8 +15,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ListIcon, SidebarSimpleIcon } from "@phosphor-icons/react/dist/ssr";
+import { EyeIcon, ListIcon, SidebarSimpleIcon } from "@phosphor-icons/react/dist/ssr";
 import { SPRING } from "@/lib/motion";
+import { useAuth } from "@/hooks/axios";
 
 /**
  * The one shell every authenticated surface is built from — admin, Chef
@@ -54,6 +55,11 @@ export type ConsoleShellProps = {
   logoHref: string;
   logoIcon: ElementType;
   allowedRoles: AllowedRole[];
+  /** Distinguishes which console this is when the shell itself is
+     identical — the active-nav highlight and the collapsed logo glyph pick
+     up this hue instead of the default brand lime. Omit for the default
+     (admin, the plain consumer app). */
+  accent?: { bg: string; fg: string };
   children: ReactNode;
 };
 
@@ -64,6 +70,7 @@ function NavLinks({
   collapsed,
   onNavigate,
   layoutId,
+  accent,
 }: {
   items: ConsoleNavItem[];
   exitItem?: ConsoleNavItem;
@@ -71,6 +78,7 @@ function NavLinks({
   collapsed: boolean;
   onNavigate?: () => void;
   layoutId: string;
+  accent?: { bg: string; fg: string };
 }) {
   const reduceMotion = useReducedMotion();
   const isActive = (href: string) =>
@@ -79,40 +87,48 @@ function NavLinks({
   const row = (item: ConsoleNavItem, muted = false) => {
     const active = !muted && isActive(item.href);
     return (
-      <Link
+      <motion.div
         key={item.href}
-        href={item.href}
-        title={collapsed ? item.label : undefined}
-        onClick={onNavigate}
-        aria-current={active ? "page" : undefined}
-        className={[
-          "focus-ring relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-[color] duration-150 active:scale-[0.98]",
-          collapsed ? "justify-center px-2" : "",
-        ].join(" ")}
-        style={{
-          color: active
-            ? "var(--cs-accent-text)"
-            : muted
-              ? "var(--cs-text-tertiary)"
-              : "var(--cs-text-secondary)",
-          fontWeight: active ? 600 : undefined,
-        }}
+        whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+        transition={{ type: "spring", bounce: 0, duration: 0.22 }}
       >
-        {active && (
-          <motion.span
-            layoutId={layoutId}
-            className="absolute inset-0 rounded-lg -z-10"
-            style={{ backgroundColor: "var(--cs-accent-muted)" }}
-            transition={reduceMotion ? { duration: 0.12 } : SPRING.snappy}
+        <Link
+          href={item.href}
+          title={collapsed ? item.label : undefined}
+          onClick={onNavigate}
+          aria-current={active ? "page" : undefined}
+          className={[
+            "focus-ring relative flex items-center gap-2.5 px-3 py-2 text-sm transition-colors duration-150",
+            muted ? "rounded-full" : "rounded-lg",
+            active ? "" : "hover:bg-(--cs-hover)",
+            collapsed ? "justify-center px-2" : "",
+          ].join(" ")}
+          style={{
+            // Exiting the studio is a navigation, not a destructive action,
+            // so it gets the same plain ghost treatment as the "Back to
+            // site" link in the marketing header — no border, no fill,
+            // just a hover wash — rather than a bordered chip that reads
+            // as its own distinct control sitting at the bottom of the list.
+            color: active ? (accent?.fg ?? "var(--cs-accent-text)") : "var(--cs-text-secondary)",
+            fontWeight: active ? 600 : undefined,
+          }}
+        >
+          {active && (
+            <motion.span
+              layoutId={layoutId}
+              className="absolute inset-0 rounded-lg -z-10"
+              style={{ backgroundColor: accent?.bg ?? "var(--cs-accent-muted)" }}
+              transition={reduceMotion ? { duration: 0.12 } : SPRING.snappy}
+            />
+          )}
+          <item.Icon
+            size={16}
+            weight={active ? "fill" : "regular"}
+            className="shrink-0"
           />
-        )}
-        <item.Icon
-          size={16}
-          weight={active ? "fill" : "regular"}
-          className="shrink-0"
-        />
-        {!collapsed && <span>{item.label}</span>}
-      </Link>
+          {!collapsed && <span>{item.label}</span>}
+        </Link>
+      </motion.div>
     );
   };
 
@@ -148,7 +164,7 @@ function ConsoleLogo({
         {qualifier && (
           <>
             {" "}
-            <span style={{ color: "var(--cs-accent-text)" }}>{qualifier}</span>
+            <span style={{ color: "var(--cs-text-primary)" }}>{qualifier}</span>
           </>
         )}
       </span>
@@ -164,6 +180,7 @@ export function ConsoleShell({
   logoHref,
   logoIcon: LogoIcon,
   allowedRoles,
+  accent,
   children,
 }: ConsoleShellProps) {
   const [collapsed, setCollapsed] = useState(false);
@@ -171,6 +188,7 @@ export function ConsoleShell({
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
+  const { user } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -209,7 +227,12 @@ export function ConsoleShell({
                 title="Expand sidebar"
                 aria-label="Expand sidebar"
               >
-                <LogoIcon size={15} weight="duotone" className="text-black dark:text-white" />
+                <LogoIcon
+                  size={15}
+                  weight="duotone"
+                  className={accent ? undefined : "text-black dark:text-white"}
+                  style={accent ? { color: accent.fg } : undefined}
+                />
               </button>
             ) : (
               <>
@@ -231,6 +254,7 @@ export function ConsoleShell({
             exitItem={exitItem}
             pathname={pathname}
             collapsed={collapsed}
+            accent={accent}
             layoutId="console-nav-active-desktop"
           />
         </motion.aside>
@@ -282,6 +306,7 @@ export function ConsoleShell({
                     exitItem={exitItem}
                     pathname={pathname}
                     collapsed={false}
+                    accent={accent}
                     onNavigate={() => setSheetOpen(false)}
                     layoutId="console-nav-active-mobile"
                   />
@@ -297,6 +322,22 @@ export function ConsoleShell({
             </div>
 
             <div className="flex items-center gap-2">
+              {/* All three demo roles are locked down server-side
+                  (DemoReadOnlyGuard) — this just means the 403 toast that
+                  follows any write attempt isn't a surprise. */}
+              {user?.isDemo && (
+                <span
+                  className="type-micro hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-semibold sm:inline-flex"
+                  style={{
+                    backgroundColor: "var(--cs-warning-bg)",
+                    color: "var(--cs-warning-fg)",
+                    border: "1px solid var(--cs-warning-edge)",
+                  }}
+                >
+                  <EyeIcon size={13} weight="bold" />
+                  Demo · read-only
+                </span>
+              )}
               <ToggleThemeButton />
               <ProfileDropdown />
             </div>

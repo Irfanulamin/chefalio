@@ -2,6 +2,7 @@ import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import type { InfiniteData } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import axiosInstance from "./axios/interceptors";
+import { toast } from "sonner";
 import type {
   Recipe,
   RecipeApiResponse,
@@ -351,7 +352,7 @@ export function useToggleLove() {
       return { previousBatch, previousSingle, previousSingleRecipe, previousChefRecipes, previousChefRecipesInfinite, wasLoved };
     },
 
-    onError: (_err, id, context) => {
+    onError: (err, id, context) => {
       if (context?.previousBatch) {
         context.previousBatch.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
@@ -375,6 +376,12 @@ export function useToggleLove() {
       }
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
       queryClient.invalidateQueries({ queryKey: ["recipes-infinite"] });
+      // The optimistic heart already reverted above — without this, that
+      // revert is the only signal the click did nothing, which just reads
+      // as a flaky button rather than a rejected action.
+      toast.error(err instanceof Error ? err.message : "Couldn't update this recipe", {
+        position: "bottom-right",
+      });
     },
 
     onSettled: (_data, _error, id) => {
@@ -477,7 +484,7 @@ export function useToggleSave() {
       return { previousBatch, previousSingle, previousChefRecipes, previousChefRecipesInfinite, wasSaved };
     },
 
-    onError: (_err, id, context) => {
+    onError: (err, id, context) => {
       if (context?.previousBatch) {
         context.previousBatch.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
@@ -498,6 +505,9 @@ export function useToggleSave() {
       }
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
       queryClient.invalidateQueries({ queryKey: ["recipes-infinite"] });
+      toast.error(err instanceof Error ? err.message : "Couldn't update this recipe", {
+        position: "bottom-right",
+      });
     },
 
     onSettled: (_data, _error, id) => {

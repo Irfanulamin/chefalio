@@ -3,7 +3,6 @@
 import { type ColumnDef } from "@tanstack/react-table"
 import Image from "next/image"
 import { SortableHeader } from "@/components/ui/data-table"
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -211,15 +210,15 @@ export function createChefOrderColumns({
           <div className="flex justify-end">
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 gap-1 text-xs rounded-lg px-2.5"
+                <button
+                  type="button"
                   disabled={isUpdating}
+                  className="focus-ring flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium transition-[background-color,transform] duration-150 active:scale-90 hover:!bg-[var(--cs-accent-muted)] hover:!text-[var(--cs-accent-text)] disabled:pointer-events-none disabled:opacity-55"
+                  style={{ color: "var(--cs-text-tertiary)" }}
                 >
                   Update
                   <CaretDownIcon size={10} weight="bold" />
-                </Button>
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="rounded-xl w-36">
                 {UPDATABLE.filter(

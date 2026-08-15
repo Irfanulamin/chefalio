@@ -65,7 +65,7 @@ export function AuthNotice({
   return (
     <div
       role={tone === "error" ? "alert" : "status"}
-      className="flex items-start gap-2.5 rounded-2xl px-4 py-3"
+      className="flex items-start gap-2.5 rounded-lg px-4 py-3"
       style={{
         backgroundColor: t.bg,
         border: `1px solid ${t.border}`,
@@ -140,7 +140,7 @@ export function AuthSubmit({
       disabled={isDisabled}
       whileTap={reduce || isDisabled ? undefined : { scale: 0.98 }}
       transition={SPRING}
-      className="type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full transition-opacity duration-150 disabled:pointer-events-none disabled:opacity-55"
+      className="type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-lg transition-opacity duration-150 disabled:pointer-events-none disabled:opacity-55"
       style={{
         backgroundColor: "var(--primary)",
         color: "var(--primary-foreground)",
@@ -180,7 +180,7 @@ export function AuthSecondary({
       disabled={disabled}
       whileTap={reduce || disabled ? undefined : { scale: 0.98 }}
       transition={SPRING}
-      className="type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full transition-colors duration-150 disabled:pointer-events-none disabled:opacity-55"
+      className="type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-lg transition-colors duration-150 disabled:pointer-events-none disabled:opacity-55"
       style={{
         color: "var(--cs-text-primary)",
         border: "1px solid var(--cs-border-default)",

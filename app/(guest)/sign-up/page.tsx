@@ -18,6 +18,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import {
   ArrowClockwiseIcon,
+  AtIcon,
+  EnvelopeSimpleIcon,
+  LockIcon,
+  UserIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
 export default function RegisterPage() {
@@ -80,7 +84,7 @@ export default function RegisterPage() {
         subtitle="Your account exists — it just needs verifying before you can sign in."
         footer={
           <>
-            Already verified? <AuthLink href="/login">Sign in</AuthLink>
+            Already verified? <AuthLink href="/sign-in">Sign in</AuthLink>
           </>
         }
       >
@@ -125,12 +129,11 @@ export default function RegisterPage() {
   return (
     <AuthLayout
       panel={AUTH_PANELS.register}
-      wide
       title="Create your account"
       subtitle="Free to browse, free to save. You only pay for cookbooks you want to keep."
       footer={
         <>
-          Already have an account? <AuthLink href="/login">Sign in</AuthLink>
+          Already have an account? <AuthLink href="/sign-in">Sign in</AuthLink>
         </>
       }
     >
@@ -145,26 +148,24 @@ export default function RegisterPage() {
             form.handleSubmit();
           }}
         >
-          {/* Name and username sit on one row at `sm`: they are both short,
-              and pairing them stops a four-field form reading as a longer
-              climb than it is. */}
           <div className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <AuthField
-                form={form}
-                name="fullName"
-                label="Full name"
-                placeholder="Ada Lovelace"
-                autoComplete="name"
-              />
-              <AuthField
-                form={form}
-                name="username"
-                label="Username"
-                placeholder="ada"
-                autoComplete="username"
-              />
-            </div>
+            <AuthField
+              form={form}
+              name="fullName"
+              label="Full name"
+              placeholder="Sarah Mitchell"
+              autoComplete="name"
+              icon={UserIcon}
+            />
+
+            <AuthField
+              form={form}
+              name="username"
+              label="Username"
+              placeholder="sarahmitchell"
+              autoComplete="username"
+              icon={AtIcon}
+            />
 
             <AuthField
               form={form}
@@ -173,6 +174,7 @@ export default function RegisterPage() {
               placeholder="you@example.com"
               type="email"
               autoComplete="email"
+              icon={EnvelopeSimpleIcon}
             />
 
             <AuthField
@@ -182,6 +184,7 @@ export default function RegisterPage() {
               placeholder="At least 6 characters"
               type="password"
               autoComplete="new-password"
+              icon={LockIcon}
             />
           </div>
 

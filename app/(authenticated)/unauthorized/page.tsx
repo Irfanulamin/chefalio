@@ -46,7 +46,7 @@ export default function UnauthorizedPage() {
 
         <div className="flex flex-col gap-3 w-full">
           <Link
-            href="/login"
+            href="/sign-in"
             className="block w-full text-center py-3 px-6 rounded-xl text-sm font-semibold transition-colors duration-150"
             style={{ backgroundColor: "var(--cs-accent)", color: "#111110" }}
           >

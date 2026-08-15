@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { useAdminUsersTable } from "@/hooks/swr/use-admin-users-table"
 import {
   useAdminUpdateUser,
@@ -8,7 +8,9 @@ import {
   useAdminCreateUser,
 } from "@/hooks/useAdmin"
 import { DataTable, type FilterConfig } from "@/components/ui/data-table"
+import { DeleteDialog } from "@/components/common/DeleteDialog"
 import { createUserColumns } from "./columns"
+import type { AdminUser } from "@/types/admin.type"
 import { toast } from "sonner"
 import {
   Dialog,
@@ -94,16 +96,34 @@ export default function AdminUsersPage() {
     })
 
   const updateUser = useAdminUpdateUser()
-  const deleteUser = useAdminDeleteUser()
+  const { mutate: deleteUser, isPending: isDeleting } = useAdminDeleteUser()
   const createUser = useAdminCreateUser()
+
+  // Single controlled dialog holding the target row, rather than an
+  // AlertDialog mounted inside every action cell — see DeleteDialog.
+  const [deleting, setDeleting] = useState<AdminUser | null>(null)
+
+  const handleDeleteUser = useCallback(() => {
+    if (!deleting) return
+    deleteUser(deleting._id, {
+      onSuccess: () => {
+        toast.success("User deleted")
+        setDeleting(null)
+        refresh()
+      },
+      onError: (err) =>
+        toast.error(err instanceof Error ? err.message : "Failed to delete user"),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deleting, deleteUser])
 
   async function handleToggleActive(id: string, current: boolean) {
     try {
       await updateUser.mutateAsync({ id, payload: { isActive: !current } })
       toast.success(current ? "User deactivated" : "User activated")
       refresh()
-    } catch {
-      toast.error("Failed to update user")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update user")
     }
   }
 
@@ -112,20 +132,11 @@ export default function AdminUsersPage() {
       await updateUser.mutateAsync({ id, payload: { role: newRole } })
       toast.success("Role updated")
       refresh()
-    } catch {
-      toast.error("Failed to update role")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update role")
     }
   }
 
-  async function handleDeleteUser(id: string) {
-    try {
-      await deleteUser.mutateAsync(id)
-      toast.success("User deleted")
-      refresh()
-    } catch {
-      toast.error("Failed to delete user")
-    }
-  }
 
   function closeCreateModal() {
     setCreateOpen(false)
@@ -140,11 +151,8 @@ export default function AdminUsersPage() {
       toast.success("User created")
       closeCreateModal()
       refresh()
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Failed to create user"
-      toast.error(msg)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create user")
     }
   }
 
@@ -158,7 +166,7 @@ export default function AdminUsersPage() {
       createUserColumns({
         onRoleChange: handleRoleChange,
         onToggleActive: handleToggleActive,
-        onDelete: handleDeleteUser,
+        onDelete: setDeleting,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -421,6 +429,15 @@ export default function AdminUsersPage() {
           }
         />
       </div>
+
+      <DeleteDialog
+        open={deleting !== null}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        kind="user"
+        name={deleting?.fullName}
+        onConfirm={handleDeleteUser}
+        isDeleting={isDeleting}
+      />
     </>
   )
 }

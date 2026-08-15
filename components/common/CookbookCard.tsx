@@ -6,7 +6,6 @@ import { SafeImage } from "@/components/common/SafeImage";
 import type { Cookbook } from "@/types/cookbook.type";
 import { cookbookPrice, initialsOf } from "@/lib/recipe-display";
 import { SPRING } from "@/lib/motion";
-import { StatusPill } from "@/components/User/shared/StatusPill";
 
 type CookbookCardProps = {
   cookbook: Cookbook;
@@ -73,19 +72,21 @@ export function CookbookCard({
           }
         />
 
-        {price.discountPct > 0 && (
-          <StatusPill tone="success" overMedia className="absolute left-2.5 top-2.5">
-            −{price.discountPct}%
-          </StatusPill>
-        )}
-
         {/* The price is the one thing that has to survive any cover art,
             so it carries its own material rather than trusting the
-            photograph underneath it. */}
+            photograph underneath it. The discount lives here too now,
+            rather than as its own badge over the artwork — it's a fact
+            about the price, so it reads better sitting next to the number
+            it explains than floating in a separate corner. */}
         <span
           className="material-thick ui-numeric absolute bottom-2.5 right-2.5 flex items-baseline gap-1.5 rounded-lg px-2.5 py-1"
           style={{ color: "var(--cs-text-primary)" }}
         >
+          {price.discountPct > 0 && (
+            <span className="ui-micro font-bold" style={{ color: "var(--cs-success-fg)" }}>
+              −{price.discountPct}%
+            </span>
+          )}
           <span className="text-sm font-bold">{price.current}</span>
           {price.original && (
             <span

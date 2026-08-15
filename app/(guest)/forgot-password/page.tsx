@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import * as z from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
+import { EnvelopeSimpleIcon } from "@phosphor-icons/react/dist/ssr";
 
 export default function ForgotPasswordPage() {
   const { forgotPassword, isLoading } = useAuth();
@@ -49,7 +50,7 @@ export default function ForgotPasswordPage() {
         panel={AUTH_PANELS.recover}
         title="Link sent"
         subtitle="If that email is registered, the reset link is on its way."
-        footer={<AuthLink href="/login">Back to sign in</AuthLink>}
+        footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
       >
         <AuthResult label="Email sent" title="Check your email">
           If an account exists for that address, a password reset link has been
@@ -66,7 +67,7 @@ export default function ForgotPasswordPage() {
       subtitle="Enter your email and we'll send you a link to set a new one."
       footer={
         <>
-          Remembered it? <AuthLink href="/login">Back to sign in</AuthLink>
+          Remembered it? <AuthLink href="/sign-in">Back to sign in</AuthLink>
         </>
       }
     >
@@ -85,6 +86,7 @@ export default function ForgotPasswordPage() {
           placeholder="you@example.com"
           type="email"
           autoComplete="email"
+          icon={EnvelopeSimpleIcon}
         />
 
         <AuthSubmit pending={isLoading} pendingLabel="Sending…">

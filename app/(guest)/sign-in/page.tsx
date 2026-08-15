@@ -18,12 +18,39 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import {
   ArrowClockwiseIcon,
+  ChefHatIcon,
+  LockIcon,
+  ShieldCheckIcon,
+  UserIcon,
 } from "@phosphor-icons/react/dist/ssr";
+
+// Fixed accounts from `seed-demo-accounts.js`, one per role — so anyone
+// reviewing the project can get into every dashboard without registering
+// or being handed real credentials out of band.
+const DEMO_ACCOUNTS = [
+  {
+    role: "User",
+    usernameOrEmail: "user@chefalio-demo.com",
+    icon: UserIcon,
+  },
+  {
+    role: "Chef",
+    usernameOrEmail: "chef@chefalio-demo.com",
+    icon: ChefHatIcon,
+  },
+  {
+    role: "Admin",
+    usernameOrEmail: "admin@chefalio-demo.com",
+    icon: ShieldCheckIcon,
+  },
+] as const;
+const DEMO_PASSWORD = "Chefalio123!";
 
 function LoginForm() {
   const { login, resendVerification, isResendingVerification } = useAuth();
   const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [demoRole, setDemoRole] = useState<string | null>(null);
   const [unverifiedLogin, setUnverifiedLogin] = useState<string | null>(null);
   const [resendSent, setResendSent] = useState(false);
 
@@ -68,6 +95,7 @@ function LoginForm() {
       placeholder: "you@example.com",
       type: "text",
       autoComplete: "username",
+      icon: UserIcon,
     },
     {
       name: "password",
@@ -75,6 +103,7 @@ function LoginForm() {
       placeholder: "Your password",
       type: "password",
       autoComplete: "current-password",
+      icon: LockIcon,
     },
   ];
 
@@ -85,6 +114,25 @@ function LoginForm() {
       setResendSent(true);
     } catch {
       setResendSent(true);
+    }
+  };
+
+  const handleDemoLogin = async (account: (typeof DEMO_ACCOUNTS)[number]) => {
+    setDemoRole(account.role);
+    try {
+      await login({
+        usernameOrEmail: account.usernameOrEmail,
+        password: DEMO_PASSWORD,
+      });
+      toast.success(`Signed in as demo ${account.role.toLowerCase()}`, {
+        position: "bottom-right",
+      });
+    } catch (err: Error | unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Demo login failed.";
+      toast.error(errorMessage, { position: "bottom-right" });
+    } finally {
+      setDemoRole(null);
     }
   };
 
@@ -107,7 +155,7 @@ function LoginForm() {
       subtitle="Sign in to get to your library, your saved recipes, and your dashboard."
       footer={
         <>
-          Don&apos;t have an account? <AuthLink href="/register">Sign up</AuthLink>
+          Don&apos;t have an account? <AuthLink href="/sign-up">Sign up</AuthLink>
         </>
       }
     >
@@ -184,7 +232,45 @@ function LoginForm() {
 
         <div>
           <AuthDivider label="or continue with" />
-          <OAuthButtons />
+          <div className="space-y-2">
+            <OAuthButtons />
+
+            {/* Fixed seeded accounts, not a real auth path — grouped under
+                the same "continue with" divider rather than getting a
+                second label of their own, so they read as one more option
+                in that row instead of a separate feature. */}
+            <div className="grid grid-cols-1 gap-2">
+              {DEMO_ACCOUNTS.map((account) => {
+                const Icon = account.icon;
+                const pending = demoRole === account.role;
+                const disabled = demoRole !== null;
+                return (
+                  <button
+                    key={account.role}
+                    type="button"
+                    onClick={() => handleDemoLogin(account)}
+                    disabled={disabled}
+                    title={`Try the demo as ${account.role.toLowerCase()}`}
+                    className="focus-ring type-caption inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full font-medium transition-colors duration-150 hover:bg-(--cs-hover) disabled:pointer-events-none disabled:opacity-55"
+                    style={{
+                      color: "var(--cs-text-secondary)",
+                      border: "1px solid var(--cs-border-default)",
+                    }}
+                  >
+                    {pending ? (
+                      <span
+                        aria-hidden
+                        className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"
+                      />
+                    ) : (
+                      <Icon size={13} />
+                    )}
+                    Try as a demo {account.role.toLowerCase()}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </AuthLayout>

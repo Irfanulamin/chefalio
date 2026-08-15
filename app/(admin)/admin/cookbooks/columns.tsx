@@ -3,17 +3,6 @@
 import { type ColumnDef } from "@tanstack/react-table"
 import Image from "next/image"
 import { SortableHeader } from "@/components/ui/data-table"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { TrashIcon, PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr"
 import { StatusPill } from "@/components/Admin/AdminUI"
 import type { Cookbook } from "@/types/cookbook.type"
@@ -23,7 +12,7 @@ export function createCookbookColumns({
   onDelete,
 }: {
   onEdit: (cookbook: Cookbook) => void
-  onDelete: (id: string) => void
+  onDelete: (cookbook: Cookbook) => void
 }): ColumnDef<Cookbook, unknown>[] {
   return [
     {
@@ -120,11 +109,13 @@ export function createCookbookColumns({
       header: () => null,
       cell: ({ row }) => (
         <button
+          type="button"
+          aria-label={`Edit ${row.original.title}`}
           onClick={() => onEdit(row.original)}
-          className="focus-ring h-7 w-7 flex items-center justify-center rounded-lg transition-[background-color,color,transform] duration-150 active:scale-90 hover:text-primary hover:bg-(--cs-accent-muted)"
+          className="focus-ring h-8 w-8 flex items-center justify-center rounded-lg transition-[background-color,color,transform] duration-150 active:scale-90 hover:!text-[var(--cs-accent-text)] hover:!bg-[var(--cs-accent-muted)]"
           style={{ color: "var(--cs-text-tertiary)" }}
         >
-          <PencilSimpleIcon size={14} />
+          <PencilSimpleIcon size={15} />
         </button>
       ),
     },
@@ -133,34 +124,15 @@ export function createCookbookColumns({
       size: 52,
       header: () => null,
       cell: ({ row }) => (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <button
-              className="focus-ring h-7 w-7 flex items-center justify-center rounded-lg transition-[background-color,color,transform] duration-150 active:scale-90 hover:text-red-500 hover:bg-(--cs-danger-bg)"
-              style={{ color: "var(--cs-text-tertiary)" }}
-            >
-              <TrashIcon size={14} />
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete cookbook?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete &ldquo;{row.original.title}&rdquo;.
-                This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onDelete(row.original._id)}
-                className="bg-red-500 hover:bg-red-600 text-white border-0"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <button
+          type="button"
+          aria-label={`Delete ${row.original.title}`}
+          onClick={() => onDelete(row.original)}
+          className="focus-ring h-8 w-8 flex items-center justify-center rounded-lg transition-[background-color,color,transform] duration-150 active:scale-90 hover:!text-[var(--cs-danger-fg)] hover:!bg-[var(--cs-danger-bg)]"
+          style={{ color: "var(--cs-text-tertiary)" }}
+        >
+          <TrashIcon size={15} />
+        </button>
       ),
     },
   ]

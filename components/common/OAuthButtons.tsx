@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 
 const GoogleIcon = () => (
@@ -49,32 +50,33 @@ const Spinner = () => (
 export function OAuthButtons() {
   const [loading, setLoading] = useState(false);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const reduce = useReducedMotion();
 
   function handleGoogleLogin() {
     setLoading(true);
     window.location.href = `${apiUrl}/auth/google`;
   }
 
+  /* Same pill shape, height, and type scale as `AuthSubmit` /
+     `AuthSecondary` — this button sits directly under the primary submit
+     button, so a different radius or a shorter box here would read as a
+     control borrowed from another page rather than the same form's second
+     option. */
   return (
-    <button
+    <motion.button
       type="button"
       onClick={handleGoogleLogin}
       disabled={loading}
-      className="w-full flex items-center justify-center gap-2.5 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-150 disabled:pointer-events-none disabled:opacity-50"
+      whileTap={reduce || loading ? undefined : { scale: 0.98 }}
+      transition={{ type: "spring", bounce: 0, duration: 0.26 }}
+      className="focus-ring type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2.5 rounded-lg transition-colors duration-150 hover:bg-[var(--cs-hover)] disabled:pointer-events-none disabled:opacity-55"
       style={{
-        backgroundColor: "var(--cs-surface-1)",
-        border: "1px solid var(--cs-border-default)",
         color: "var(--cs-text-primary)",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = "var(--cs-surface-3)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = "var(--cs-surface-1)";
+        border: "1px solid var(--cs-border-default)",
       }}
     >
       {loading ? <Spinner /> : <GoogleIcon />}
       {loading ? "Redirecting…" : "Continue with Google"}
-    </button>
+    </motion.button>
   );
 }

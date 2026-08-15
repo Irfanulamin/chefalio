@@ -47,8 +47,8 @@ const COLUMNS: {
     links: [
       { label: "About", href: "/#about" },
       { label: "FAQ", href: "/#faq" },
-      { label: "Privacy Policy", href: "/privacy" },
-      { label: "Terms of Service", href: "/terms" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Terms of Service", href: "/terms-of-service" },
     ],
   },
 ];
@@ -150,14 +150,14 @@ export const Footer = () => {
               links people actually look for down here take its place. */}
           <nav className="flex items-center gap-5">
             <Link
-              href="/privacy"
+              href="/privacy-policy"
               className="type-caption transition-opacity duration-150 hover:opacity-70"
               style={{ color: "var(--cs-text-tertiary)" }}
             >
               Privacy
             </Link>
             <Link
-              href="/terms"
+              href="/terms-of-service"
               className="type-caption transition-opacity duration-150 hover:opacity-70"
               style={{ color: "var(--cs-text-tertiary)" }}
             >

@@ -8,11 +8,12 @@ import { DataTable } from "@/components/ui/data-table"
 import { createChefCookbookColumns } from "./columns"
 import { Button } from "@/components/ui/button"
 import { EditSheet } from "@/components/Chef/studio/EditSheet"
-import { DeleteDialog } from "@/components/Chef/studio/DeleteDialog"
+import { DeleteDialog } from "@/components/common/DeleteDialog"
 import CookbookForm from "@/components/Chef/CookbookForn"
 import { toast } from "sonner"
 import Image from "next/image"
 import { PlusIcon, BookOpenIcon, CaretRightIcon } from "@phosphor-icons/react/dist/ssr"
+import { PageHeader } from "@/components/Admin/AdminUI"
 import type { Cookbook } from "@/types/cookbook.type"
 
 const EDIT_FORM_ID = "chef-cookbook-edit-form"
@@ -131,28 +132,21 @@ export default function ChefCookbooksPage() {
 
   return (
     <>
-      <title>Cookbooks – Chefalio</title>
+      <title>My Cookbooks – Chefalio</title>
 
       <div className="space-y-5 max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h1
-              className="text-xl font-semibold tracking-[-0.018em]"
-              style={{ color: "var(--cs-text-primary)" }}
-            >
-              My cookbooks
-            </h1>
-            <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
-              {cookbooks.length} cookbook{cookbooks.length !== 1 ? "s" : ""} published
-            </p>
-          </div>
-          <Link href="/chef/cookbooks/create">
-            <Button size="sm" className="gap-1.5 h-8 text-xs rounded-lg">
-              <PlusIcon size={13} weight="bold" />
-              New cookbook
-            </Button>
-          </Link>
-        </div>
+        <PageHeader
+          title="My cookbooks"
+          description={`${cookbooks.length} cookbook${cookbooks.length !== 1 ? "s" : ""} published`}
+          action={
+            <Link href="/chef/cookbooks/create">
+              <Button size="sm" className="gap-1.5 h-8 text-xs rounded-lg">
+                <PlusIcon size={13} weight="bold" />
+                New cookbook
+              </Button>
+            </Link>
+          }
+        />
 
         <DataTable
           columns={columns}

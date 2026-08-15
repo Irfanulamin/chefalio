@@ -9,6 +9,7 @@ import Image from "next/image"
 import type { ChefOrder } from "@/types/chef-dashboard.type"
 import { toast } from "sonner"
 import { PackageIcon } from "@phosphor-icons/react/dist/ssr"
+import { PageHeader } from "@/components/Admin/AdminUI"
 
 const STATUS_FILTER: FilterConfig = {
   key: "status",
@@ -90,10 +91,11 @@ export default function ChefOrdersPage() {
           })
           refresh()
         },
-        onError: () =>
-          toast.error("Failed to update order status.", {
-            position: "bottom-right",
-          }),
+        onError: (err) =>
+          toast.error(
+            err instanceof Error ? err.message : "Failed to update order status.",
+            { position: "bottom-right" },
+          ),
       },
     )
   }
@@ -110,23 +112,18 @@ export default function ChefOrdersPage() {
 
   return (
     <>
-      <title>Orders – Chefalio</title>
+      <title>My Orders – Chefalio</title>
 
       <div className="space-y-5 max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h1
-              className="text-xl font-semibold tracking-[-0.018em]"
-              style={{ color: "var(--cs-text-primary)" }}
-            >
-              Orders
-            </h1>
-            <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
+        <PageHeader
+          title="My orders"
+          description={
+            <>
               {orders.length} order{orders.length !== 1 ? "s" : ""} total
-              {isFetching && <span className="ml-2 text-xs">Refreshing…</span>}
-            </p>
-          </div>
-        </div>
+              {isFetching && <span className="ml-2">Refreshing…</span>}
+            </>
+          }
+        />
 
         <DataTable
           columns={columns}

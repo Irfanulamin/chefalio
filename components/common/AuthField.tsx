@@ -2,6 +2,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import type { Icon } from "@phosphor-icons/react";
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -14,9 +15,9 @@ import {
  * The five auth screens were built out of the generic `FormField`, which
  * renders the shadcn `Input`: a 48px box with a small radius, a
  * `border-input` hairline and error text in raw `text-red-500`. Dropped
- * into a `rounded-3xl` translucent card above a pill-shaped submit button,
- * it read as a component borrowed from somewhere else — different radius,
- * different border language, different red.
+ * into the auth card above the submit button, it read as a component
+ * borrowed from somewhere else — different radius, different border
+ * language, different red.
  *
  * This is the same control drawn in the auth screen's own vocabulary: the
  * card's radius family, the `--cs-*` tokens both themes already define,
@@ -38,6 +39,7 @@ export function AuthField({
   placeholder,
   type = "text",
   autoComplete,
+  icon: FieldIcon,
 }: {
   form: any;
   name: string;
@@ -45,6 +47,9 @@ export function AuthField({
   placeholder?: string;
   type?: string;
   autoComplete?: string;
+  /** Leading glyph that names the field at a glance — a person for a name,
+      an @ for a handle, an envelope for email, a lock for a password. */
+  icon?: Icon;
 }) {
   const [reveal, setReveal] = useState(false);
   const reactId = useId();
@@ -74,6 +79,15 @@ export function AuthField({
             </label>
 
             <div className="relative">
+              {FieldIcon && (
+                <FieldIcon
+                  size={17}
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2"
+                  style={{ color: "var(--cs-text-tertiary)" }}
+                  aria-hidden
+                />
+              )}
+
               <input
                 id={id}
                 name={name}
@@ -86,11 +100,12 @@ export function AuthField({
                 aria-invalid={invalid || undefined}
                 aria-describedby={invalid ? errorId : undefined}
                 className={[
-                  "h-12 w-full rounded-2xl text-[0.9375rem] outline-none",
+                  "h-12 w-full rounded-lg text-[0.9375rem] outline-none",
                   "transition-[border-color,box-shadow,background-color] duration-150",
                   "placeholder:text-[var(--cs-text-tertiary)]",
                   "focus:border-[var(--primary)] focus:shadow-[0_0_0_3px_var(--cs-focus-ring)]",
-                  isPassword ? "pl-4 pr-12" : "px-4",
+                  FieldIcon ? "pl-10" : "pl-4",
+                  isPassword ? "pr-12" : "pr-4",
                 ].join(" ")}
                 style={{
                   border: `1px solid ${
@@ -107,7 +122,7 @@ export function AuthField({
                   onClick={() => setReveal((v) => !v)}
                   aria-label={reveal ? "Hide password" : "Show password"}
                   aria-pressed={reveal}
-                  className="focus-ring absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl transition-colors duration-150 hover:bg-[var(--cs-hover)]"
+                  className="focus-ring absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md transition-colors duration-150 hover:bg-[var(--cs-hover)]"
                   style={{ color: "var(--cs-text-tertiary)" }}
                 >
                   {reveal ? <EyeSlashIcon size={17} /> : <EyeIcon size={17} />}

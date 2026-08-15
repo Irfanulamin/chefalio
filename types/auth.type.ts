@@ -1,6 +1,7 @@
 export interface Me {
   userId: string;
   role: string;
+  isDemo?: boolean;
 }
 
 export interface RegisterResponse {

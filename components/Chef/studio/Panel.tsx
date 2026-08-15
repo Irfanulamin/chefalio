@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Reveal } from "@/components/Admin/AdminUI";
 
 /**
  * The studio's card. Every panel on the dashboard and analytics pages was
@@ -10,28 +11,35 @@ import { Skeleton } from "@/components/ui/skeleton";
  * component means one place to change the surface, and it means a panel can
  * own its own loading and empty states instead of the page gating on all of
  * them at once.
+ *
+ * Draws from `.ui-card` — the same class the admin console's `Panel` uses —
+ * rather than a hand-rolled border/background/radius that had quietly
+ * drifted to a 12px corner against admin's 14px. Same reasoning for the
+ * `Reveal` wrap: it's the admin console's entrance animation, imported
+ * rather than re-implemented, so moving from `/admin` to `/chef` doesn't
+ * read as arriving at a differently-animated tool.
  */
 
 export function Panel({
   className,
   flush = false,
+  /** Stagger position among sibling panels — mirrors how admin's
+   *  `ChartCard` delays each card by `index * 0.03`. */
+  index = 0,
   children,
 }: {
   className?: string;
   /** Drop the padding — for panels whose content runs edge to edge (tables). */
   flush?: boolean;
+  index?: number;
   children: React.ReactNode;
 }) {
   return (
-    <section
-      className={cn("rounded-xl", flush ? "overflow-hidden" : "p-5", className)}
-      style={{
-        border: "1px solid var(--cs-border-subtle)",
-        backgroundColor: "var(--cs-surface-2)",
-      }}
-    >
-      {children}
-    </section>
+    <Reveal delay={index * 0.03} className={className}>
+      <section className={cn("ui-card", flush ? "overflow-hidden" : "p-5")}>
+        {children}
+      </section>
+    </Reveal>
   );
 }
 
@@ -45,7 +53,7 @@ export function PanelHeader({
   title: string;
   sub?: string;
   /** The panel's headline figure, set right. Reads as the answer the chart
-   *  below is evidence for. */
+   *  below is evidence for — same role as admin's `ChartCard` `headline`. */
   value?: React.ReactNode;
   action?: React.ReactNode;
   className?: string;
@@ -53,21 +61,16 @@ export function PanelHeader({
   return (
     <div className={cn("flex items-start justify-between gap-4 mb-5", className)}>
       <div className="min-w-0">
-        <h3
-          className="text-sm font-semibold tracking-[-0.006em]"
-          style={{ color: "var(--cs-text-primary)" }}
-        >
-          {title}
-        </h3>
+        <h3 className="ui-subheading text-foreground">{title}</h3>
         {sub && (
-          <p className="text-xs mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
+          <p className="ui-caption mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
             {sub}
           </p>
         )}
       </div>
       {value !== undefined ? (
         <span
-          className="text-sm font-semibold tabular-nums shrink-0"
+          className="ui-numeric font-semibold shrink-0"
           style={{ color: "var(--cs-text-primary)" }}
         >
           {value}

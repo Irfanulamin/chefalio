@@ -125,10 +125,7 @@ function HeroFigure({
 
   return (
     <div>
-      <p
-        className="text-[11px] font-semibold uppercase tracking-[0.06em]"
-        style={{ color: "var(--cs-text-tertiary)" }}
-      >
+      <p className="ui-label" style={{ color: "var(--cs-text-tertiary)" }}>
         Revenue
       </p>
       <p
@@ -137,7 +134,7 @@ function HeroFigure({
       >
         {value}
       </p>
-      <p className="text-sm mt-1" style={{ color: "var(--cs-text-secondary)" }}>
+      <p className="ui-body mt-1" style={{ color: "var(--cs-text-secondary)" }}>
         {caption}
       </p>
     </div>
@@ -180,10 +177,7 @@ function SectionHeading({
   return (
     <div className="flex items-center gap-2 pt-1">
       <Icon size={14} style={{ color: "var(--cs-text-tertiary)" }} />
-      <h2
-        className="text-xs font-semibold uppercase tracking-[0.06em]"
-        style={{ color: "var(--cs-text-secondary)" }}
-      >
+      <h2 className="ui-label" style={{ color: "var(--cs-text-secondary)" }}>
         {title}
       </h2>
       <div className="flex-1 h-px" style={{ backgroundColor: "var(--cs-border-subtle)" }} />
@@ -282,6 +276,7 @@ function EarningsSection({
         ) : (
           <>
             <StatTile
+              index={0}
               label="Your profit"
               value={currency(earnings?.totalProfit ?? 0)}
               sub={`At ${earnings?.profitRate ?? "80%"} rate`}
@@ -289,6 +284,7 @@ function EarningsSection({
               accent={MEASURE.revenue}
             />
             <StatTile
+              index={1}
               label="Average order"
               value={
                 earnings?.totalOrders
@@ -299,6 +295,7 @@ function EarningsSection({
               icon={ChartBarIcon}
             />
             <StatTile
+              index={2}
               label="Orders"
               value={(earnings?.totalOrders ?? 0).toLocaleString()}
               sub={`Paid, ${periodSub}`}
@@ -429,6 +426,7 @@ function EngagementSection({
         ) : (
           <>
             <StatTile
+              index={0}
               label="Loves"
               value={totalLoves.toLocaleString()}
               sub={`Across recipes, ${periodSub}`}
@@ -436,6 +434,7 @@ function EngagementSection({
               accent={MEASURE.loves}
             />
             <StatTile
+              index={1}
               label="Saves"
               value={totalSaves.toLocaleString()}
               sub={`Across recipes, ${periodSub}`}
@@ -443,12 +442,14 @@ function EngagementSection({
               accent={MEASURE.saves}
             />
             <StatTile
+              index={2}
               label="Unique engagers"
               value={totalUniqueUsers.toLocaleString()}
               sub={`Distinct users, ${periodSub}`}
               icon={UsersIcon}
             />
             <StatTile
+              index={3}
               label="Engagement score"
               value={totalEngagement.toLocaleString()}
               sub="Loves ×2 + saves ×1.5"

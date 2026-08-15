@@ -17,8 +17,8 @@ function flushQueue(error: unknown) {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const GUEST_ROUTES = [
-  "/login",
-  "/register",
+  "/sign-in",
+  "/sign-up",
   "/forgot-password",
   "/reset-password",
   "/verify-email",
@@ -30,7 +30,7 @@ const isGuestRoute = () =>
 
 function redirectToLogin() {
   queryClient.clear()
-  window.location.href = "/login"
+  window.location.href = "/sign-in"
 }
 
 // ── Interceptor ───────────────────────────────────────────────────────────────

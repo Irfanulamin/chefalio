@@ -8,12 +8,13 @@ import { DataTable, type FilterConfig } from "@/components/ui/data-table"
 import { createChefRecipeColumns } from "./columns"
 import { Button } from "@/components/ui/button"
 import { EditSheet } from "@/components/Chef/studio/EditSheet"
-import { DeleteDialog } from "@/components/Chef/studio/DeleteDialog"
+import { DeleteDialog } from "@/components/common/DeleteDialog"
 import RecipeForm from "@/components/Chef/RecipeForm"
 import { toast } from "sonner"
 import Image from "next/image"
 import { PlusIcon, ForkKnifeIcon, CaretRightIcon } from "@phosphor-icons/react/dist/ssr"
 import { DIFFICULTY } from "@/components/Chef/studio/viz"
+import { PageHeader } from "@/components/Admin/AdminUI"
 import type { Recipe } from "@/types/recipes.type"
 
 const DIFFICULTY_FILTER: FilterConfig = {
@@ -148,28 +149,21 @@ export default function ChefRecipesPage() {
 
   return (
     <>
-      <title>Recipes – Chefalio</title>
+      <title>My Recipes – Chefalio</title>
 
       <div className="space-y-5 max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h1
-              className="text-xl font-semibold tracking-[-0.018em]"
-              style={{ color: "var(--cs-text-primary)" }}
-            >
-              My recipes
-            </h1>
-            <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
-              {recipes.length} recipe{recipes.length !== 1 ? "s" : ""} published
-            </p>
-          </div>
-          <Link href="/chef/recipes/create">
-            <Button size="sm" className="gap-1.5 h-8 text-xs rounded-lg">
-              <PlusIcon size={13} weight="bold" />
-              New recipe
-            </Button>
-          </Link>
-        </div>
+        <PageHeader
+          title="My recipes"
+          description={`${recipes.length} recipe${recipes.length !== 1 ? "s" : ""} published`}
+          action={
+            <Link href="/chef/recipes/create">
+              <Button size="sm" className="gap-1.5 h-8 text-xs rounded-lg">
+                <PlusIcon size={13} weight="bold" />
+                New recipe
+              </Button>
+            </Link>
+          }
+        />
 
         <DataTable
           columns={columns}

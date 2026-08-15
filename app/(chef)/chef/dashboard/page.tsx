@@ -25,6 +25,7 @@ import {
   ShoppingCartSimpleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
+import { PageHeader } from "@/components/Admin/AdminUI";
 import { Panel, PanelHeader, PanelEmpty, PanelSkeleton } from "@/components/Chef/studio/Panel";
 import { StatTile, StatTileSkeleton } from "@/components/Chef/studio/StatTile";
 import {
@@ -516,42 +517,34 @@ export default function ChefDashboardPage() {
       <title>Dashboard – Chefalio</title>
 
       <div className="space-y-5 max-w-7xl mx-auto">
-        {/* ── Header ── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1
-              className="text-xl font-semibold tracking-[-0.018em]"
-              style={{ color: "var(--cs-text-primary)" }}
-            >
-              {greeting}, {firstName}
-            </h1>
-            <p className="text-sm mt-0.5" style={{ color: "var(--cs-text-tertiary)" }}>
-              Here&apos;s what&apos;s happening with your content.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/chef/recipes/create"
-              className="inline-flex items-center gap-1.5 px-3 h-8 text-xs font-medium rounded-lg transition-colors duration-150 hover:bg-[var(--cs-hover)] active:scale-[0.98]"
-              style={{
-                border: "1px solid var(--cs-border-default)",
-                backgroundColor: "var(--cs-surface-2)",
-                color: "var(--cs-text-primary)",
-              }}
-            >
-              <PlusIcon size={12} weight="bold" />
-              New recipe
-            </Link>
-            <Link
-              href="/chef/cookbooks/create"
-              className="inline-flex items-center gap-1.5 px-3 h-8 text-xs font-medium rounded-lg transition-transform duration-150 active:scale-[0.98]"
-              style={{ backgroundColor: "var(--cs-accent)", color: "#111110" }}
-            >
-              <PlusIcon size={12} weight="bold" />
-              New cookbook
-            </Link>
-          </div>
-        </div>
+        <PageHeader
+          title={`${greeting}, ${firstName}`}
+          description="Here's what's happening with your content."
+          action={
+            <div className="flex items-center gap-2">
+              <Link
+                href="/chef/recipes/create"
+                className="inline-flex items-center gap-1.5 px-3 h-8 text-xs font-medium rounded-lg transition-colors duration-150 hover:bg-[var(--cs-hover)] active:scale-[0.98]"
+                style={{
+                  border: "1px solid var(--cs-border-default)",
+                  backgroundColor: "var(--cs-surface-2)",
+                  color: "var(--cs-text-primary)",
+                }}
+              >
+                <PlusIcon size={12} weight="bold" />
+                New recipe
+              </Link>
+              <Link
+                href="/chef/cookbooks/create"
+                className="inline-flex items-center gap-1.5 px-3 h-8 text-xs font-medium rounded-lg transition-transform duration-150 active:scale-[0.98]"
+                style={{ backgroundColor: "var(--cs-accent)", color: "#111110" }}
+              >
+                <PlusIcon size={12} weight="bold" />
+                New cookbook
+              </Link>
+            </div>
+          }
+        />
 
         {/* ── Stat tiles. Each waits on its own query, so the money figures
               don't sit blank because the recipe list is slow. ── */}
@@ -564,6 +557,7 @@ export default function ChefDashboardPage() {
           ) : (
             <>
               <StatTile
+                index={0}
                 label="Revenue"
                 value={currency(dashboardEarnings?.totalRevenue ?? 0, true)}
                 sub="Lifetime"
@@ -571,10 +565,12 @@ export default function ChefDashboardPage() {
                 accent={MEASURE.revenue}
               />
               <StatTile
+                index={1}
                 label="Orders"
                 value={(dashboardEarnings?.totalOrders ?? 0).toLocaleString()}
                 sub="Paid"
                 icon={ShoppingCartSimpleIcon}
+                accent={MEASURE.orders}
               />
             </>
           )}
@@ -588,22 +584,27 @@ export default function ChefDashboardPage() {
           ) : (
             <>
               <StatTile
+                index={2}
                 label="Recipes"
                 value={recipeAnalytics?.totalRecipes ?? 0}
                 sub="Published"
                 icon={ForkKnifeIcon}
               />
               <StatTile
+                index={3}
                 label="Loves"
                 value={(recipeAnalytics?.totalLoves ?? 0).toLocaleString()}
                 sub="All recipes"
                 icon={HeartIcon}
+                accent={MEASURE.loves}
               />
               <StatTile
+                index={4}
                 label="Saves"
                 value={(recipeAnalytics?.totalSaves ?? 0).toLocaleString()}
                 sub="All recipes"
                 icon={BookmarkSimpleIcon}
+                accent={MEASURE.saves}
               />
             </>
           )}
@@ -612,6 +613,7 @@ export default function ChefDashboardPage() {
             <StatTileSkeleton />
           ) : (
             <StatTile
+              index={5}
               label="Cookbooks"
               value={dashboardEarnings?.totalCookbooks ?? 0}
               sub="Published"

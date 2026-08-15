@@ -176,7 +176,7 @@ export function LegalPage({
               >
                 These pages sit alongside each other — the{" "}
                 <Link
-                  href="/privacy"
+                  href="/privacy-policy"
                   className="underline decoration-1 underline-offset-2"
                   style={{ color: "var(--cs-accent-text)" }}
                 >
@@ -184,7 +184,7 @@ export function LegalPage({
                 </Link>{" "}
                 and the{" "}
                 <Link
-                  href="/terms"
+                  href="/terms-of-service"
                   className="underline decoration-1 underline-offset-2"
                   style={{ color: "var(--cs-accent-text)" }}
                 >

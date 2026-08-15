@@ -19,11 +19,13 @@ export default function UserLayout({
   const { profile } = useProfile();
   const isChef = profile?.role === "chef";
 
-  const navItems = [
-    ...PRIMARY_NAV,
-    isChef ? CHEF_STUDIO_NAV : BECOME_CHEF_NAV,
-    SETTINGS_NAV,
-  ];
+  // Chef Studio leads the list for a chef — it's the destination that
+  // matters most to them, not one more item after the browsing nav. Become
+  // a chef stays where it was: it's a pitch to a member, not a mode switch,
+  // so it doesn't compete for the top slot.
+  const navItems = isChef
+    ? [CHEF_STUDIO_NAV, ...PRIMARY_NAV, SETTINGS_NAV]
+    : [...PRIMARY_NAV, BECOME_CHEF_NAV, SETTINGS_NAV];
 
   return (
     <>

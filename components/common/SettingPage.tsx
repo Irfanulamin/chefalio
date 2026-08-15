@@ -54,14 +54,18 @@ const InfoRow = ({
   icon: Icon,
   label,
   value,
+  isLast,
 }: {
   icon: React.ElementType;
   label: string;
   value?: string;
+  isLast?: boolean;
 }) => (
   <div
-    className="flex items-center gap-3 py-2.5 last:border-0"
-    style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
+    className="flex items-center gap-3 py-2.5"
+    style={{
+      borderBottom: isLast ? "none" : "1px solid var(--cs-border-subtle)",
+    }}
   >
     <span
       aria-hidden
@@ -160,8 +164,11 @@ function ChefProfileForm({ initial }: { initial: ChefProfile | null }) {
     try {
       await upsertProfile({ bio, genres, achievements });
       toast.success("Chef profile updated", { position: "bottom-right" });
-    } catch {
-      toast.error("Couldn't update your chef profile", { position: "bottom-right" });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Couldn't update your chef profile",
+        { position: "bottom-right" },
+      );
     }
   };
 
@@ -664,7 +671,7 @@ export default function SettingsPage() {
     defaultValues: { fullName: "", image: [] as File[] },
     onSubmit: async ({ value }) => {
       try {
-        updateProfile(value);
+        await updateProfile(value);
         toast.success("Profile updated", { position: "bottom-right" });
         profileForm.reset();
       } catch (err: Error | unknown) {
@@ -762,6 +769,7 @@ export default function SettingsPage() {
                     icon={UserCircleIcon}
                     label="Name"
                     value={profile?.fullName}
+                    isLast
                   />
                 </div>
               </div>

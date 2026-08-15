@@ -1,24 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
-import { difficultyDisplay } from "@/lib/recipe-display";
-import { StatusPill } from "@/components/User/shared/StatusPill";
+
+const AUTOPLAY_INTERVAL_MS = 400;
 
 export function ImageCarousel({
   images,
   title,
-  difficulty,
 }: {
   images: string[];
   title: string;
-  difficulty: string;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
-  const diff = difficultyDisplay(difficulty);
   const hasMany = images.length > 1;
 
   /**
@@ -69,9 +67,31 @@ export function ImageCarousel({
     }
   };
 
+  /* Loops back to the first photo after the last rather than stopping —
+     the same "advances until interrupted" behavior as native OS photo
+     widgets. Pauses on hover/focus so it never fights a reader who's
+     actually looking at a specific photo, and sits out entirely under
+     reduced motion, where a continuously-advancing carousel is exactly the
+     kind of looping motion that preference exists to remove. */
+  useEffect(() => {
+    if (!hasMany || reduce || paused) return;
+
+    const id = setInterval(() => {
+      scrollToImage((activeIndex + 1) % images.length);
+    }, AUTOPLAY_INTERVAL_MS);
+
+    return () => clearInterval(id);
+  }, [hasMany, reduce, paused, activeIndex, images.length, scrollToImage]);
+
   return (
     <div className="mb-8">
-      <div className="ui-card overflow-hidden">
+      <div
+        className="ui-card overflow-hidden"
+        onPointerEnter={() => setPaused(true)}
+        onPointerLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+      >
         {/* Native scroll-snap rather than a JS carousel: it keeps the
             platform's own momentum, rubber-banding at the ends and
             trackpad handling, which no reimplementation gets right. */}
@@ -124,10 +144,6 @@ export function ImageCarousel({
               </span>
             </div>
           )}
-
-          <StatusPill tone={diff.tone} overMedia className="absolute left-3 top-3 z-10">
-            {diff.label}
-          </StatusPill>
 
           {hasMany && (
             <span

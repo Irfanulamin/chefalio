@@ -133,7 +133,8 @@ function RejectDialog({
           <AlertDialogAction
             disabled={!note.trim() || isPending}
             onClick={() => onReject(note.trim())}
-            className="bg-red-600 text-white hover:bg-red-700"
+            className="text-white hover:opacity-90"
+            style={{ backgroundColor: "var(--cv-critical)" }}
           >
             {isPending ? "Rejecting…" : "Confirm Rejection"}
           </AlertDialogAction>

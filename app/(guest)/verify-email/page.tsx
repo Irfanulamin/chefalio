@@ -11,11 +11,11 @@ import {
   AuthResult,
   AuthSecondary,
 } from "@/components/common/AuthBits";
-import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowClockwiseIcon,
+  UserIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
 function VerifyEmailContent() {
@@ -96,7 +96,7 @@ function VerifyEmailContent() {
       panel={AUTH_PANELS.verify}
       title={copy.title}
       subtitle={copy.subtitle}
-      footer={<AuthLink href="/login">Back to sign in</AuthLink>}
+      footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
     >
       {status === "loading" && (
         <div className="flex flex-col items-center gap-5 py-6 text-center">
@@ -151,14 +151,28 @@ function VerifyEmailContent() {
                 >
                   Enter your email or username and we&apos;ll send a fresh link.
                 </label>
-                <Input
-                  id="resend-target"
-                  type="text"
-                  value={resendInput}
-                  onChange={(e) => setResendInput(e.target.value)}
-                  placeholder="Email or username"
-                  autoComplete="off"
-                />
+                <div className="relative">
+                  <UserIcon
+                    size={17}
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2"
+                    style={{ color: "var(--cs-text-tertiary)" }}
+                    aria-hidden
+                  />
+                  <input
+                    id="resend-target"
+                    type="text"
+                    value={resendInput}
+                    onChange={(e) => setResendInput(e.target.value)}
+                    placeholder="Email or username"
+                    autoComplete="off"
+                    className="h-12 w-full rounded-lg pl-10 pr-4 text-[0.9375rem] outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--cs-text-tertiary)] focus:border-[var(--primary)] focus:shadow-[0_0_0_3px_var(--cs-focus-ring)]"
+                    style={{
+                      border: "1px solid var(--cs-border-default)",
+                      backgroundColor: "var(--cs-surface-1)",
+                      color: "var(--cs-text-primary)",
+                    }}
+                  />
+                </div>
                 <AuthSecondary
                   onClick={handleResend}
                   disabled={isResendingVerification || !resendInput.trim()}

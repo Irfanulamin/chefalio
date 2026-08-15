@@ -111,14 +111,9 @@ export function EditSheet({
           className="px-5 py-4 shrink-0"
           style={{ borderBottom: "1px solid var(--cs-border-subtle)" }}
         >
-          <SheetTitle
-            className="text-base font-semibold tracking-[-0.01em]"
-            style={{ color: "var(--cs-text-primary)" }}
-          >
-            {title}
-          </SheetTitle>
+          <SheetTitle className="ui-subheading text-foreground">{title}</SheetTitle>
           {description && (
-            <SheetDescription className="text-xs" style={{ color: "var(--cs-text-tertiary)" }}>
+            <SheetDescription className="ui-caption" style={{ color: "var(--cs-text-tertiary)" }}>
               {description}
             </SheetDescription>
           )}

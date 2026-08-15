@@ -16,7 +16,7 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({
   children,
   allowedRoles,
-  redirectTo = "/login",
+  redirectTo = "/sign-in",
   unauthorizedRedirect = "/unauthorized",
 }: ProtectedRouteProps) {
   const { user, isLoading, isAuthenticated } = useAuth();

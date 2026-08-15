@@ -9,17 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { TrashIcon } from "@phosphor-icons/react/dist/ssr"
 import { StatusPill, StatusSwitch } from "@/components/Admin/AdminUI"
 import type { AdminUser } from "@/types/admin.type"
@@ -37,7 +26,7 @@ export function createUserColumns({
 }: {
   onRoleChange: (id: string, role: string) => void
   onToggleActive: (id: string, current: boolean) => void
-  onDelete: (id: string) => void
+  onDelete: (user: AdminUser) => void
 }): ColumnDef<AdminUser, unknown>[] {
   return [
     {
@@ -141,35 +130,15 @@ export function createUserColumns({
       size: 52,
       header: () => null,
       cell: ({ row }) => (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <button
-              className="focus-ring h-7 w-7 flex items-center justify-center rounded-lg transition-[background-color,color,transform] duration-150 active:scale-90 hover:text-red-500 hover:bg-(--cs-danger-bg)"
-              style={{ color: "var(--cs-text-tertiary)" }}
-            >
-              <TrashIcon size={14} />
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete user?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete{" "}
-                <strong>{row.original.fullName}</strong> and all their data.
-                This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onDelete(row.original._id)}
-                className="bg-red-500 hover:bg-red-600 text-white border-0"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <button
+          type="button"
+          aria-label={`Delete ${row.original.fullName}`}
+          onClick={() => onDelete(row.original)}
+          className="focus-ring h-8 w-8 flex items-center justify-center rounded-lg transition-[background-color,color,transform] duration-150 active:scale-90 hover:!text-[var(--cs-danger-fg)] hover:!bg-[var(--cs-danger-bg)]"
+          style={{ color: "var(--cs-text-tertiary)" }}
+        >
+          <TrashIcon size={15} />
+        </button>
       ),
     },
   ]

@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { useAdminRecipesTable } from "@/hooks/swr/use-admin-recipes-table"
 import { useAdminDeleteRecipe } from "@/hooks/useAdmin"
 import { DataTable } from "@/components/ui/data-table"
-import { createRecipeColumns } from "./columns"
+import { DeleteDialog } from "@/components/common/DeleteDialog"
+import { createRecipeColumns, type AdminRecipeRow } from "./columns"
 import { toast } from "sonner"
 import { ForkKnifeIcon } from "@phosphor-icons/react/dist/ssr"
 import { PageHeader } from "@/components/Admin/AdminUI"
@@ -16,21 +17,27 @@ export default function AdminRecipesPage() {
   const { recipes, pagination, isLoading, isFetching, refresh } =
     useAdminRecipesTable({ page, limit: 20, search: search || undefined })
 
-  const deleteRecipe = useAdminDeleteRecipe()
+  const { mutate: deleteRecipe, isPending: isDeleting } = useAdminDeleteRecipe()
 
-  async function handleDelete(id: string) {
-    try {
-      await deleteRecipe.mutateAsync(id)
-      toast.success("Recipe deleted")
-      refresh()
-    } catch {
-      toast.error("Failed to delete recipe")
-    }
-  }
+  // Single controlled dialog holding the target row, rather than an
+  // AlertDialog mounted inside every action cell — see DeleteDialog.
+  const [deleting, setDeleting] = useState<AdminRecipeRow | null>(null)
+
+  const handleDelete = useCallback(() => {
+    if (!deleting) return
+    deleteRecipe(deleting._id, {
+      onSuccess: () => {
+        toast.success("Recipe deleted")
+        setDeleting(null)
+        refresh()
+      },
+      onError: (err) =>
+        toast.error(err instanceof Error ? err.message : "Failed to delete recipe"),
+    })
+  }, [deleting, deleteRecipe, refresh])
 
   const columns = useMemo(
-    () => createRecipeColumns({ onDelete: handleDelete }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    () => createRecipeColumns({ onDelete: setDeleting }),
     [],
   )
 
@@ -73,6 +80,15 @@ export default function AdminRecipesPage() {
           }
         />
       </div>
+
+      <DeleteDialog
+        open={deleting !== null}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        kind="recipe"
+        name={deleting?.title}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
+      />
     </>
   )
 }

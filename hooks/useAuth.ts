@@ -77,7 +77,7 @@ export function useAuth() {
     mutationFn: () => axiosInstance.post("/auth/logout"),
     onSuccess: () => {
       queryClient.clear();
-      router.push("/login");
+      router.push("/sign-in");
     },
   });
 
@@ -90,7 +90,7 @@ export function useAuth() {
     mutationFn: (data: ResetPasswordPayload) =>
       axiosInstance.post("/auth/reset-password", data),
     onSuccess: () => {
-      router.push("/login?reset=success");
+      router.push("/sign-in?reset=success");
     },
     onError: () => {},
   });

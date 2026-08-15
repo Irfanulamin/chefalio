@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { useAdminCookbooksTable } from "@/hooks/swr/use-admin-cookbooks-table"
 import {
   useAdminDeleteCookbook,
@@ -10,6 +10,7 @@ import {
 import type { Cookbook } from "@/types/cookbook.type"
 import Image from "next/image"
 import { DataTable } from "@/components/ui/data-table"
+import { DeleteDialog } from "@/components/common/DeleteDialog"
 import { createCookbookColumns } from "./columns"
 import { toast } from "sonner"
 import {
@@ -60,19 +61,27 @@ export default function AdminCookbooksPage() {
       search: search || undefined,
     })
 
-  const deleteCookbook = useAdminDeleteCookbook()
+  const { mutate: deleteCookbook, isPending: isDeleting } = useAdminDeleteCookbook()
   const updateCookbook = useAdminUpdateCookbook()
   const applyGlobalDiscount = useAdminApplyGlobalDiscount()
 
-  async function handleDelete(id: string) {
-    try {
-      await deleteCookbook.mutateAsync(id)
-      toast.success("Cookbook deleted")
-      refresh()
-    } catch {
-      toast.error("Failed to delete cookbook")
-    }
-  }
+  // Single controlled dialog holding the target row, rather than an
+  // AlertDialog mounted inside every action cell — see DeleteDialog.
+  const [deleting, setDeleting] = useState<Cookbook | null>(null)
+
+  const handleDelete = useCallback(() => {
+    if (!deleting) return
+    deleteCookbook(deleting._id, {
+      onSuccess: () => {
+        toast.success("Cookbook deleted")
+        setDeleting(null)
+        refresh()
+      },
+      onError: (err) =>
+        toast.error(err instanceof Error ? err.message : "Failed to delete cookbook"),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deleting, deleteCookbook])
 
   function openEdit(cookbook: Cookbook) {
     setEditTarget(cookbook)
@@ -105,8 +114,8 @@ export default function AdminCookbooksPage() {
       toast.success("Cookbook updated")
       setEditTarget(null)
       refresh()
-    } catch {
-      toast.error("Failed to update cookbook")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update cookbook")
     }
   }
 
@@ -121,8 +130,10 @@ export default function AdminCookbooksPage() {
       )
       setPendingGlobalDiscount(null)
       refresh()
-    } catch {
-      toast.error("Failed to apply global discount")
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to apply global discount",
+      )
     }
   }
 
@@ -130,7 +141,7 @@ export default function AdminCookbooksPage() {
     () =>
       createCookbookColumns({
         onEdit: openEdit,
-        onDelete: handleDelete,
+        onDelete: setDeleting,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -376,6 +387,15 @@ export default function AdminCookbooksPage() {
           }
         />
       </div>
+
+      <DeleteDialog
+        open={deleting !== null}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        kind="cookbook"
+        name={deleting?.title}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
+      />
     </>
   )
 }

@@ -33,7 +33,7 @@ const PLANS: {
       "Save unlimited recipes to your library",
       "Follow the chefs whose food you like",
     ],
-    cta: { label: "Create free account", href: "/register" },
+    cta: { label: "Create free account", href: "/sign-up" },
   },
   {
     id: "cookbooks",

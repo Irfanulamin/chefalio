@@ -3,7 +3,6 @@
 import { type ColumnDef } from "@tanstack/react-table"
 import Image from "next/image"
 import { SortableHeader } from "@/components/ui/data-table"
-import { Button } from "@/components/ui/button"
 import {
   PencilSimpleIcon,
   TrashIcon,
@@ -151,29 +150,27 @@ export function createChefRecipeColumns({
            otherwise pressing Delete would also open the thing you're
            deleting, behind the confirmation dialog. */
         <div
-          className="flex items-center gap-1.5 justify-end"
+          className="flex items-center gap-1 justify-end"
           onClick={(e) => e.stopPropagation()}
         >
-          <Button
-            variant="outline"
-            size="sm"
+          <button
+            type="button"
+            aria-label={`Edit ${row.original.title}`}
             onClick={() => onEdit(row.original)}
-            className="h-7 gap-1.5 text-xs px-2.5 rounded-lg transition-transform duration-150 active:scale-[0.97]"
-            style={{ color: "var(--cs-text-secondary)" }}
-          >
-            <PencilSimpleIcon size={13} />
-            Edit
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            aria-label={`Delete ${row.original.title}`}
-            onClick={() => onDelete(row.original)}
-            className="h-7 px-2 rounded-lg transition-transform duration-150 active:scale-[0.97] hover:!text-[var(--cs-danger-fg)] hover:!bg-[var(--cs-danger-bg)]"
+            className="focus-ring h-8 w-8 flex items-center justify-center rounded-lg transition-[background-color,color,transform] duration-150 active:scale-90 hover:!text-[var(--cs-accent-text)] hover:!bg-[var(--cs-accent-muted)]"
             style={{ color: "var(--cs-text-tertiary)" }}
           >
-            <TrashIcon size={13} />
-          </Button>
+            <PencilSimpleIcon size={15} />
+          </button>
+          <button
+            type="button"
+            aria-label={`Delete ${row.original.title}`}
+            onClick={() => onDelete(row.original)}
+            className="focus-ring h-8 w-8 flex items-center justify-center rounded-lg transition-[background-color,color,transform] duration-150 active:scale-90 hover:!text-[var(--cs-danger-fg)] hover:!bg-[var(--cs-danger-bg)]"
+            style={{ color: "var(--cs-text-tertiary)" }}
+          >
+            <TrashIcon size={15} />
+          </button>
         </div>
       ),
     },

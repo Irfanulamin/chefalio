@@ -1,19 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
-import {
-  ArrowLeftIcon,
-  ClockIcon,
-  StarIcon,
-} from "@phosphor-icons/react/dist/ssr";
 import {
   AUTH_PANELS,
   cld,
   type AuthPanel,
 } from "@/components/Home/imagery";
+import { Header } from "@/components/common/Header";
 
 interface AuthLayoutProps {
   /** Page heading. Say what this screen does, plainly. */
@@ -28,18 +23,25 @@ interface AuthLayoutProps {
    * disagree — see `AUTH_PANELS`.
    */
   panel?: AuthPanel;
-  /** Wider card for longer forms (register). */
-  wide?: boolean;
 }
 
 /**
  * The shell every auth screen sits in.
  *
- * Auth used to be a bare form on a flat white page next to a photo with a
- * dark scrim — a different product from the one the visitor just came from.
- * It now carries the landing page's language: the same light field, the same
- * translucent card material, the same type scale and the same press
- * feedback, so signing in reads as the next step rather than a handoff.
+ * One bounded card rather than a full-height split screen: the photo used
+ * to run the full viewport height as its own column, which made a short
+ * form (forgot-password, one field) sit next to a wall of photograph. The
+ * two now share a single card at a fixed max-width — photo on the left,
+ * form on the right, both the same height as whichever is taller — so the
+ * page reads as one composed object floating on the light field instead of
+ * two independent panels racing each other to the edges of the window.
+ *
+ * The chrome above the card is the same fixed `Header` the marketing site
+ * uses, not a stripped-down one-link bar. A one-off "Back to site" link
+ * meant the theme toggle only existed off the auth screens — the same
+ * navbar carries it everywhere else. `main` picks up the top padding the
+ * header's `fixed` positioning takes out of flow, the same amount the
+ * legal pages already clear it by.
  */
 export default function AuthLayout({
   title,
@@ -47,53 +49,101 @@ export default function AuthLayout({
   children,
   footer,
   panel = AUTH_PANELS.login,
-  wide = false,
 }: AuthLayoutProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const reduce = useReducedMotion();
 
   return (
-    <div className="flex min-h-svh">
-      {/* Form side */}
-      <div className="auth-field relative flex flex-1 flex-col">
-        <header className="flex shrink-0 items-center justify-between px-5 py-5 md:px-8">
-          <Link
-            href="/"
-            className="select-none text-xl font-extrabold"
-            style={{
-              color: "var(--cs-accent-text)",
-              letterSpacing: "-0.03em",
-            }}
-          >
-            Chefalio
-          </Link>
+    <div className="auth-field min-h-svh">
+      <Header />
 
-          <motion.div
-            whileTap={reduce ? undefined : { scale: 0.96 }}
-            transition={{ type: "spring", bounce: 0, duration: 0.26 }}
+      <main className="flex min-h-svh items-center justify-center px-5 pb-14 pt-28 md:px-8 md:pt-32">
+        <motion.div
+          initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={
+            reduce
+              ? { duration: 0.2 }
+              : { type: "spring", bounce: 0, duration: 0.5 }
+          }
+          /* `overflow-hidden` on this element is what clips both children
+             to the card's own corner radius — neither the photo half nor
+             the form half needs to know its own radius. */
+          className="material grid w-full overflow-hidden rounded-2xl lg:max-w-4xl lg:grid-cols-2 xl:max-w-5xl"
+        >
+          {/* Photo half — kept first in the DOM so the form and its
+              heading are what a screen reader or a crawler meets first;
+              `lg:order-1` is what actually puts it on the left visually. */}
+          <div
+            className="relative order-2 hidden min-h-[520px] lg:order-1 lg:block"
+            style={{ backgroundColor: "var(--cs-surface-3)" }}
           >
-            <Link
-              href="/"
-              className="type-caption inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors duration-150"
-              style={{ color: "var(--cs-text-secondary)" }}
-            >
-              <ArrowLeftIcon size={13} weight="bold" />
-              Back to site
-            </Link>
-          </motion.div>
-        </header>
+            {!imgLoaded && (
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(135deg, color-mix(in oklab, var(--primary) 55%, transparent), var(--cs-surface-3))",
+                }}
+              />
+            )}
+            <Image
+              src={cld(panel.id, { w: 900, h: 1100 })}
+              alt={panel.alt}
+              fill
+              priority
+              sizes="(min-width: 1024px) 32vw, 0px"
+              className={`object-cover transition-opacity duration-500 ${
+                imgLoaded ? "opacity-100" : "opacity-0"
+              }`}
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgLoaded(true)}
+            />
 
-        <main className="flex flex-1 items-center justify-center px-5 pb-14 pt-4 md:px-8">
-          <motion.div
-            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={
-              reduce
-                ? { duration: 0.2 }
-                : { type: "spring", bounce: 0, duration: 0.5 }
-            }
-            className={`w-full ${wide ? "max-w-lg" : "max-w-md"}`}
-          >
+            {/* Flat neutral scrim, dark-to-transparent — just enough to
+                carry the white headline over whatever the photo is doing
+                underneath it. No brand tint: a name/time/rating chip and a
+                lime-mixed gradient here read as decoration borrowed from a
+                stock auth template, not as something that belongs to this
+                specific photo. */}
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.24) 45%, transparent 75%)",
+              }}
+            />
+
+            <div className="absolute inset-x-0 bottom-0 p-8">
+              <h2
+                className="text-2xl font-bold text-white"
+                style={{ letterSpacing: "-0.03em", lineHeight: 1.14 }}
+              >
+                Cook from the pros.
+                <br />
+                Sell what you cook.
+              </h2>
+
+              <p
+                className="type-caption mt-3"
+                style={{ color: "rgba(255,255,255,0.82)" }}
+              >
+                Browsing is free. Cookbooks are a one-off price set by the
+                chef who wrote them, and they stay in your library for good.
+              </p>
+
+              <p
+                className="type-micro mt-5"
+                style={{ color: "rgba(255,255,255,0.62)" }}
+              >
+                Pictured: {panel.name}, by {panel.chef}
+              </p>
+            </div>
+          </div>
+
+          {/* Form half */}
+          <div className="order-1 flex flex-col justify-center p-6 md:p-8 lg:order-2 lg:p-10">
             <h1
               className="type-heading"
               style={{ color: "var(--cs-text-primary)" }}
@@ -110,11 +160,7 @@ export default function AuthLayout({
               </div>
             )}
 
-            {/* The card is a material: the light field passes underneath it,
-                which is what keeps the form attached to the page. */}
-            <div className="material mt-7 rounded-3xl p-6 md:p-8">
-              {children}
-            </div>
+            <div className="mt-6">{children}</div>
 
             {footer && (
               <div
@@ -124,113 +170,9 @@ export default function AuthLayout({
                 {footer}
               </div>
             )}
-          </motion.div>
-        </main>
-      </div>
-
-      {/* Brand side */}
-      <aside
-        className="relative hidden w-[42%] max-w-2xl shrink-0 overflow-hidden lg:block"
-        style={{ backgroundColor: "var(--cs-surface-3)" }}
-      >
-        {!imgLoaded && (
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(135deg, color-mix(in oklab, var(--primary) 55%, transparent), var(--cs-surface-3))",
-            }}
-          />
-        )}
-        <Image
-          src={cld(panel.id, { w: 1200, h: 1600 })}
-          alt={panel.alt}
-          fill
-          priority
-          sizes="42vw"
-          className={`object-cover transition-opacity duration-500 ${
-            imgLoaded ? "opacity-100" : "opacity-0"
-          }`}
-          onLoad={() => setImgLoaded(true)}
-          onError={() => setImgLoaded(true)}
-        />
-
-        {/* Brand-tinted scrim rather than flat black, so the panel belongs to
-            Chefalio and not to a stock photo. */}
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(18,32,10,0.88) 0%, rgba(18,32,10,0.45) 45%, color-mix(in oklab, var(--primary) 18%, transparent) 100%)",
-          }}
-        />
-
-        {/* A row of five decorative stars and three adjectives ("Thousands of
-            chef-tested recipes") is the stock half of every split-screen auth
-            page, and none of it was checkable. The panel now credits the
-            photograph instead: this is a real recipe on the platform, by a
-            named chef, and saying so is worth more than the claim was. */}
-        <div className="absolute inset-0 flex flex-col justify-between p-10">
-          <div
-            className="type-caption inline-flex w-fit items-center gap-2.5 rounded-full px-3.5 py-2"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.14)",
-              border: "1px solid rgba(255,255,255,0.22)",
-              backdropFilter: "blur(10px) saturate(140%)",
-              WebkitBackdropFilter: "blur(10px) saturate(140%)",
-              color: "#ffffff",
-            }}
-          >
-            <span className="font-semibold">{panel.name}</span>
-            <span style={{ color: "rgba(255,255,255,0.5)" }}>·</span>
-            <span
-              className="inline-flex items-center gap-1"
-              style={{ color: "rgba(255,255,255,0.82)" }}
-            >
-              <ClockIcon size={12} weight="bold" />
-              {panel.time}
-            </span>
-            <span
-              className="inline-flex items-center gap-1"
-              style={{ color: "rgba(255,255,255,0.82)" }}
-            >
-              <StarIcon
-                size={12}
-                weight="fill"
-                style={{ color: "var(--primary)" }}
-              />
-              {panel.rating}
-            </span>
           </div>
-
-          <div>
-            <h2
-              className="text-3xl font-bold text-white"
-              style={{ letterSpacing: "-0.03em", lineHeight: 1.12 }}
-            >
-              Cook from the pros.
-              <br />
-              Sell what you cook.
-            </h2>
-
-            <p
-              className="type-body mt-4 max-w-sm"
-              style={{ color: "rgba(255,255,255,0.82)" }}
-            >
-              Browsing is free. Cookbooks are a one-off price set by the chef
-              who wrote them, and they stay in your library for good.
-            </p>
-
-            <p
-              className="type-micro mt-6"
-              style={{ color: "rgba(255,255,255,0.62)" }}
-            >
-              Pictured: {panel.name}, by {panel.chef}
-            </p>
-          </div>
-        </div>
-      </aside>
+        </motion.div>
+      </main>
     </div>
   );
 }

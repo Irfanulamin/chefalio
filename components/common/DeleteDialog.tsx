@@ -13,19 +13,21 @@ import {
 import { WarningIcon } from "@phosphor-icons/react/dist/ssr";
 
 /**
- * The one destructive confirmation in the studio.
+ * The one destructive-confirmation pattern for the whole product — chef
+ * studio and the admin console both delete recipes, cookbooks, and users
+ * through this, not five near-identical `AlertDialog`s each hand-rolled per
+ * table with their own hover colours.
  *
- * Deletion already went through an AlertDialog, but a fresh one was
- * constructed inside every row's action cell — a hundred recipes meant a
- * hundred dialog subtrees mounted behind a hundred triggers, all identical
- * except for a title. This is a single controlled instance the page opens
- * with the target row.
+ * A single controlled instance the page opens with the target row, rather
+ * than a dialog mounted inside every action cell — a hundred rows meant a
+ * hundred dialog subtrees otherwise.
  *
- * The styling matters as much as the structure: the old confirm button was
- * `bg-red-500 hover:bg-red-600` with `hover:bg-red-50` on the trigger. Those
- * are light-mode literals — in dark mode a pale red-50 wash lit up behind
- * the trash icon on a near-black row. It now draws from the danger triplet,
- * which is restated per theme.
+ * The styling matters as much as the structure: the confirm button used to
+ * be `bg-red-500 hover:bg-red-600` with `hover:bg-red-50` on the trigger
+ * elsewhere in the app. Those are light-mode literals — in dark mode a pale
+ * red-50 wash lit up behind the trash icon on a near-black row. It draws
+ * from the danger triplet and `--cv-critical` instead, both restated per
+ * theme.
  *
  * Apple's guidance is that confirmation is for the genuinely irreversible;
  * this qualifies, and it earns its interruption by naming the exact thing
@@ -34,7 +36,7 @@ import { WarningIcon } from "@phosphor-icons/react/dist/ssr";
 export function DeleteDialog({
   open,
   onOpenChange,
-  /** What kind of thing — "recipe", "cookbook". Lowercase. */
+  /** What kind of thing — "recipe", "cookbook", "user". Lowercase. */
   kind,
   name,
   onConfirm,
@@ -66,13 +68,10 @@ export function DeleteDialog({
           >
             <WarningIcon size={17} weight="fill" style={{ color: "var(--cs-danger-fg)" }} />
           </div>
-          <AlertDialogTitle
-            className="text-base font-semibold tracking-[-0.01em]"
-            style={{ color: "var(--cs-text-primary)" }}
-          >
+          <AlertDialogTitle className="ui-subheading text-foreground">
             Delete this {kind}?
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
+          <AlertDialogDescription className="ui-caption" style={{ color: "var(--cs-text-secondary)" }}>
             <span className="font-medium" style={{ color: "var(--cs-text-primary)" }}>
               {name ?? `This ${kind}`}
             </span>{" "}
