@@ -120,8 +120,8 @@ export function useChefRecipes(
   });
 
   return {
-    recipes: data?.data?.recipes,
-    pagination: data?.data?.pagination,
+    recipes: data?.data,
+    pagination: data?.pagination,
     isLoading,
     isFetching,
     error,
@@ -151,15 +151,15 @@ export function useInfiniteChefRecipes(
         .then((res) => res.data),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      const { page, totalPages } = lastPage.data.pagination;
+      const { page, totalPages } = lastPage.pagination;
       return page < totalPages ? page + 1 : undefined;
     },
     staleTime: 1000 * 60,
     enabled: !!id,
   });
 
-  const recipes = data?.pages.flatMap((p) => p.data.recipes) ?? [];
-  const total = data?.pages[0]?.data.pagination.total ?? 0;
+  const recipes = data?.pages.flatMap((p) => p.data) ?? [];
+  const total = data?.pages[0]?.pagination.total ?? 0;
 
   return { recipes, total, isLoading, isFetching, error, fetchNextPage, hasNextPage, isFetchingNextPage };
 }
@@ -181,8 +181,8 @@ export function useChefCookbooks(
   });
 
   return {
-    cookbooks: data?.data?.cookbooks,
-    pagination: data?.data?.pagination,
+    cookbooks: data?.data,
+    pagination: data?.pagination,
     isLoading,
     isFetching,
     error,
@@ -212,15 +212,15 @@ export function useInfiniteChefCookbooks(
         .then((res) => res.data),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      const { page, totalPages } = lastPage.data.pagination;
+      const { page, totalPages } = lastPage.pagination;
       return page < totalPages ? page + 1 : undefined;
     },
     staleTime: 1000 * 60,
     enabled: !!id,
   });
 
-  const cookbooks = data?.pages.flatMap((p) => p.data.cookbooks) ?? [];
-  const total = data?.pages[0]?.data.pagination.total ?? 0;
+  const cookbooks = data?.pages.flatMap((p) => p.data) ?? [];
+  const total = data?.pages[0]?.pagination.total ?? 0;
 
   return { cookbooks, total, isLoading, isFetching, error, fetchNextPage, hasNextPage, isFetchingNextPage };
 }

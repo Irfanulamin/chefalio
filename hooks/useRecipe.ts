@@ -91,14 +91,14 @@ export function useInfiniteRecipes(params?: {
         .then((res) => res.data),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      const { page, totalPages } = lastPage.data.pagination;
+      const { page, totalPages } = lastPage.pagination;
       return page < totalPages ? page + 1 : undefined;
     },
     staleTime: 1000 * 60,
   });
 
-  const recipes = data?.pages.flatMap((p) => p.data.recipes) ?? [];
-  const total = data?.pages[0]?.data.pagination.total ?? 0;
+  const recipes = data?.pages.flatMap((p) => p.data) ?? [];
+  const total = data?.pages[0]?.pagination.total ?? 0;
 
   return {
     recipes,
@@ -178,12 +178,9 @@ function patchRecipesCache(id: string, patch: Partial<Recipe>) {
       if (!old) return old;
       return {
         ...old,
-        data: {
-          ...old.data,
-          recipes: old.data.recipes.map((recipe) =>
-            recipe._id === id ? { ...recipe, ...patch } : recipe,
-          ),
-        },
+        data: old.data.map((recipe) =>
+          recipe._id === id ? { ...recipe, ...patch } : recipe,
+        ),
       };
     },
   );
@@ -195,12 +192,9 @@ function patchRecipesCache(id: string, patch: Partial<Recipe>) {
         ...old,
         pages: old.pages.map((page) => ({
           ...page,
-          data: {
-            ...page.data,
-            recipes: page.data.recipes.map((recipe) =>
-              recipe._id === id ? { ...recipe, ...patch } : recipe,
-            ),
-          },
+          data: page.data.map((recipe) =>
+            recipe._id === id ? { ...recipe, ...patch } : recipe,
+          ),
         })),
       };
     },
@@ -214,12 +208,9 @@ function patchChefRecipesCache(id: string, patch: Partial<Recipe>) {
       if (!old) return old;
       return {
         ...old,
-        data: {
-          ...old.data,
-          recipes: old.data.recipes.map((recipe) =>
-            recipe._id === id ? { ...recipe, ...patch } : recipe,
-          ),
-        },
+        data: old.data.map((recipe) =>
+          recipe._id === id ? { ...recipe, ...patch } : recipe,
+        ),
       };
     },
   );
@@ -231,12 +222,9 @@ function patchChefRecipesCache(id: string, patch: Partial<Recipe>) {
         ...old,
         pages: old.pages.map((page) => ({
           ...page,
-          data: {
-            ...page.data,
-            recipes: page.data.recipes.map((recipe) =>
-              recipe._id === id ? { ...recipe, ...patch } : recipe,
-            ),
-          },
+          data: page.data.map((recipe) =>
+            recipe._id === id ? { ...recipe, ...patch } : recipe,
+          ),
         })),
       };
     },
@@ -292,7 +280,7 @@ export function useToggleLove() {
         queryKey: ["recipes"],
       });
       const recipeFromList = allRecipePages
-        .flatMap(([, page]) => page?.data?.recipes ?? [])
+        .flatMap(([, page]) => page?.data ?? [])
         .find((r) => r._id === id);
 
       const allRecipeInfinitePages = queryClient.getQueriesData<InfiniteData<RecipeApiResponse>>({
@@ -301,7 +289,7 @@ export function useToggleLove() {
       const recipeFromInfiniteList = recipeFromList
         ? undefined
         : allRecipeInfinitePages
-            .flatMap(([, iData]) => iData?.pages.flatMap((p) => p?.data?.recipes ?? []) ?? [])
+            .flatMap(([, iData]) => iData?.pages.flatMap((p) => p?.data ?? []) ?? [])
             .find((r) => r._id === id);
 
       const allChefRecipePages = queryClient.getQueriesData<GetChefRecipesResponse>({
@@ -309,7 +297,7 @@ export function useToggleLove() {
       });
       const previousChefRecipes = allChefRecipePages;
       const recipeFromChef = allChefRecipePages
-        .flatMap(([, page]) => page?.data?.recipes ?? [])
+        .flatMap(([, page]) => page?.data ?? [])
         .find((r) => r._id === id);
 
       const allChefRecipeInfinitePages = queryClient.getQueriesData<InfiniteData<GetChefRecipesResponse>>({
@@ -319,7 +307,7 @@ export function useToggleLove() {
       const recipeFromChefInfinite = recipeFromChef
         ? undefined
         : allChefRecipeInfinitePages
-            .flatMap(([, iData]) => iData?.pages.flatMap((p) => p?.data?.recipes ?? []) ?? [])
+            .flatMap(([, iData]) => iData?.pages.flatMap((p) => p?.data ?? []) ?? [])
             .find((r) => r._id === id);
 
       const currentRecipe = recipeFromList ?? recipeFromInfiniteList ?? recipeFromChef ?? recipeFromChefInfinite;
@@ -431,7 +419,7 @@ export function useToggleSave() {
         queryKey: ["recipes"],
       });
       const recipeFromList = allRecipePages
-        .flatMap(([, page]) => page?.data?.recipes ?? [])
+        .flatMap(([, page]) => page?.data ?? [])
         .find((r) => r._id === id);
 
       const allRecipeInfinitePages = queryClient.getQueriesData<InfiniteData<RecipeApiResponse>>({
@@ -440,7 +428,7 @@ export function useToggleSave() {
       const recipeFromInfiniteList = recipeFromList
         ? undefined
         : allRecipeInfinitePages
-            .flatMap(([, iData]) => iData?.pages.flatMap((p) => p?.data?.recipes ?? []) ?? [])
+            .flatMap(([, iData]) => iData?.pages.flatMap((p) => p?.data ?? []) ?? [])
             .find((r) => r._id === id);
 
       const allChefRecipePages = queryClient.getQueriesData<GetChefRecipesResponse>({
@@ -448,7 +436,7 @@ export function useToggleSave() {
       });
       const previousChefRecipes = allChefRecipePages;
       const recipeFromChef = allChefRecipePages
-        .flatMap(([, page]) => page?.data?.recipes ?? [])
+        .flatMap(([, page]) => page?.data ?? [])
         .find((r) => r._id === id);
 
       const allChefRecipeInfinitePages = queryClient.getQueriesData<InfiniteData<GetChefRecipesResponse>>({
@@ -458,7 +446,7 @@ export function useToggleSave() {
       const recipeFromChefInfinite = recipeFromChef
         ? undefined
         : allChefRecipeInfinitePages
-            .flatMap(([, iData]) => iData?.pages.flatMap((p) => p?.data?.recipes ?? []) ?? [])
+            .flatMap(([, iData]) => iData?.pages.flatMap((p) => p?.data ?? []) ?? [])
             .find((r) => r._id === id);
 
       const currentRecipe = recipeFromList ?? recipeFromInfiniteList ?? recipeFromChef ?? recipeFromChefInfinite;

@@ -2,10 +2,8 @@ export interface RecipeApiResponse {
   success: boolean;
   statusCode: number;
   message: string;
-  data: {
-    recipes: Recipe[];
-    pagination: Pagination;
-  };
+  data: Recipe[];
+  pagination: Pagination;
 }
 
 export interface SingleRecipeApiResponse {

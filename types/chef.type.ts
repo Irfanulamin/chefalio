@@ -49,18 +49,14 @@ export interface GetChefRecipesResponse {
   success: boolean;
   statusCode: number;
   message: string;
-  data: {
-    recipes: Recipe[];
-    pagination: Pagination;
-  };
+  data: Recipe[];
+  pagination: Pagination;
 }
 
 export interface GetChefCookbooksResponse {
   success: boolean;
   statusCode: number;
   message: string;
-  data: {
-    cookbooks: Cookbook[];
-    pagination: ChefPagination;
-  };
+  data: Cookbook[];
+  pagination: ChefPagination;
 }
