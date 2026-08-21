@@ -118,8 +118,14 @@ export function AddButton({
 
 /* ── Text controls ────────────────────────────────────────────────────── */
 
+/* `min-w-0` is load-bearing, not defensive. An `<input>` carries an
+   intrinsic width from its `size` attribute (~20 characters), and a flex
+   item's `min-width` defaults to `auto` — so an input in a flex row refuses
+   to shrink below ~11rem no matter what `w-full` says, and pushes its row
+   wider than the container instead. That is what sent the ingredient rows
+   and the tag field out through the side of the edit sheet on a phone. */
 const fieldBase =
-  "w-full text-sm rounded-[10px] outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--cs-text-tertiary)] focus:border-[var(--cs-accent)] focus:shadow-[0_0_0_3px_var(--cs-focus-ring)] disabled:opacity-50";
+  "w-full min-w-0 text-sm rounded-[10px] outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--cs-text-tertiary)] focus:border-[var(--cs-accent)] focus:shadow-[0_0_0_3px_var(--cs-focus-ring)] disabled:opacity-50";
 
 const fieldStyle: React.CSSProperties = {
   border: "1px solid var(--cs-border-default)",
@@ -227,7 +233,13 @@ export function SegmentedControl<T extends string>({
             role="radio"
             aria-checked={selected}
             onClick={() => onChange(opt.value)}
-            className="relative flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 h-8 px-3.5 text-xs font-medium rounded-[10px] transition-transform duration-100 active:scale-[0.97]"
+            /* `min-w-0` + `truncate` on the label: `flex-1` sets the
+               basis to 0 but leaves `min-width: auto`, so three segments
+               whose labels total more than the row ("Beginner",
+               "Intermediate", "Advanced") would overflow rather than
+               divide the space. Narrow padding on phones buys most of
+               what's needed; the truncation is the floor. */
+            className="relative flex-1 sm:flex-initial min-w-0 inline-flex items-center justify-center gap-1.5 h-8 px-2.5 sm:px-3.5 text-xs font-medium rounded-[10px] transition-transform duration-100 active:scale-[0.97]"
             style={{ color: selected ? "var(--cs-text-primary)" : "var(--cs-text-secondary)" }}
           >
             {selected && (
@@ -248,7 +260,7 @@ export function SegmentedControl<T extends string>({
                 style={{ backgroundColor: opt.dot }}
               />
             )}
-            <span className="relative">{opt.label}</span>
+            <span className="relative truncate">{opt.label}</span>
           </button>
         );
       })}
