@@ -1,0 +1,51 @@
+import { Module } from '@nestjs/common';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { UserModule } from '../user/user.module';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ResetToken, ResetTokenSchema } from './schemas/reset-token.schema';
+import {
+  EmailVerificationToken,
+  EmailVerificationTokenSchema,
+} from './schemas/email-verification-token.schema';
+import { MailService } from '../services/mail.service';
+import { User, UserSchema } from '../user/schema/user.schema';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { PassportModule } from '@nestjs/passport';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { AlreadyLoggedInGuard } from './already-logged-in.guard';
+import { GoogleOAuthGuard } from './google-oauth.guard';
+
+@Module({
+  imports: [
+    UserModule,
+    ThrottlerModule,
+    PassportModule,
+    MongooseModule.forFeature([
+      { name: ResetToken.name, schema: ResetTokenSchema },
+      { name: EmailVerificationToken.name, schema: EmailVerificationTokenSchema },
+      { name: User.name, schema: UserSchema },
+    ]),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        global: true,
+        secret: config.getOrThrow<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '1h' },
+      }),
+    }),
+  ],
+  controllers: [AuthController],
+  providers: [
+    AuthService,
+    MailService,
+    AlreadyLoggedInGuard,
+    GoogleOAuthGuard,
+    ...(process.env.GOOGLE_CLIENT_ID ? [GoogleStrategy] : []),
+  ],
+  exports: [JwtModule],
+})
+export class AuthModule {}

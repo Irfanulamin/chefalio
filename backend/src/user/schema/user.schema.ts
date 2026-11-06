@@ -1,0 +1,52 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
+
+export type UserDocument = HydratedDocument<User>;
+
+@Schema({ timestamps: true })
+export class User {
+  @Prop({ required: true })
+  fullName!: string;
+
+  @Prop({ required: true, unique: true })
+  username!: string;
+
+  @Prop({ required: true, unique: true })
+  email!: string;
+
+  @Prop()
+  password?: string;
+
+  @Prop({ default: 'user', enum: ['user', 'chef', 'admin'] })
+  role!: 'user' | 'chef' | 'admin';
+
+  @Prop({
+    required: true,
+    default: 'https://i.ibb.co.com/XWqvgyv/Minimalist-Avatar-Illustration.jpg',
+  })
+  profile_url!: string;
+
+  @Prop({ default: true, required: true })
+  isActive!: boolean;
+
+  @Prop({ default: 'local', enum: ['local', 'google'] })
+  authProvider!: 'local' | 'google';
+
+  @Prop({ sparse: true })
+  googleId?: string;
+
+  @Prop({ default: false })
+  isEmailVerified!: boolean;
+
+  // Seeded reviewer accounts (see seed-demo-accounts.js). Their credentials
+  // are public, so every write request from one is blocked server-side by
+  // DemoReadOnlyGuard regardless of role — a demo admin can look at every
+  // panel but can't delete a recipe, change a role, or touch another user.
+  @Prop({ default: false })
+  isDemo!: boolean;
+
+  @Prop({ type: Date })
+  notificationLastReadAt?: Date;
+}
+
+export const UserSchema = SchemaFactory.createForClass(User);
