@@ -4,6 +4,8 @@ REST API for the Chefalio platform — a marketplace where chefs publish recipes
 
 Built with **NestJS**, **MongoDB**, and **Stripe**.
 
+**Live API:** https://chefalio-backend-irfanulamins-projects.vercel.app · **Frontend:** https://www.chefalio.xyz ([repo](https://github.com/Irfanulamin/chefalio-frontend))
+
 ---
 
 ## Tech Stack
@@ -16,6 +18,9 @@ Built with **NestJS**, **MongoDB**, and **Stripe**.
 | Payments     | Stripe Checkout        |
 | Image Upload | Cloudinary             |
 | Email        | Resend                 |
+| OAuth        | Google (Passport)      |
+| Realtime     | Socket.IO notifications |
+| AI           | Anthropic Claude       |
 
 ---
 
@@ -68,6 +73,10 @@ Server starts on `PORT` defined in `.env` (default: `5000`).
 | `RESEND_API_KEY`        | Resend email API key                          |
 | `STRIPE_SECRET_KEY`     | Stripe secret key                             |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret                 |
+| `GOOGLE_CLIENT_ID`      | Google OAuth client ID                        |
+| `GOOGLE_CLIENT_SECRET`  | Google OAuth client secret                    |
+| `GOOGLE_CALLBACK_URL`   | OAuth callback, e.g. `http://localhost:5000/auth/google/callback` |
+| `ANTHROPIC_API_KEY`     | Anthropic API key for AI features             |
 
 ---
 
@@ -75,18 +84,22 @@ Server starts on `PORT` defined in `.env` (default: `5000`).
 
 ```
 src/
-├── auth/                  # JWT auth, guards, password reset
+├── auth/                  # JWT + Google OAuth, guards, password reset
 ├── user/                  # User CRUD, admin controls
+├── chef/ chef-profile/    # Chef profiles and dashboards
+├── chef-application/      # Apply-to-become-chef flow
 ├── recipe/                # Recipe creation and management
 ├── recipe-interaction/    # Save / love interactions
 ├── cookbook/              # Cookbook listings
 ├── cookbook-purchase/     # Stripe checkout & webhook
-├── services/
-│   ├── cloudinary.service.ts
-│   └── mail.service.ts
-├── common/pipes/          # ObjectId validation, image type
+├── follow/                # Follow chefs
+├── notifications/         # Realtime notifications (Socket.IO)
+├── ai/                    # Anthropic-powered features
+├── seeds/                 # Demo account + seed data
+├── services/              # Cloudinary, mail
+├── common/                # Pipes, shared utilities
 ├── app.module.ts
-└── main.ts
+└── main.ts                # Local bootstrap + Vercel serverless handler
 ```
 
 ---
