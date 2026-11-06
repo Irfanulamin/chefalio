@@ -20,7 +20,6 @@ Built with **NestJS**, **MongoDB**, and **Stripe**.
 | Email        | Resend                 |
 | OAuth        | Google (Passport)      |
 | Realtime     | Socket.IO notifications |
-| AI           | Anthropic Claude       |
 
 ---
 
@@ -76,7 +75,6 @@ Server starts on `PORT` defined in `.env` (default: `5000`).
 | `GOOGLE_CLIENT_ID`      | Google OAuth client ID                        |
 | `GOOGLE_CLIENT_SECRET`  | Google OAuth client secret                    |
 | `GOOGLE_CALLBACK_URL`   | OAuth callback, e.g. `http://localhost:5000/auth/google/callback` |
-| `ANTHROPIC_API_KEY`     | Anthropic API key for AI features             |
 
 ---
 
@@ -94,7 +92,6 @@ src/
 ├── cookbook-purchase/     # Stripe checkout & webhook
 ├── follow/                # Follow chefs
 ├── notifications/         # Realtime notifications (Socket.IO)
-├── ai/                    # Anthropic-powered features
 ├── seeds/                 # Demo account + seed data
 ├── services/              # Cloudinary, mail
 ├── common/                # Pipes, shared utilities

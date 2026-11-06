@@ -23,7 +23,6 @@
     "seed:chef-profiles": "ts-node -r tsconfig-paths/register src/seeds/seed-chef-profiles.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.95.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",

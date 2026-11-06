@@ -14,7 +14,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { ChefModule } from './chef/chef.module';
 import { ChefProfileModule } from './chef-profile/chef-profile.module';
-import { AiModule } from './ai/ai.module';
 import { NotificationModule } from './notifications/notification.module';
 import { ChefApplicationModule } from './chef-application/chef-application.module';
 import { FollowModule } from './follow/follow.module';
@@ -48,7 +47,6 @@ import { DemoReadOnlyGuard } from './auth/demo-read-only.guard';
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 200 }]),
     ChefModule,
     ChefProfileModule,
-    AiModule,
     NotificationModule,
     ChefApplicationModule,
     FollowModule,
