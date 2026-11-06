@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     // which is why they're gitignored too.
     ".agents/**",
     ".claude/**",
+    // NestJS API, linted with its own config inside backend/
+    "backend/**",
   ]),
   {
     rules: {

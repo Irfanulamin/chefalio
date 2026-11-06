@@ -2,7 +2,9 @@
 
 A recipe and cookbook marketplace. Chefs publish recipes and sell cookbooks; food lovers discover, save, and buy them.
 
-**Live:** https://www.chefalio.xyz · **Backend:** [chefalio-backend](https://github.com/Irfanulamin/chefalio-backend)
+**Live:** https://www.chefalio.xyz
+
+This repo holds the whole project: the Next.js frontend at the root and the NestJS API in [`backend/`](backend).
 
 > Want to look around without signing up? Use the demo accounts on the sign-in page (read-only).
 
@@ -31,11 +33,11 @@ A recipe and cookbook marketplace. Chefs publish recipes and sell cookbooks; foo
 
 ## Getting started
 
-Requires Node.js 20+ and pnpm. The [backend](https://github.com/Irfanulamin/chefalio-backend) must be running for most pages to work.
+Requires Node.js 20+ and pnpm. The API in [`backend/`](backend) must be running for most pages to work; see its README for setup.
 
 ```bash
-git clone https://github.com/Irfanulamin/chefalio-frontend.git
-cd chefalio-frontend
+git clone https://github.com/Irfanulamin/chefalio.git
+cd chefalio
 pnpm install
 cp .env.example .env   # then fill in the values
 pnpm dev
@@ -62,6 +64,7 @@ Open http://localhost:3000.
 ## Project structure
 
 ```
+backend/              # NestJS API (separate package, own README)
 app/
 ├── (guest)/          # sign-in, sign-up, verify email, password reset
 ├── (user)/           # recipes, cookbooks, chefs, checkout, activity, settings

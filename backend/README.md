@@ -4,7 +4,7 @@ REST API for the Chefalio platform — a marketplace where chefs publish recipes
 
 Built with **NestJS**, **MongoDB**, and **Stripe**.
 
-**Live API:** https://chefalio-backend-irfanulamins-projects.vercel.app · **Frontend:** https://www.chefalio.xyz ([repo](https://github.com/Irfanulamin/chefalio-frontend))
+**Live API:** https://chefalio-backend-irfanulamins-projects.vercel.app · **Frontend:** https://www.chefalio.xyz (code at the [repo root](..))
 
 ---
 
@@ -28,8 +28,8 @@ Built with **NestJS**, **MongoDB**, and **Stripe**.
 **1. Clone and install**
 
 ```bash
-git clone https://github.com/Irfanulamin/chefalio-backend.git
-cd chefalio-backend
+git clone https://github.com/Irfanulamin/chefalio.git
+cd chefalio/backend
 pnpm install
 ```
 
