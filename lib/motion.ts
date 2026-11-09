@@ -4,12 +4,8 @@ import { cubicBezier, type Transition } from "framer-motion";
  * The product's motion vocabulary — shared by the landing page and the
  * authenticated app.
  *
- * This used to live in `components/Home/motion.ts`, which was the right
- * place while only the landing page had motion. It isn't any more: the
- * app now presses, snaps and slides too, and the single most effective
- * way to make signing in *not* feel like changing products is for both
- * halves to be driven by the same springs. `components/Home/motion.ts`
- * re-exports this file, so landing imports still resolve.
+ * Both halves are driven by the same springs, so signing in doesn't feel
+ * like changing products.
  *
  * Apple describes a spring with two designer-facing numbers rather than the
  * physics triplet: **damping ratio** (how much it overshoots — 1.0 settles

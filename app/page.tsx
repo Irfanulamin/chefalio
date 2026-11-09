@@ -1,48 +1,40 @@
 import type { Metadata } from "next";
 import { Header } from "../components/common/Header";
+import Footer from "../components/common/Footer";
 import { Hero } from "../components/Home/Hero";
-import { SocialProof } from "../components/Home/SocialProof";
-import { Personas } from "../components/Home/Personas";
-import { Features } from "../components/Home/Features";
-import { HowItWorks } from "../components/Home/HowItWorks";
-import { Testimonials } from "../components/Home/Testimonials";
-import { Pricing } from "../components/Home/Pricing";
-import { AboutUs } from "../components/Home/AboutUs";
+import { RecipePreviews } from "../components/Home/RecipePreviews";
+import { FeaturedCookbook } from "../components/Home/FeaturedCookbook";
+import { ForChefs } from "../components/Home/ForChefs";
 import { FAQ } from "../components/Home/FAQ";
 import { CTA } from "../components/Home/CTA";
-import Footer from "../components/common/Footer";
 
 export const metadata: Metadata = {
   title: "Chefalio",
   description:
-    "Chefalio is a marketplace for chef-tested recipes and cookbooks. Browse thousands of recipes for free, buy cookbooks from professional chefs, and publish and sell your own.",
+    "Discover free recipes, follow the chefs behind them, and buy their printed cookbooks. Chefs publish for free and sell their own cookbooks.",
 };
 
 /**
- * Section order follows the questions a visitor actually asks, in order:
- * what is this → is it real → is it for me → what does it do → how does it
- * work → who says so → what does it cost → why does it exist → what am I
- * still unsure about → alright, where do I start.
- *
- * Backgrounds alternate base / raised down the page (see `.surface-raised`
- * in globals.css), so neighbouring sections meet through a gradient instead
- * of a hard colour seam.
+ * Read top to bottom like a cookbook: a dish worth making, a few more,
+ * the book they come from, a word for chefs, the questions people ask, and
+ * one last invitation. Every name, photo and price is real (see
+ * `components/Home/landing-content.ts`).
  */
 export default function Home() {
   return (
-    <div className="landing-root">
+    <div className="landing">
       <Header />
-      <Hero />
-      <SocialProof />
-      <Personas />
-      <Features />
-      <HowItWorks />
-      <Testimonials />
-      <Pricing />
-      <AboutUs />
-      <FAQ />
-      <CTA />
-      <Footer />
+      <main>
+        <Hero />
+        <RecipePreviews />
+        <FeaturedCookbook />
+        <ForChefs />
+        <FAQ />
+      </main>
+      <div style={{ backgroundColor: "var(--paper-deep)" }}>
+        <CTA />
+        <Footer />
+      </div>
     </div>
   );
 }

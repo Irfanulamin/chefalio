@@ -101,7 +101,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={twMerge(pinyonScript.variable, dmSans.variable, "antialiased")}
+      className={twMerge(
+        pinyonScript.variable,
+        dmSans.variable,
+        "antialiased",
+      )}
     >
       <head>
         <script

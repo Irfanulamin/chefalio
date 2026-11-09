@@ -1,230 +1,86 @@
-"use client";
-
 import Link from "next/link";
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
-import { useRef } from "react";
-import {
-  ArrowRightIcon,
-  CheckCircleIcon,
-  PlayCircleIcon,
-} from "@phosphor-icons/react/dist/ssr";
-import { Beams } from "./Beams";
-import { HeroVisual } from "./HeroVisual";
-import { materialize, SPRING, stagger } from "./motion";
+import { ForkKnifeIcon } from "@phosphor-icons/react/dist/ssr";
+import { difficultyDisplay } from "@/lib/recipe-display";
+import { HERO_DISH } from "./landing-content";
+import { HeroTable } from "./DishArt";
+import { Sparkle, SpinBadge, Squiggle, Star } from "./Doodles";
 
-/** Small, factual, and checkable — the three things a visitor wants to know
- *  before they decide whether the buttons are worth pressing. */
-const ASSURANCES = [
-  "Free to browse",
-  "No subscription",
-  "Chef-tested recipes",
-];
-
-export const Hero = () => {
-  const sectionRef = useRef<HTMLElement>(null);
-  const reduce = useReducedMotion();
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
-
-  /**
-   * Scroll *is* the gesture, so these track it 1:1 — no spring smoothing in
-   * the path, which would put lag between the finger and the pixels. The
-   * preview recedes as you scroll past: pushed back and dimmed, the way a
-   * layer that has handed off focus should behave.
-   */
-  const previewY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : -64]);
-  const previewScale = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [1, reduce ? 1 : 0.95],
-  );
-  const previewOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.85],
-    [1, reduce ? 1 : 0.55],
-  );
+/**
+ * One promise, one action, one dish. The dish is a real recipe from the
+ * catalogue, credited to its chef, drawn as a table seen from above.
+ *
+ * The copy and the picture share the width evenly, so the headline sets in
+ * two or three lines rather than a word per line, and the picture is
+ * landscape. On phones the copy and button come first, so "Create a free
+ * account" is on the first screen even at 360 × 740.
+ */
+export function Hero() {
+  const dish = HERO_DISH;
 
   return (
     <section
-      ref={sectionRef}
-      id="hero"
-      className="surface-base relative isolate flex h-svh min-h-[680px] flex-col overflow-hidden pb-0 pt-20 md:pt-24"
+      id="top"
+      className="mx-auto max-w-6xl px-4 pb-16 pt-24 md:px-8 md:pb-24 md:pt-32"
     >
-      <Beams />
+      <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-14">
+        <div className="relative">
+          <Sparkle
+            className="landing-bob absolute -top-8 right-2 h-9 w-9 sm:right-10"
+            color="var(--butter)"
+          />
+          <Sparkle
+            className="landing-bob absolute -top-1 right-12 h-4 w-4 sm:right-20"
+            style={{ animationDelay: "-2s" }}
+          />
 
-      {/* The hero is exactly one screen. The copy takes the height it needs
-          and the product shot takes whatever is left — so nothing overflows
-          the fold and nothing has to be scrolled to be understood. */}
-      <div className="relative mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col px-5 md:px-8">
-        <motion.div
-          variants={stagger(0.06, 0.02)}
-          initial="hidden"
-          animate="visible"
-          className="mx-auto w-full max-w-3xl shrink-0 text-center"
-        >
-          {/* Announcement. One live thing worth knowing, linked — not a
-              slogan dressed up as a badge. */}
-          <motion.div variants={materialize}>
-            <Link
-              href="/chefs"
-              className="material-thin group inline-flex items-center gap-2 rounded-full py-1.5 pl-2 pr-3.5"
-            >
-              <span
-                className="type-micro rounded-full px-2 py-0.5 font-semibold"
-                style={{
-                  backgroundColor: "var(--primary)",
-                  color: "var(--primary-foreground)",
-                }}
-              >
-                New
-              </span>
-              <span
-                className="type-caption vibrant-secondary"
-                style={{ fontWeight: 500 }}
-              >
-                Chef payouts now land weekly
-              </span>
-              <ArrowRightIcon
-                size={12}
-                weight="bold"
-                className="transition-transform duration-200 ease-out group-hover:translate-x-0.5"
-                style={{ color: "var(--cs-text-tertiary)" }}
-              />
-            </Link>
-          </motion.div>
-
-          <motion.h1
-            variants={materialize}
-            className="type-display mt-7"
-            style={{ color: "var(--cs-text-primary)" }}
-          >
-            Cook from the pros.
-            <br />
-            <span style={{ color: "var(--cs-accent-text)" }}>
-              Sell what you cook.
+          <h1 className="display-1 max-w-[15ch]">
+            Find a recipe you&rsquo;ll want to cook{" "}
+            <span className="relative inline-block whitespace-nowrap">
+              again
+              <Squiggle className="absolute -bottom-2 left-0 h-3 w-full md:-bottom-3 md:h-4" />
             </span>
-          </motion.h1>
-
-          <motion.p
-            variants={materialize}
-            className="type-body-lg mx-auto mt-6 max-w-xl"
-            style={{ color: "var(--cs-text-secondary)" }}
+          </h1>
+          <p
+            className="type-body-lg mt-6 max-w-[38ch]"
+            style={{ color: "var(--ink-soft)" }}
           >
-            The marketplace for chef-tested recipes and cookbooks. Browse
-            thousands for free, and publish, price, and sell your own.
-          </motion.p>
+            Discover free recipes, follow the chefs behind them, and buy their
+            printed cookbooks.
+          </p>
+          <Link href="/sign-up" className="landing-button landing-focus mt-8">
+            Create a free account
+          </Link>
+        </div>
 
-          <motion.div
-            variants={materialize}
-            className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
+        <figure>
+          <div className="relative">
+            <HeroTable dish={dish.art} label={dish.alt} />
+
+            <SpinBadge
+              id="hero-badge"
+              text="Free recipes ✦ Follow chefs ✦ Printed cookbooks ✦ "
+              center={<ForkKnifeIcon weight="fill" className="h-[30%] w-[30%]" />}
+              className="landing-wiggle absolute left-3 top-3 w-24 sm:w-28 lg:-left-10 lg:-top-10 lg:w-32"
+            />
+            <Star className="landing-spin-reverse absolute -bottom-5 right-5 h-12 w-12 lg:-bottom-6 lg:-right-6 lg:h-14 lg:w-14" />
+          </div>
+
+          <figcaption
+            className="type-caption mt-4 flex flex-wrap gap-x-2"
+            style={{ color: "var(--ink-soft)" }}
           >
-            <motion.div
-              whileTap={reduce ? undefined : { scale: 0.97 }}
-              transition={SPRING.snappy}
-              className="w-full sm:w-auto"
-            >
-              <Link
-                href="/sign-up"
-                className="type-subheading group inline-flex h-12 w-full items-center justify-center gap-2 rounded-full px-7 transition-shadow duration-200 hover:shadow-lg sm:w-auto"
-                style={{
-                  backgroundColor: "var(--primary)",
-                  color: "var(--primary-foreground)",
-                  boxShadow: "0 6px 20px -8px color-mix(in oklab, var(--primary) 80%, transparent)",
-                }}
-              >
-                Start cooking free
-                <ArrowRightIcon
-                  size={16}
-                  weight="bold"
-                  className="transition-transform duration-200 ease-out group-hover:translate-x-0.5"
-                />
-              </Link>
-            </motion.div>
-
-            <motion.div
-              whileTap={reduce ? undefined : { scale: 0.97 }}
-              transition={SPRING.snappy}
-              className="w-full sm:w-auto"
-            >
-              <Link
-                href="/apply-chef"
-                className="type-subheading material-thin inline-flex h-12 w-full items-center justify-center gap-2 rounded-full px-7 sm:w-auto"
-                style={{ color: "var(--cs-text-primary)" }}
-              >
-                <PlayCircleIcon size={17} weight="fill" style={{ color: "var(--cs-accent-text)" }} />
-                Sell as a chef
-              </Link>
-            </motion.div>
-          </motion.div>
-
-          <motion.ul
-            variants={materialize}
-            className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2"
-          >
-            {ASSURANCES.map((item) => (
-              <li
-                key={item}
-                className="type-caption flex items-center gap-1.5"
-                style={{ color: "var(--cs-text-tertiary)" }}
-              >
-                <CheckCircleIcon
-                  size={14}
-                  weight="fill"
-                  style={{ color: "var(--cs-accent-text)" }}
-                />
-                {item}
-              </li>
-            ))}
-          </motion.ul>
-        </motion.div>
-
-        {/* The product shot is the largest surface on the page, so it arrives
-            as a material — blur and scale resolving together — rather than
-            fading in as a flat rectangle. */}
-        <motion.div
-          style={{
-            y: previewY,
-            scale: previewScale,
-            opacity: previewOpacity,
-            transformOrigin: "top center",
-          }}
-          className="mx-auto mt-8 min-h-0 w-full max-w-5xl flex-1 px-0 md:mt-10 lg:px-10"
-        >
-          {/* Scroll transforms live on the wrapper and the entrance lives
-              here, so the two never fight over the same transform. */}
-          <motion.div
-            className="h-full"
-            /* This used to animate `filter: blur(14px) → 0` across the
-               largest surface on the page. Blur is not compositor-cheap:
-               every frame re-blurs the whole subtree, which on a low-end GPU
-               turns the one animation the visitor is guaranteed to see into
-               the one that drops frames. Opacity and transform get the same
-               "resolving into place" read for free. */
-            initial={
-              reduce
-                ? { opacity: 0 }
-                : { opacity: 0, y: 48, scale: 0.97 }
-            }
-            animate={
-              reduce ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }
-            }
-            transition={reduce ? { duration: 0.2 } : { ...SPRING.soft, delay: 0.22 }}
-            style={{ transformOrigin: "top center" }}
-          >
-            <HeroVisual />
-          </motion.div>
-        </motion.div>
+            <span className="font-semibold" style={{ color: "var(--ink)" }}>
+              {dish.title}
+            </span>
+            <span aria-hidden>·</span>
+            <span>{dish.chef}</span>
+            <span aria-hidden>·</span>
+            <span>{difficultyDisplay(dish.difficulty).label}</span>
+          </figcaption>
+        </figure>
       </div>
     </section>
   );
-};
+}
 
 export default Hero;

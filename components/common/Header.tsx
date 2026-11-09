@@ -8,15 +8,9 @@ import {
   CaretRightIcon,
   ChefHatIcon,
   ForkKnifeIcon,
-  PathIcon,
-  QuestionIcon,
   SignOutIcon,
-  SparkleIcon,
-  TagIcon,
-  UsersThreeIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -36,15 +30,11 @@ const NAV_LINKS = [
   { label: "Chefs", href: "/chefs", icon: ChefHatIcon },
 ] as const;
 
-// Guests land on the marketing page, so they get section anchors instead of
-// app routes they cannot reach yet. Names are specific on purpose — a nav
-// item should say what's behind it, not sit under a vague umbrella.
+// Guests land on the marketing page, so they get the two landing sections
+// worth jumping to, plus Sign in. Everything else is behind an account.
 const GUEST_LINKS = [
-  { label: "Who it's for", href: "/#personas", icon: UsersThreeIcon },
-  { label: "Features", href: "/#features", icon: SparkleIcon },
-  { label: "How it works", href: "/#how-it-works", icon: PathIcon },
-  { label: "Pricing", href: "/#pricing", icon: TagIcon },
-  { label: "FAQ", href: "/#faq", icon: QuestionIcon },
+  { label: "Cookbooks", href: "/#cookbook", icon: BookOpenIcon },
+  { label: "For chefs", href: "/#for-chefs", icon: ChefHatIcon },
 ] as const;
 
 /** Past this, the bar condenses into a floating pill. */
@@ -135,23 +125,18 @@ export const Header = () => {
                 <ProfileDropdown />
               </>
             ) : (
-              // One CTA, not two — this goes to sign-in, and the sign-in
-              // screen itself links to sign-up for anyone who needs it. A
-              // second nav button whose only job is "I don't have an
-              // account yet" doesn't earn a permanent slot in the bar.
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.96 }}
-                transition={{ type: "spring", bounce: 0, duration: 0.26 }}
-                onClick={() => router.push("/sign-in")}
-                className="type-caption cursor-pointer rounded-full px-4 py-2 font-semibold"
+              // Sign-up is the page's own call to action; the bar only
+              // offers a way back in for people who already have an account.
+              <Link
+                href="/sign-in"
+                className="type-caption focus-ring inline-flex min-h-11 items-center rounded-full px-4 font-semibold transition-colors duration-150 hover:bg-(--cs-accent-muted)"
                 style={{
-                  backgroundColor: "var(--primary)",
-                  color: "var(--primary-foreground)",
+                  color: "var(--cs-text-primary)",
+                  border: "1px solid var(--cs-border-default)",
                 }}
               >
-                Get started
-              </motion.button>
+                Sign in
+              </Link>
             )}
           </div>
 
@@ -168,7 +153,7 @@ export const Header = () => {
                 <motion.button
                   whileTap={{ scale: 0.92 }}
                   transition={{ type: "spring", bounce: 0, duration: 0.26 }}
-                  className="cursor-pointer rounded-full p-2"
+                  className="focus-ring grid h-11 w-11 cursor-pointer place-items-center rounded-full"
                   style={{ color: "var(--cs-text-primary)" }}
                   aria-label="Open menu"
                 >
@@ -206,7 +191,7 @@ export const Header = () => {
                     className="type-caption"
                     style={{ color: "var(--cs-text-tertiary)" }}
                   >
-                    Recipes and cookbooks from the pros
+                    Recipes and cookbooks from chefs
                   </p>
                 </SheetHeader>
 
@@ -287,25 +272,18 @@ export const Header = () => {
                         Log out
                       </motion.button>
                     ) : (
-                      // Same one-CTA reasoning as the desktop bar — sign-in,
-                      // which links to sign-up for anyone who needs it.
-                      <motion.button
-                        type="button"
-                        whileTap={{ scale: 0.98 }}
-                        transition={{ type: "spring", bounce: 0, duration: 0.26 }}
-                        onClick={() => {
-                          router.push("/sign-in");
-                          closeSheet();
-                        }}
-                        className="type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full"
+                      <Link
+                        href="/sign-in"
+                        onClick={closeSheet}
+                        className="type-subheading focus-ring inline-flex h-12 w-full items-center justify-center gap-2 rounded-full"
                         style={{
-                          backgroundColor: "var(--primary)",
-                          color: "var(--primary-foreground)",
+                          color: "var(--cs-text-primary)",
+                          border: "1px solid var(--cs-border-default)",
                         }}
                       >
-                        Start cooking free
+                        Sign in
                         <ArrowRightIcon size={15} weight="bold" />
-                      </motion.button>
+                      </Link>
                     )}
                   </div>
                 )}

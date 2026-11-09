@@ -373,70 +373,320 @@ body {
 }
 
 /* ── Section surfaces ──────────────────────────────────────────────────
-   The page is one continuous surface, not a stack of differently
-   coloured slabs. `surface-raised` lifts a section slightly and fades
-   back to the base at both edges, so neighbouring sections meet without
-   a visible seam and the whole page reads as one material. Alternate
-   base / raised down the page. */
-
-/* The light field belongs to the *page*, not to each section. Painting a
-   gradient per section restarts it at every boundary, which is exactly
-   what makes the seams visible. One layer spans the whole document and
-   the sections sit on it as translucent bands, so the light carries
-   straight through the joins. */
-
-.landing-root {
-  position: relative;
-  isolation: isolate;
-  background-color: var(--cs-surface-1);
-  background-image:
-    radial-gradient(
-      ellipse 70% 12% at 8% 3%,
-      var(--cs-accent-muted),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 60% 10% at 94% 21%,
-      color-mix(in oklab, var(--primary) 8%, transparent),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 65% 11% at 6% 44%,
-      var(--cs-accent-muted),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 60% 10% at 96% 63%,
-      color-mix(in oklab, var(--secondary) 9%, transparent),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 70% 12% at 50% 88%,
-      var(--cs-accent-muted),
-      transparent 62%
-    );
-}
-
-/* Bands, not blocks. `surface-raised` tints translucently and fades out at
-   both edges, so the page-level light stays continuous underneath it. */
+   `surface-base` is used by the legal pages. */
 
 .surface-base {
   background-color: transparent;
 }
 
-.surface-raised {
-  background-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    color-mix(in oklab, var(--cs-surface-2) 72%, transparent) 11%,
-    color-mix(in oklab, var(--cs-surface-2) 72%, transparent) 89%,
-    transparent 100%
-  );
+/* ── Landing page: warm paper ──────────────────────────────────────────
+   The public landing page reads like a printed cookbook: warm paper
+   grounds, dark ink, one accent (the brand lime as a button fill, its
+   olive text tint for small labels). These tokens are scoped to
+   `.landing`, so nothing else in the app changes.
+
+   Contrast on --paper: ink 16.8:1, ink-soft 7.0:1, olive 5.9:1. */
+
+.landing {
+  --paper: #faf6ee;
+  --paper-deep: #f1e8d8;
+  --ink: #1c1915;
+  --ink-soft: #5b5248;
+  --rule: #e2d7c4;
+  /* Doodle colours: decoration only, never text on paper. */
+  --tomato: #e4572e;
+  --butter: #f4c542;
+  --landing-accent: var(--primary);
+  --landing-accent-ink: var(--primary-foreground);
+  --landing-accent-text: var(--cs-accent-text);
+  --landing-header-offset: 6rem;
+
+  background-color: var(--paper);
+  color: var(--ink);
+  /* Doodles hang off section edges; never let them widen the page. */
+  overflow-x: clip;
 }
 
-/* The same light field, tuned for a single screen rather than a long
-   scroll — used behind the auth pages so signing in feels like part of
-   the same product, not a bare form on a white page. */
+/* ── Landing doodles ─────────────────────────────────────────────────
+   Slow, constant motion that never asks for attention. All of it stops
+   under reduced motion; the shapes stay put. */
+
+@keyframes landing-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes landing-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--tilt, 0deg));
+  }
+  50% {
+    transform: translateY(-6px) rotate(calc(var(--tilt, 0deg) + 8deg));
+  }
+}
+
+@keyframes landing-wiggle {
+  0%,
+  100% {
+    transform: rotate(var(--tilt, 0deg));
+  }
+  30% {
+    transform: rotate(calc(var(--tilt, 0deg) - 7deg)) scale(1.04);
+  }
+  65% {
+    transform: rotate(calc(var(--tilt, 0deg) + 5deg)) scale(1.04);
+  }
+}
+
+.landing-spin {
+  animation: landing-spin 24s linear infinite;
+  transform-origin: center;
+}
+
+.landing-spin-slow {
+  animation: landing-spin 60s linear infinite;
+  transform-origin: center;
+}
+
+.landing-spin-reverse {
+  animation: landing-spin 18s linear infinite reverse;
+  transform-origin: center;
+}
+
+.landing-bob {
+  animation: landing-bob 5s ease-in-out infinite;
+}
+
+.landing-tilt {
+  transform: rotate(var(--tilt, 0deg));
+}
+
+/* Stickers give a little wiggle when the pointer passes over them. */
+.landing-wiggle:hover {
+  animation: landing-wiggle 500ms ease-out;
+}
+
+/* ── Dish illustrations (DishArt.tsx) ─────────────────────────────── */
+
+/* The hero plate turns, slowly enough to notice only on a second look. */
+.art-turn {
+  animation: landing-spin 140s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* A card's plate gives a little spin while the card is hovered. */
+.art-plate {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.art-card:hover .art-plate {
+  transform: rotate(28deg) scale(1.03);
+}
+
+.art-steam path {
+  animation: art-steam 3.4s ease-in-out infinite;
+  transform-box: fill-box;
+  opacity: 0;
+}
+
+.art-steam path:nth-child(2) {
+  animation-delay: -1.1s;
+}
+
+.art-steam path:nth-child(3) {
+  animation-delay: -2.2s;
+}
+
+@keyframes art-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+.art-twinkle {
+  animation: art-twinkle 2.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes art-twinkle {
+  0%,
+  100% {
+    transform: scale(0.7);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .art-turn,
+  .art-steam path,
+  .art-twinkle {
+    animation: none;
+  }
+
+  /* Still steam, still visible. */
+  .art-steam path {
+    opacity: 1;
+  }
+
+  .art-plate,
+  .art-card:hover .art-plate {
+    transition: none;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-spin,
+  .landing-spin-slow,
+  .landing-spin-reverse,
+  .landing-bob,
+  .landing-wiggle:hover {
+    animation: none;
+  }
+}
+
+/* Anchor jumps land below the sticky header, not under it. */
+.landing section[id] {
+  scroll-margin-top: var(--landing-header-offset);
+}
+
+/* Landing headings: DM Sans, the app's own face, set bold and tight so the
+   landing page and the product read as one. Body text stays on the `.type-*`
+   scale. */
+.display-1,
+.display-2,
+.display-3 {
+  font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+.display-1 {
+  font-size: clamp(2.5rem, 5.4vw, 4.375rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+
+.display-2 {
+  font-size: clamp(1.875rem, 3.4vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.display-3 {
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.display-1 {
+  font-size: clamp(2.75rem, 6vw, 5rem);
+  line-height: 1.02;
+}
+
+.display-2 {
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.08;
+}
+
+.display-3 {
+  font-size: clamp(1.625rem, 2.6vw, 2.25rem);
+  line-height: 1.12;
+}
+
+/* Visible on both papers: 2px ink outline, offset so it never sits on the
+   control's own edge. */
+.landing-focus:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* The page's one button style. Press feedback is a small scale on :active,
+   which reduced motion drops while keeping the colour change. */
+.landing-button {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0 1.5rem;
+  background-color: var(--landing-accent);
+  color: var(--landing-accent-ink);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition:
+    background-color 150ms ease-out,
+    transform 120ms ease-out;
+}
+
+.landing-button:hover {
+  background-color: color-mix(in oklab, var(--landing-accent) 88%, var(--ink));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-button:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Quiet secondary action: ink text, hairline border. */
+.landing-button-quiet {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0 1.125rem;
+  border: 1px solid var(--rule);
+  background-color: var(--paper);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  transition:
+    background-color 150ms ease-out,
+    border-color 150ms ease-out,
+    transform 120ms ease-out;
+}
+
+.landing-button-quiet:hover:not(:disabled, [aria-disabled="true"]) {
+  border-color: var(--ink-soft);
+}
+
+.landing-button-quiet:disabled,
+.landing-button-quiet[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-button-quiet:active:not(:disabled, [aria-disabled="true"]) {
+    transform: scale(0.97);
+  }
+}
+
+/* A soft light field behind the auth pages, so signing in feels like part
+   of the product rather than a bare form on a white page. */
 .auth-field {
   background-color: var(--cs-surface-2);
   background-image:
@@ -450,20 +700,6 @@ body {
       color-mix(in oklab, var(--primary) 8%, transparent),
       transparent 62%
     );
-}
-
-/* An extra pool overhead, for a section that needs more warmth than the
-   base carries on its own. Requires `position: relative` on the section. */
-.surface-glow::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse 55% 45% at 50% 0%,
-    var(--cs-accent-muted),
-    transparent 70%
-  );
 }
 
 /* ── Materials ─────────────────────────────────────────────────────────
