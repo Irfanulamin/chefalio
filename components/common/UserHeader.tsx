@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { ListIcon, XIcon } from "@phosphor-icons/react";
 import { motion, useReducedMotion } from "framer-motion";
-import { ToggleThemeButton } from "./ToggleThemeButton";
 import {
   Sheet,
   SheetContent,
@@ -107,13 +106,11 @@ export const UserHeader = () => {
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
-            <ToggleThemeButton />
             <NotificationBell />
             <ProfileDropdown />
           </div>
 
           <div className="flex items-center gap-2 lg:hidden">
-            <ToggleThemeButton />
             <NotificationBell />
             <ProfileDropdown />
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>

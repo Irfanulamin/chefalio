@@ -102,7 +102,6 @@ export default function RootLayout({
     <html
       lang="en"
       className={twMerge(pinyonScript.variable, dmSans.variable, "antialiased")}
-      suppressHydrationWarning
     >
       <head>
         <script

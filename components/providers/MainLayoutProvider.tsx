@@ -1,7 +1,6 @@
 "use client";
 
 import { QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { queryClient } from "@/lib/queryClient";
 import {
@@ -35,7 +34,7 @@ export const MainLayoutProvider = ({
   children: React.ReactNode;
 }) => {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+    <>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
       <Toaster
         position="bottom-right"
@@ -86,6 +85,6 @@ export const MainLayoutProvider = ({
           descriptionClassName: "!text-[var(--cs-text-secondary)]",
         }}
       />
-    </ThemeProvider>
+    </>
   );
 };

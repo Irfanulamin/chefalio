@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import ProtectedRoute, { type AllowedRole } from "@/components/common/ProtectedRoute";
 import { ProfileDropdown } from "@/components/common/ProfileDropdown";
-import { ToggleThemeButton } from "@/components/common/ToggleThemeButton";
 import {
   Sheet,
   SheetContent,
@@ -230,7 +229,7 @@ export function ConsoleShell({
                 <LogoIcon
                   size={15}
                   weight="duotone"
-                  className={accent ? undefined : "text-black dark:text-white"}
+                  className={accent ? undefined : "text-black"}
                   style={accent ? { color: accent.fg } : undefined}
                 />
               </button>
@@ -338,7 +337,6 @@ export function ConsoleShell({
                   Demo · read-only
                 </span>
               )}
-              <ToggleThemeButton />
               <ProfileDropdown />
             </div>
           </header>

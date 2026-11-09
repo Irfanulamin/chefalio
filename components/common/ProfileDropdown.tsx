@@ -215,7 +215,7 @@ export const ProfileDropdown = () => {
                 <ChefHatIcon
                   size={15}
                   weight="duotone"
-                  className="text-black shrink-0 dark:text-white"
+                  className="text-black shrink-0"
                 />
                 <span className="text-sm font-semibold tracking-tight text-foreground truncate">
                   Chef <span style={{ color: "var(--cs-accent-text)" }}>Studio</span>

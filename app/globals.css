@@ -14,7 +14,6 @@ html {
   }
 }
 
-@custom-variant dark (&:is(.dark *));
 
 body {
   font-family: var(--font-dm-sans, ui-sans-serif, system-ui, sans-serif);
@@ -55,8 +54,9 @@ body {
   font-family: var(--font-dm-sans);
 }
 
-/* LIGHT MODE */
+/* THEME TOKENS: light only. Dark mode was removed; there is one theme. */
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
 
@@ -218,120 +218,6 @@ body {
   --cv-critical: #d03b3b;
 }
 
-/* DARK MODE */
-.dark {
-  --background: #0f0f0f;
-  --foreground: oklch(0.96 0 0);
-
-  --primary: #A7D129;
-  --primary-foreground: #000;
-
-  --secondary: #1a1a1a;
-  --secondary-foreground: #f5f5f5;
-
-  --muted: #161616;
-  --muted-foreground: #9ca3af;
-
-  --accent: #1f2a12;
-  --accent-foreground: #eaffc7;
-
-  --border: #262626;
-  --input: #262626;
-  --ring: #A7D129;
-
-  /* Chefalio surface tokens — dark overrides */
-  --cs-surface-1: #0f0f0f;
-  --cs-surface-2: #161614;
-  --cs-surface-3: #1e1e1b;
-  --cs-text-primary: #f0f0ee;
-  --cs-text-secondary: #9a9a96;
-  --cs-text-tertiary: #64645f;
-  --cs-border-subtle: #2a2a27;
-  --cs-border-default: #383835;
-  --cs-accent: #A7D129;
-  --cs-accent-muted: rgba(167, 209, 41, 0.12);
-  --cs-accent-text: #B8DE4A;
-
-  --cs-check-fill: rgba(167, 209, 41, 0.16);
-  --cs-check-mark: var(--primary);
-  --cs-check-edge: rgba(167, 209, 41, 0.45);
-
-  /* Materials — dark overrides. Dark materials lean on luminance rather
-     than white veil, and keep a bright top edge so the surface still
-     reads as glass catching light. */
-  --cs-material-thin: rgba(28, 28, 26, 0.5);
-  --cs-material-regular: rgba(22, 22, 20, 0.66);
-  --cs-material-thick: rgba(16, 16, 15, 0.86);
-  --cs-material-edge: rgba(255, 255, 255, 0.08);
-  --cs-material-blur: 14px;
-  --cs-scrim: rgba(0, 0, 0, 0.5);
-
-  --cs-shadow-chip: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --cs-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35),
-    0 10px 28px -14px rgba(0, 0, 0, 0.6);
-  --cs-shadow-float: 0 2px 6px rgba(0, 0, 0, 0.4),
-    0 28px 68px -28px rgba(0, 0, 0, 0.8);
-
-  /* Interaction states — dark lifts with light rather than darkening. */
-  --cs-hover: rgba(255, 255, 255, 0.05);
-  --cs-active: rgba(255, 255, 255, 0.09);
-  --cs-selected: var(--cs-accent-muted);
-  --cs-focus-ring: color-mix(in oklab, var(--primary) 60%, transparent);
-
-  /* Status — dark mode drops the fill to a low-alpha wash of its own hue
-     and brightens the foreground, so a pill reads as a tinted piece of
-     the card rather than a light sticker pasted onto it. */
-  --cs-success-bg: rgba(58, 176, 106, 0.16);
-  --cs-success-fg: #6ed99b;
-  --cs-success-edge: rgba(110, 217, 155, 0.28);
-
-  --cs-warning-bg: rgba(214, 160, 46, 0.16);
-  --cs-warning-fg: #e6be62;
-  --cs-warning-edge: rgba(230, 190, 98, 0.28);
-
-  --cs-danger-bg: rgba(224, 88, 82, 0.16);
-  --cs-danger-fg: #f08d88;
-  --cs-danger-edge: rgba(240, 141, 136, 0.28);
-
-  --cs-info-bg: rgba(110, 150, 214, 0.16);
-  --cs-info-fg: #9fbcec;
-  --cs-info-edge: rgba(159, 188, 236, 0.28);
-
-  --cs-love: #f2687f;
-  --cs-love-bg: rgba(242, 104, 127, 0.14);
-
-  /* ── Data visualisation — dark ─────────────────────────────────────────
-     The same hues re-stepped for the dark card, not an automatic flip of
-     the light values. Lime climbs back towards the brand here: on a
-     near-black surface it can be bright without glaring, which is where
-     the studio looks most like itself. All clear 3:1 on --cs-surface-2. */
-  --cv-1: #8ab01f; /* Chefalio lime — dark step */
-  --cv-2: #3987e5;
-  --cv-3: #d95926;
-  --cv-4: #9085e9;
-  --cv-5: #199e70;
-  --cv-6: #d55181;
-  --cv-7: #c98500;
-  --cv-8: #e66767;
-
-  /* Ordinal ramp inverts on dark: low → high runs dark → light, so the
-     brightest step still means "most". */
-  --cv-ord-1: #48610d;
-  --cv-ord-2: #8ab01f;
-  --cv-ord-3: #c2dd72;
-
-  --cv-grid: #2a2a27;
-  --cv-axis: #383835;
-  --cv-label: #7c7b76;
-  --cv-fill-strong: 0.22;
-  --cv-fill-soft: 0.03;
-
-  --cv-good: #0ca30c;
-  --cv-warning: #fab219;
-  --cv-serious: #ec835a;
-  --cv-critical: #d03b3b;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -403,22 +289,6 @@ body {
   font-weight: 500;
   background-color: var(--cs-surface-3);
   color: var(--cs-text-secondary);
-}
-
-/* Dark-mode badge overrides */
-.dark .badge-success {
-  background-color: rgba(34, 197, 94, 0.15);
-  color: #86efac;
-}
-
-.dark .badge-warning {
-  background-color: rgba(234, 179, 8, 0.15);
-  color: #fde047;
-}
-
-.dark .badge-error {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -640,19 +510,6 @@ body {
     0 1px 2px rgba(17, 17, 16, 0.05);
   border: 1px solid var(--cs-border-subtle);
   color: var(--cs-accent-text);
-}
-
-.dark .brand-tile {
-  background: linear-gradient(
-    145deg,
-    color-mix(in oklab, var(--primary) 16%, var(--cs-surface-3)),
-    var(--cs-surface-2)
-  );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 6px 16px -10px rgba(0, 0, 0, 0.7);
-  border: 1px solid color-mix(in oklab, var(--primary) 26%, transparent);
-  color: var(--primary);
 }
 
 /* Vibrancy: text over a translucent, shifting backdrop needs more weight

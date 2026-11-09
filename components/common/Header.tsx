@@ -16,7 +16,6 @@ import {
   UsersThreeIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { motion } from "framer-motion";
-import { ToggleThemeButton } from "./ToggleThemeButton";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -130,7 +129,6 @@ export const Header = () => {
           )}
 
           <div className="hidden shrink-0 items-center gap-2 lg:flex">
-            <ToggleThemeButton />
             {user ? (
               <>
                 <NotificationBell />
@@ -159,7 +157,6 @@ export const Header = () => {
 
           {/* Mobile */}
           <div className="flex items-center gap-1.5 lg:hidden">
-            <ToggleThemeButton />
             {!isLoading && user && (
               <>
                 <NotificationBell />

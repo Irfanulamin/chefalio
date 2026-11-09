@@ -44,7 +44,7 @@ export function Beams() {
 
       {/* Grid, masked out toward the edges so it never reads as a border */}
       <div
-        className="absolute inset-0 opacity-60 dark:opacity-35"
+        className="absolute inset-0 opacity-60"
         style={{
           backgroundImage:
             "linear-gradient(to right, var(--cs-border-subtle) 1px, transparent 1px), linear-gradient(to bottom, var(--cs-border-subtle) 1px, transparent 1px)",
