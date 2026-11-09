@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { WarningIcon, HouseLineIcon, ArrowClockwiseIcon } from "@phosphor-icons/react/dist/ssr";
+import { HouseLineIcon, ArrowClockwiseIcon } from "@phosphor-icons/react/dist/ssr";
 import { useProfile } from "@/hooks/useAuth";
 import {
   StatusPage,
@@ -35,7 +35,6 @@ export default function GlobalError({
   return (
     <StatusPage
       eyebrow="Something went wrong"
-      icon={WarningIcon}
       title="That didn't work"
       description="The page hit an error loading. It might be temporary — try again, or head back to something that works."
       actions={
