@@ -69,10 +69,11 @@ export function OAuthButtons() {
       disabled={loading}
       whileTap={reduce || loading ? undefined : { scale: 0.98 }}
       transition={{ type: "spring", bounce: 0, duration: 0.26 }}
-      className="focus-ring type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2.5 rounded-lg transition-colors duration-150 hover:bg-[var(--cs-hover)] disabled:pointer-events-none disabled:opacity-55"
+      className="landing-focus type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2.5 rounded-full transition-colors duration-150 hover:border-[var(--ink-soft)] disabled:pointer-events-none disabled:opacity-55"
       style={{
-        color: "var(--cs-text-primary)",
-        border: "1px solid var(--cs-border-default)",
+        color: "var(--ink)",
+        backgroundColor: "#FFFDF8",
+        border: "1px solid var(--rule)",
       }}
     >
       {loading ? <Spinner /> : <GoogleIcon />}

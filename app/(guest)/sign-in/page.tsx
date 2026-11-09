@@ -152,11 +152,44 @@ function LoginForm() {
   return (
     <AuthLayout
       title="Welcome back"
-      subtitle="Sign in to get to your library, your saved recipes, and your dashboard."
+      subtitle="Sign in to your saved recipes, the chefs you follow and your orders."
       footer={
         <>
           Don&apos;t have an account? <AuthLink href="/sign-up">Sign up</AuthLink>
         </>
+      }
+      aside={
+        <div>
+          <p className="type-caption" style={{ color: "var(--ink-soft)" }}>
+            Just looking? Try a read-only demo account.
+          </p>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {DEMO_ACCOUNTS.map((account) => {
+              const Icon = account.icon;
+              const pending = demoRole === account.role;
+              return (
+                <button
+                  key={account.role}
+                  type="button"
+                  onClick={() => handleDemoLogin(account)}
+                  disabled={demoRole !== null}
+                  aria-label={`Sign in as the demo ${account.role.toLowerCase()}`}
+                  className="landing-focus type-caption inline-flex h-11 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-(--rule) bg-[#FFFDF8] font-medium transition-colors duration-150 hover:border-(--ink-soft) disabled:cursor-default disabled:opacity-55"
+                >
+                  {pending ? (
+                    <span
+                      aria-hidden
+                      className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"
+                    />
+                  ) : (
+                    <Icon size={14} />
+                  )}
+                  {account.role}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       }
     >
       <div className="space-y-5">
@@ -218,8 +251,8 @@ function LoginForm() {
           <div className="flex justify-end">
             <Link
               href="/forgot-password"
-              className="type-caption font-medium transition-opacity duration-150 hover:opacity-70"
-              style={{ color: "var(--cs-text-secondary)" }}
+              className="landing-focus type-caption rounded-sm font-medium underline-offset-4 hover:underline"
+              style={{ color: "var(--ink-soft)" }}
             >
               Forgot your password?
             </Link>
@@ -231,46 +264,8 @@ function LoginForm() {
         </form>
 
         <div>
-          <AuthDivider label="or continue with" />
-          <div className="space-y-2">
-            <OAuthButtons />
-
-            {/* Fixed seeded accounts, not a real auth path — grouped under
-                the same "continue with" divider rather than getting a
-                second label of their own, so they read as one more option
-                in that row instead of a separate feature. */}
-            <div className="grid grid-cols-1 gap-2">
-              {DEMO_ACCOUNTS.map((account) => {
-                const Icon = account.icon;
-                const pending = demoRole === account.role;
-                const disabled = demoRole !== null;
-                return (
-                  <button
-                    key={account.role}
-                    type="button"
-                    onClick={() => handleDemoLogin(account)}
-                    disabled={disabled}
-                    title={`Try the demo as ${account.role.toLowerCase()}`}
-                    className="focus-ring type-caption inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full font-medium transition-colors duration-150 hover:bg-(--cs-hover) disabled:pointer-events-none disabled:opacity-55"
-                    style={{
-                      color: "var(--cs-text-secondary)",
-                      border: "1px solid var(--cs-border-default)",
-                    }}
-                  >
-                    {pending ? (
-                      <span
-                        aria-hidden
-                        className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"
-                      />
-                    ) : (
-                      <Icon size={13} />
-                    )}
-                    Try as a demo {account.role.toLowerCase()}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <AuthDivider label="or" />
+          <OAuthButtons />
         </div>
       </div>
     </AuthLayout>

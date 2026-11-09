@@ -1,6 +1,5 @@
 "use client";
 
-import { AUTH_PANELS } from "@/components/Home/imagery";
 import AuthLayout from "@/components/common/AuthLayout";
 import {
   AuthLink,
@@ -47,7 +46,6 @@ export default function ForgotPasswordPage() {
   if (onSuccess) {
     return (
       <AuthLayout
-        panel={AUTH_PANELS.recover}
         title="Link sent"
         subtitle="If that email is registered, the reset link is on its way."
         footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
@@ -62,7 +60,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout
-      panel={AUTH_PANELS.recover}
       title="Forgot your password?"
       subtitle="Enter your email and we'll send you a link to set a new one."
       footer={

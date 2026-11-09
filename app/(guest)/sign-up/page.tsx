@@ -1,6 +1,5 @@
 "use client";
 
-import { AUTH_PANELS } from "@/components/Home/imagery";
 import AuthLayout from "@/components/common/AuthLayout";
 import {
   AuthDivider,
@@ -79,7 +78,6 @@ export default function RegisterPage() {
   if (registeredEmail) {
     return (
       <AuthLayout
-        panel={AUTH_PANELS.register}
         title="One more step"
         subtitle="Your account exists — it just needs verifying before you can sign in."
         footer={
@@ -128,9 +126,8 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
-      panel={AUTH_PANELS.register}
       title="Create your account"
-      subtitle="Free to browse, free to save. You only pay for cookbooks you want to keep."
+      subtitle="Free to read and save recipes. You only pay if you buy a printed cookbook."
       footer={
         <>
           Already have an account? <AuthLink href="/sign-in">Sign in</AuthLink>
@@ -194,7 +191,7 @@ export default function RegisterPage() {
         </form>
 
         <div>
-          <AuthDivider label="or sign up with" />
+          <AuthDivider label="or" />
           <OAuthButtons />
         </div>
       </div>

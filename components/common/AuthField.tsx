@@ -72,8 +72,8 @@ export function AuthField({
           <div className="space-y-1.5">
             <label
               htmlFor={id}
-              className="type-caption block font-medium"
-              style={{ color: "var(--cs-text-secondary)" }}
+              className="type-caption block font-semibold"
+              style={{ color: "var(--ink)" }}
             >
               {label}
             </label>
@@ -83,7 +83,7 @@ export function AuthField({
                 <FieldIcon
                   size={17}
                   className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2"
-                  style={{ color: "var(--cs-text-tertiary)" }}
+                  style={{ color: "var(--ink-soft)" }}
                   aria-hidden
                 />
               )}
@@ -102,17 +102,18 @@ export function AuthField({
                 className={[
                   "h-12 w-full rounded-lg text-[0.9375rem] outline-none",
                   "transition-[border-color,box-shadow,background-color] duration-150",
-                  "placeholder:text-[var(--cs-text-tertiary)]",
-                  "focus:border-[var(--primary)] focus:shadow-[0_0_0_3px_var(--cs-focus-ring)]",
+                  "placeholder:text-[color-mix(in_oklab,var(--ink-soft)_70%,transparent)]",
+                  "hover:border-[var(--ink-soft)]",
+                  "focus:border-[var(--ink)] focus:shadow-[0_0_0_3px_color-mix(in_oklab,var(--primary)_40%,transparent)]",
                   FieldIcon ? "pl-10" : "pl-4",
                   isPassword ? "pr-12" : "pr-4",
                 ].join(" ")}
                 style={{
                   border: `1px solid ${
-                    invalid ? "var(--cs-danger-fg)" : "var(--cs-border-default)"
+                    invalid ? "var(--cs-danger-fg)" : "var(--rule)"
                   }`,
-                  backgroundColor: "var(--cs-surface-1)",
-                  color: "var(--cs-text-primary)",
+                  backgroundColor: "#FFFDF8",
+                  color: "var(--ink)",
                 }}
               />
 
@@ -122,8 +123,8 @@ export function AuthField({
                   onClick={() => setReveal((v) => !v)}
                   aria-label={reveal ? "Hide password" : "Show password"}
                   aria-pressed={reveal}
-                  className="focus-ring absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md transition-colors duration-150 hover:bg-[var(--cs-hover)]"
-                  style={{ color: "var(--cs-text-tertiary)" }}
+                  className="landing-focus absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md transition-colors duration-150 hover:bg-[var(--paper-deep)]"
+                  style={{ color: "var(--ink-soft)" }}
                 >
                   {reveal ? <EyeSlashIcon size={17} /> : <EyeIcon size={17} />}
                 </button>

@@ -1,6 +1,5 @@
 "use client";
 
-import { AUTH_PANELS } from "@/components/Home/imagery";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -93,7 +92,6 @@ function VerifyEmailContent() {
 
   return (
     <AuthLayout
-      panel={AUTH_PANELS.verify}
       title={copy.title}
       subtitle={copy.subtitle}
       footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}

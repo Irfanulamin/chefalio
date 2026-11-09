@@ -93,20 +93,11 @@ export function AuthDivider({ label }: { label: string }) {
      glass instead of disappearing into it. */
   return (
     <div className="my-6 flex items-center gap-3" aria-hidden>
-      <span
-        className="h-px flex-1"
-        style={{ backgroundColor: "var(--cs-border-subtle)" }}
-      />
-      <span
-        className="type-micro font-semibold uppercase"
-        style={{ color: "var(--cs-text-tertiary)", letterSpacing: "0.1em" }}
-      >
+      <span className="h-px flex-1" style={{ backgroundColor: "var(--rule)" }} />
+      <span className="type-caption" style={{ color: "var(--ink-soft)" }}>
         {label}
       </span>
-      <span
-        className="h-px flex-1"
-        style={{ backgroundColor: "var(--cs-border-subtle)" }}
-      />
+      <span className="h-px flex-1" style={{ backgroundColor: "var(--rule)" }} />
     </div>
   );
 }
@@ -140,12 +131,10 @@ export function AuthSubmit({
       disabled={isDisabled}
       whileTap={reduce || isDisabled ? undefined : { scale: 0.98 }}
       transition={SPRING}
-      className="type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-lg transition-opacity duration-150 disabled:pointer-events-none disabled:opacity-55"
+      className="landing-focus type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full font-semibold transition-[background-color,opacity] duration-150 hover:bg-[color-mix(in_oklab,var(--primary)_88%,var(--ink))] disabled:pointer-events-none disabled:opacity-55"
       style={{
         backgroundColor: "var(--primary)",
         color: "var(--primary-foreground)",
-        boxShadow:
-          "0 6px 20px -10px color-mix(in oklab, var(--primary) 85%, transparent)",
       }}
     >
       {pending && (
@@ -180,10 +169,11 @@ export function AuthSecondary({
       disabled={disabled}
       whileTap={reduce || disabled ? undefined : { scale: 0.98 }}
       transition={SPRING}
-      className="type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-lg transition-colors duration-150 disabled:pointer-events-none disabled:opacity-55"
+      className="landing-focus type-subheading inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full transition-colors duration-150 hover:border-[var(--ink-soft)] disabled:pointer-events-none disabled:opacity-55"
       style={{
-        color: "var(--cs-text-primary)",
-        border: "1px solid var(--cs-border-default)",
+        color: "var(--ink)",
+        backgroundColor: "#FFFDF8",
+        border: "1px solid var(--rule)",
       }}
     >
       {children}
@@ -202,8 +192,11 @@ export function AuthLink({
   return (
     <a
       href={href}
-      className="font-semibold transition-opacity duration-150 hover:opacity-70"
-      style={{ color: "var(--cs-accent-text)" }}
+      className="landing-focus rounded-sm font-semibold underline decoration-2 underline-offset-4 transition-colors duration-150"
+      style={{
+        color: "var(--ink)",
+        textDecorationColor: "var(--primary)",
+      }}
     >
       {children}
     </a>

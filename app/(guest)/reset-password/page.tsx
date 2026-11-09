@@ -1,6 +1,5 @@
 "use client";
 
-import { AUTH_PANELS } from "@/components/Home/imagery";
 import AuthLayout from "@/components/common/AuthLayout";
 import {
   AuthLink,
@@ -61,7 +60,6 @@ function ResetPasswordForm() {
   if (!resetToken) {
     return (
       <AuthLayout
-        panel={AUTH_PANELS.recover}
         title="That link didn't work"
         subtitle="Reset links expire, and each one can only be used once."
         footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
@@ -82,7 +80,6 @@ function ResetPasswordForm() {
 
   return (
     <AuthLayout
-      panel={AUTH_PANELS.recover}
       title="Set a new password"
       subtitle="Choose something at least 6 characters long that you haven't used here before."
       footer={
